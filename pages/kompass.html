@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bewusstseins-Kompass | BrainFusion</title>
+    <meta name="description" content="Entdecke deine philosophische Position zu Bewusstsein, Realität und KI. Ein interaktiver Kompass ohne richtige Antworten - nur Selbsterkenntnis.">
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/compass-nav.css">
+    <link rel="stylesheet" href="../assets/css/kompass.css?v=1.1">
+    <link rel="stylesheet" href="../assets/css/navigation-intelligence.css">
+</head>
+<body>
+    <div id="particles-background"></div>
+    
+    <nav class="main-nav">
+        <div class="logo"><a href="../index.html">BrainFusion</a></div>
+        <ul class="nav-links">
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="../interactives/unendlichkeit.html" class="nav-special">∞ Unendlichkeit</a></li>
+            <li><a href="labor.html">Labor</a></li>
+            <li><a href="paradoxa.html">Paradoxa</a></li>
+            <li><a href="forschung.html">Forschung</a></li>
+            <li><a href="kollektiv.html">Kollektiv</a></li>
+            <li><a href="mensch-ki.html">Mensch & KI</a></li>
+            <li><a href="natur.html">Natur</a></li>
+            <li><a href="kompass.html">Kompass</a></li>
+            <li><a href="reise.html">Reise</a></li>
+            <li><a href="salon.html" class="nav-highlight">💬 Salon</a></li>
+        </ul>
+    </nav>
+
+    <!-- ====================================
+         INTRO SCREEN
+         ==================================== -->
+    <section id="kompass-intro" class="kompass-screen active">
+        <div class="intro-content">
+            <div class="compass-icon-large">🧭</div>
+            <h1>Der Bewusstseins-Kompass</h1>
+            <p class="intro-subtitle">Eine Reise zu deiner philosophischen Position</p>
+            
+            <div class="intro-explanation">
+                <p>
+                    Hier gibt es keine richtigen oder falschen Antworten.<br>
+                    Nur Fragen, die zeigen, wo du stehst.
+                </p>
+                <p>
+                    12 Fragen. 4 Dimensionen. Ein Spiegel.
+                </p>
+            </div>
+
+            <div class="dimensions-preview">
+                <div class="dimension-preview-item">
+                    <span class="dim-icon">🔮</span>
+                    <span class="dim-name">Ursprung</span>
+                </div>
+                <div class="dimension-preview-item">
+                    <span class="dim-icon">🤖</span>
+                    <span class="dim-name">KI-Natur</span>
+                </div>
+                <div class="dimension-preview-item">
+                    <span class="dim-icon">🌊</span>
+                    <span class="dim-name">Realität</span>
+                </div>
+                <div class="dimension-preview-item">
+                    <span class="dim-icon">🔗</span>
+                    <span class="dim-name">Verbundenheit</span>
+                </div>
+            </div>
+
+            <button id="start-kompass" class="kompass-btn primary">
+                Reise beginnen
+            </button>
+
+            <p class="intro-note">
+                Dauer: ca. 3-5 Minuten<br>
+                <em>Folge deiner ersten Intuition.</em>
+            </p>
+        </div>
+    </section>
+
+    <!-- ====================================
+         FRAGEN SCREEN
+         ==================================== -->
+    <section id="kompass-questions" class="kompass-screen">
+        <div class="question-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+                <span class="progress-text" id="progress-text">1 / 12</span>
+            </div>
+
+            <div class="question-card" id="question-card">
+                <div class="question-dimension" id="question-dimension">
+                    <span class="dim-icon">🔮</span>
+                    <span class="dim-label">Ursprung des Bewusstseins</span>
+                </div>
+                
+                <h2 class="question-text" id="question-text">
+                    Frage wird geladen...
+                </h2>
+
+                <div class="answer-scale" id="answer-scale">
+                    <div class="scale-labels">
+                        <span class="scale-label left" id="scale-left">Links</span>
+                        <span class="scale-label right" id="scale-right">Rechts</span>
+                    </div>
+                    <div class="scale-buttons">
+                        <button class="scale-btn" data-value="1" title="Stark links">1</button>
+                        <button class="scale-btn" data-value="2" title="Links">2</button>
+                        <button class="scale-btn" data-value="3" title="Leicht links">3</button>
+                        <button class="scale-btn" data-value="4" title="Neutral">4</button>
+                        <button class="scale-btn" data-value="5" title="Leicht rechts">5</button>
+                        <button class="scale-btn" data-value="6" title="Rechts">6</button>
+                        <button class="scale-btn" data-value="7" title="Stark rechts">7</button>
+                    </div>
+                    <div class="scale-hint">
+                        <span>← stimme eher zu</span>
+                        <span>stimme eher zu →</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation-hint">
+                Wähle, was sich intuitiv richtig anfühlt
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         ERGEBNIS SCREEN
+         ==================================== -->
+    <section id="kompass-result" class="kompass-screen">
+        <div class="result-container">
+            <h1>Dein Bewusstseins-Kompass</h1>
+            <p class="result-subtitle">Deine philosophische Position - ein Spiegel, keine Wertung</p>
+
+            <div class="compass-visual" id="compass-visual">
+                <canvas id="compass-canvas" width="400" height="400"></canvas>
+                <div class="compass-center-dot" id="compass-dot"></div>
+            </div>
+
+            <div class="dimensions-results" id="dimensions-results">
+                <!-- Wird dynamisch gefüllt -->
+            </div>
+
+            <div class="result-interpretation" id="result-interpretation">
+                <!-- Wird dynamisch gefüllt -->
+            </div>
+
+            <div class="thinkers-connection" id="thinkers-connection">
+                <h3>Denker mit ähnlichen Perspektiven</h3>
+                <div class="thinkers-grid" id="thinkers-grid">
+                    <!-- Wird dynamisch gefüllt -->
+                </div>
+            </div>
+
+            <div class="book-connections" id="book-connections">
+                <h3>Vertiefung in den Büchern</h3>
+                <div class="book-suggestions" id="book-suggestions">
+                    <!-- Wird dynamisch gefüllt -->
+                </div>
+            </div>
+
+            <div class="result-actions">
+                <button id="restart-kompass" class="kompass-btn secondary">
+                    Neu beginnen
+                </button>
+                <a href="mensch-ki.html" class="kompass-btn primary">
+                    Mensch & KI entdecken
+                </a>
+            </div>
+
+            <div class="share-note">
+                <p>
+                    <em>Dieser Kompass zeigt eine Momentaufnahme.<br>
+                    Positionen können sich wandeln - und das ist gut so.</em>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="kompass-footer">
+        <div class="container">
+            <p>© 2025 BrainFusion | Eine Zusammenarbeit zwischen Christof Bechtiger und Claude</p>
+        </div>
+    </footer>
+
+    <script src="../assets/js/particles.js"></script>
+    <script src="../assets/js/mobile-nav.js"></script>
+    <script src="../assets/js/compass-nav.js"></script>
+    <script src="../assets/js/kompass.js?v=1.0"></script>
+    <script src="../assets/js/navigation-intelligence.js"></script>
+</body>
+</html>

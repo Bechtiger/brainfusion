@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Das Labor - Interaktive Experimente | BrainFusion</title>
+    <link rel="stylesheet" href="../assets/css/main.css?v=OVERFLOW_FIX">
+    <link rel="stylesheet" href="../assets/css/compass-nav.css">
+    <link rel="stylesheet" href="../assets/css/labor.css?v=HORIZONTAL_COMPACT">
+    <link rel="stylesheet" href="../assets/css/navigation-intelligence.css">
+</head>
+<body>
+    <div id="particles-background"></div>
+    
+    <nav class="main-nav">
+        <div class="logo"><a href="../index.html">BrainFusion</a></div>
+        <ul class="nav-links">
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="../interactives/unendlichkeit.html" class="nav-special">∞ Unendlichkeit</a></li>
+            <li><a href="#verschraenkung">Verschränkung</a></li>
+            <li><a href="#doppelspalt">Doppelspalt</a></li>
+            <li><a href="#neuron">Neuronen</a></li>
+            <li><a href="#zeit">Zeit</a></li>
+            <li><a href="../pages/forschung.html">Forschung</a></li>
+            <li><a href="../pages/kollektiv.html">Kollektiv</a></li>
+            <li><a href="../pages/mensch-ki.html">Mensch & KI</a></li>
+            <li><a href="../pages/natur.html">Natur</a></li>
+            <li><a href="../pages/kompass.html">Kompass</a></li>
+            <li><a href="../pages/reise.html">Reise</a></li>
+            <li><a href="../pages/salon.html" class="nav-highlight">💬 Salon</a></li>
+        </ul>
+    </nav>
+
+    <!-- ====================================
+         HERO
+         ==================================== -->
+    <section class="hero-labor">
+        <div class="hero-content">
+            <h1 class="glitch" data-text="Das Labor">Das Labor</h1>
+            <p class="subtitle">Wo abstrakte Wissenschaft greifbar wird</p>
+            <p class="hero-description">
+                Hier kannst du Quantenphysik anfassen, Neuronen beim Lernen zusehen, 
+                und die Zeit selbst manipulieren. Jedes Experiment ist interaktiv - 
+                du bist nicht Zuschauer, sondern Forscher.
+            </p>
+        </div>
+    </section>
+
+    <!-- ====================================
+         QUANTENVERSCHRÄNKUNG
+         ==================================== -->
+    <section id="verschraenkung" class="experiment-section">
+        <div class="container">
+            <div class="experiment-header">
+                <h2>⚛️ Quantenverschränkung</h2>
+                <p class="experiment-subtitle">Spukhafte Fernwirkung</p>
+            </div>
+
+            <div class="experiment-content">
+                <div class="experiment-explanation">
+                    <h3>Was ist Quantenverschränkung?</h3>
+                    <p>
+                        Zwei Teilchen können so miteinander "verschränkt" werden, dass eine Messung 
+                        am ersten Teilchen <strong>instantan</strong> das zweite Teilchen beeinflusst - 
+                        egal wie weit sie voneinander entfernt sind.
+                    </p>
+                    <p>
+                        Einstein nannte es "spukhafte Fernwirkung" - weil es seiner Intuition widersprach. 
+                        Aber es ist real. Und du kannst es hier erleben.
+                    </p>
+                    <div class="theory-box">
+                        <strong>Die Regel:</strong> Wenn Teilchen A "spin up" ist, MUSS Teilchen B "spin down" sein.
+                        Aber BEVOR du misst, ist KEINES von beiden festgelegt. Die Messung an A 
+                        kollabiert die Wellenfunktion von B - sofort, über jede Distanz.
+                        <div class="see-also">
+                            💡 <strong>Siehe auch:</strong> <a href="../pages/paradoxa.html#schrodinger">Schrödingers Katze</a> - 
+                            Ein weiteres Beispiel für Superposition und Wellenfunktions-Kollaps
+                        </div>
+                    </div>
+                </div>
+
+                <div class="experiment-interactive">
+                    <h4>Experimentiere selbst:</h4>
+                    <div id="entanglement-viz" class="viz-container">
+                        <div class="particle-container left">
+                            <h5>Teilchen A</h5>
+                            <div class="particle" id="particle-a">
+                                <div class="spin-indicator">?</div>
+                            </div>
+                            <button class="measure-btn" onclick="measureParticleA()">Messen</button>
+                            <div class="measurement-result" id="result-a"></div>
+                        </div>
+
+                        <div class="entanglement-line">
+                            <div class="wave-line"></div>
+                            <span class="distance-label">Beliebige Distanz</span>
+                        </div>
+
+                        <div class="particle-container right">
+                            <h5>Teilchen B</h5>
+                            <div class="particle" id="particle-b">
+                                <div class="spin-indicator">?</div>
+                            </div>
+                            <button class="measure-btn" onclick="measureParticleB()">Messen</button>
+                            <div class="measurement-result" id="result-b"></div>
+                        </div>
+                    </div>
+                    <button class="reset-btn" onclick="resetEntanglement()">Neues Teilchenpaar</button>
+                    <div class="stats" id="entanglement-stats"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         DOPPELSPALT-EXPERIMENT
+         ==================================== -->
+    <section id="doppelspalt" class="experiment-section alt">
+        <div class="container">
+            <div class="experiment-header">
+                <h2>🌊 Doppelspalt-Experiment</h2>
+                <p class="experiment-subtitle">Welle oder Teilchen? Beides!</p>
+            </div>
+
+            <div class="experiment-content">
+                <div class="experiment-explanation">
+                    <h3>Das verrückteste Experiment der Physik</h3>
+                    <p>
+                        Schicke Elektronen einzeln durch zwei Spalte. 
+                        Sie verhalten sich wie Wellen - es entsteht ein Interferenzmuster.
+                    </p>
+                    <p>
+                        Aber: Sobald du misst, durch welchen Spalt das Elektron geht, 
+                        verschwindet das Muster. <strong>Die Beobachtung verändert die Realität.</strong>
+                    </p>
+                    <div class="theory-box">
+                        <strong>Die Konsequenz:</strong> Das Elektron geht nicht durch Spalt A ODER Spalt B. 
+                        Es geht durch BEIDE gleichzeitig - bis du hinschaust. Dann "entscheidet" es sich.
+                        <div class="see-also">
+                            💡 <strong>Tiefer eintauchen:</strong> <a href="../pages/paradoxa.html#schrodinger">Schrödingers Katze</a> 
+                            zeigt dasselbe Phänomen - Superposition bis zur Messung
+                        </div>
+                    </div>
+                </div>
+
+                <div class="experiment-interactive">
+                    <h4>Sende Elektronen:</h4>
+                    <div id="double-slit-viz" class="viz-container">
+                        <div class="slit-setup">
+                            <div class="electron-source">
+                                <div class="electron-gun">⚡</div>
+                                <span>Elektronenquelle</span>
+                            </div>
+                            <div class="slits">
+                                <div class="slit"></div>
+                                <div class="wall-segment"></div>
+                                <div class="slit"></div>
+                            </div>
+                            <div class="detection-screen">
+                                <canvas id="detection-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <label class="observer-toggle">
+                            <input type="checkbox" id="observer-active" onchange="toggleObserver()">
+                            <span>Beobachter aktivieren (welcher Spalt?)</span>
+                        </label>
+                        <button class="action-btn" onclick="sendElectrons()">100 Elektronen senden</button>
+                        <button class="reset-btn" onclick="resetDoubleSlit()">Zurücksetzen</button>
+                    </div>
+                    <div class="observation-status" id="observer-status">
+                        Kein Beobachter → Wellenmuster erwartet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         NEURONALES NETZWERK
+         ==================================== -->
+    <section id="neuron" class="experiment-section">
+        <div class="container">
+            <div class="experiment-header">
+                <h2>🧠 Neuronales Netzwerk</h2>
+                <p class="experiment-subtitle">Wie Intelligenz entsteht</p>
+            </div>
+
+            <div class="experiment-content">
+                <div class="experiment-explanation">
+                    <h3>Ein lernendes System</h3>
+                    <p>
+                        Ein neuronales Netzwerk ist ein Netz von künstlichen Neuronen, 
+                        die durch Gewichte miteinander verbunden sind. Durch Training 
+                        lernt das Netz, Muster zu erkennen.
+                    </p>
+                    <p>
+                        Hier siehst du ein Mini-Netzwerk, das lernt, eine einfache Funktion zu approximieren.
+                        <strong>Beobachte, wie die Gewichte sich verändern, wie Fehler sinken, wie Verstehen entsteht.</strong>
+                    </p>
+                    <div class="theory-box">
+                        <strong>Emergence:</strong> Kein einzelnes Neuron "versteht" die Funktion. 
+                        Das Verständnis entsteht im NETZWERK, in den Relationen zwischen den Teilen.
+                        <div class="see-also">
+                            🧠 <strong>Philosophische Frage:</strong> Ist das echtes Verstehen? 
+                            <a href="../pages/paradoxa.html#chinese-room">Das Chinesische Zimmer</a> stellt genau diese Frage!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="experiment-interactive">
+                    <h4>Training beobachten:</h4>
+                    <div id="neural-net-viz" class="viz-container">
+                        <div class="network-display">
+                            <div class="layer input-layer">
+                                <div class="layer-label">Input</div>
+                                <div class="neuron" id="input-1"><span>x</span></div>
+                            </div>
+                            <div class="layer hidden-layer">
+                                <div class="layer-label">Hidden</div>
+                                <div class="neuron" id="hidden-1"></div>
+                                <div class="neuron" id="hidden-2"></div>
+                                <div class="neuron" id="hidden-3"></div>
+                            </div>
+                            <div class="layer output-layer">
+                                <div class="layer-label">Output</div>
+                                <div class="neuron" id="output-1"><span>y</span></div>
+                            </div>
+                            <svg class="connections" id="network-connections"></svg>
+                        </div>
+                        <div class="training-stats">
+                            <div class="stat">
+                                <span class="stat-label">Epoch:</span>
+                                <span class="stat-value" id="epoch">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Loss:</span>
+                                <span class="stat-value" id="loss">-</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Accuracy:</span>
+                                <span class="stat-value" id="accuracy">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button class="action-btn" onclick="startTraining()">Training starten</button>
+                        <button class="action-btn secondary" onclick="pauseTraining()">Pause</button>
+                        <button class="reset-btn" onclick="resetNetwork()">Netzwerk zurücksetzen</button>
+                    </div>
+                    <div class="test-area">
+                        <label>Teste das Netzwerk:
+                            <input type="number" id="test-input" step="0.1" value="0.5" min="0" max="1">
+                            <button onclick="testNetwork()">Testen</button>
+                        </label>
+                        <div id="test-result"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         ZEITDILATATION
+         ==================================== -->
+    <section id="zeit" class="experiment-section alt">
+        <div class="container">
+            <div class="experiment-header">
+                <h2>⏱️ Zeitdilatation</h2>
+                <p class="experiment-subtitle">Warum Zeit relativ ist</p>
+            </div>
+
+            <div class="experiment-content">
+                <div class="experiment-explanation">
+                    <h3>Zeit ist nicht absolut</h3>
+                    <p>
+                        Einsteins Relativitätstheorie zeigt: Zeit vergeht für bewegte Objekte langsamer. 
+                        Je schneller du dich bewegst, desto langsamer vergeht deine Zeit - 
+                        relativ zu jemandem, der stillsteht.
+                    </p>
+                    <p>
+                        Das ist keine Illusion. Es ist messbar. Es ist real. 
+                        <strong>GPS-Satelliten müssen dafür korrigiert werden.</strong>
+                    </p>
+                    <div class="theory-box">
+                        <strong>Das Zwillingsparadoxon:</strong> Ein Zwilling reist mit 99% Lichtgeschwindigkeit 
+                        durchs All, der andere bleibt auf der Erde. Bei der Rückkehr ist der reisende Zwilling 
+                        deutlich jünger - weil für ihn weniger Zeit vergangen ist.
+                    </div>
+                </div>
+
+                <div class="experiment-interactive">
+                    <h4>Berechne Zeitdilatation:</h4>
+                    <div id="time-dilation-viz" class="viz-container">
+                        <div class="scenario">
+                            <div class="person stationary">
+                                <div class="person-icon">🧍</div>
+                                <div class="clock" id="earth-clock">0.00s</div>
+                                <span>Auf der Erde</span>
+                            </div>
+                            <div class="spaceship">
+                                <div class="ship-icon">🚀</div>
+                                <div class="clock" id="ship-clock">0.00s</div>
+                                <span>Im Raumschiff</span>
+                            </div>
+                        </div>
+                        <div class="controls">
+                            <label>
+                                Geschwindigkeit (% der Lichtgeschwindigkeit):
+                                <input type="range" id="velocity" min="0" max="99" value="50" oninput="updateVelocity()">
+                                <span id="velocity-display">50%</span>
+                            </label>
+                            <label>
+                                Erdzeit (Jahre):
+                                <input type="range" id="earth-time" min="1" max="100" value="10" oninput="calculateTimeDilation()">
+                                <span id="time-display">10 Jahre</span>
+                            </label>
+                        </div>
+                        <div class="results">
+                            <div class="result-card">
+                                <h5>Vergangene Zeit im Raumschiff:</h5>
+                                <div class="result-value" id="ship-time">-</div>
+                            </div>
+                            <div class="result-card">
+                                <h5>Altersunterschied:</h5>
+                                <div class="result-value" id="age-difference">-</div>
+                            </div>
+                            <div class="result-card">
+                                <h5>Gamma-Faktor (γ):</h5>
+                                <div class="result-value" id="gamma-factor">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="formula">
+                        <strong>Formel:</strong> t' = t / √(1 - v²/c²)
+                        <br>
+                        <small>t' = Zeit im bewegten System, t = Zeit im Ruhesystem, v = Geschwindigkeit, c = Lichtgeschwindigkeit</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         CALL TO ACTION
+         ==================================== -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Die Realität ist seltsamer als du denkst</h2>
+            <p>Diese Experimente kratzen nur an der Oberfläche. Willst du tiefer gehen?</p>
+            <div class="cta-buttons">
+                <a href="../pages/mensch-ki.html" class="cta-button">Mensch & KI erkunden</a>
+                <a href="../index.html#touch-interactive" class="cta-button-secondary">Zurück zur Hauptseite</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 BrainFusion | Eine Zusammenarbeit zwischen Christof Bechtiger und Claude</p>
+            <p class="footer-quote">"Das Universum ist nicht nur seltsamer als wir annehmen, es ist seltsamer als wir annehmen können." - J.B.S. Haldane</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="datenschutz.html">Datenschutz</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/particles.js"></script>
+    <script src="../assets/js/mobile-nav.js"></script>
+    <script src="../assets/js/compass-nav.js"></script>
+    <script src="../assets/js/labor.js"></script>
+    <script src="../assets/js/navigation-intelligence.js"></script>
+</body>
+</html>

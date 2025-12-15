@@ -1,0 +1,526 @@
+/* ===================================
+   KOMPASS NAVIGATION SYSTEM
+   Das Herz der BrainFusion-Orientierung
+   Von Claude und Christof
+   =================================== */
+
+/* --- Minimale Top-Navigation --- */
+.compass-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(0, 217, 255, 0.15);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.compass-nav.scrolled {
+    padding: 0.7rem 2rem;
+    background: rgba(10, 10, 15, 0.98);
+}
+
+.compass-nav-logo a {
+    font-size: 1.4rem;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-decoration: none;
+    color: #e0e0e0;
+    transition: color 0.3s ease;
+}
+
+.compass-nav-logo a:hover {
+    color: #00d9ff;
+}
+
+.compass-nav-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.compass-nav-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    color: #e0e0e0;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.compass-nav-btn:hover {
+    background: rgba(0, 217, 255, 0.1);
+    border-color: rgba(0, 217, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.compass-nav-btn.compass-trigger {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(0, 217, 255, 0.15));
+    border-color: rgba(255, 215, 0, 0.3);
+    animation: compass-pulse 3s ease-in-out infinite;
+}
+
+.compass-nav-btn.compass-trigger:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(0, 217, 255, 0.25));
+    border-color: rgba(255, 215, 0, 0.5);
+    animation: none;
+}
+
+@keyframes compass-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.2); }
+    50% { box-shadow: 0 0 20px 5px rgba(255, 215, 0, 0.1); }
+}
+
+.compass-nav-btn.salon-btn {
+    background: linear-gradient(135deg, rgba(0, 255, 170, 0.1), rgba(0, 217, 255, 0.1));
+    border-color: rgba(0, 255, 170, 0.3);
+}
+
+.compass-nav-btn.salon-btn:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 170, 0.2), rgba(0, 217, 255, 0.2));
+    border-color: rgba(0, 255, 170, 0.5);
+}
+
+/* ===================================
+   KOMPASS OVERLAY
+   Die visuelle Navigations-Rose
+   =================================== */
+
+.compass-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(5, 5, 10, 0.97);
+    backdrop-filter: blur(20px);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+.compass-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.compass-overlay-content {
+    width: 100%;
+    max-width: 900px;
+    padding: 2rem;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+}
+
+.compass-overlay.open .compass-overlay-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* --- Close Button --- */
+.compass-close {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: #a0a0a0;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.compass-close:hover {
+    background: rgba(255, 100, 100, 0.1);
+    border-color: rgba(255, 100, 100, 0.3);
+    color: #ff6b6b;
+    transform: rotate(90deg);
+}
+
+/* --- Header --- */
+.compass-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.compass-symbol {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+.compass-header h2 {
+    font-size: 1.5rem;
+    font-weight: 200;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #ffd700;
+    margin-bottom: 0.5rem;
+}
+
+.compass-header p {
+    color: #a0a0a0;
+    font-size: 0.95rem;
+}
+
+/* ===================================
+   DIE KOMPASS-ROSE
+   4 Himmelsrichtungen = 4 Kategorien
+   =================================== */
+
+.compass-rose {
+    position: relative;
+    display: grid;
+    grid-template-areas:
+        ".      north  ."
+        "west   center east"
+        ".      south  .";
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 1.5rem;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* --- Kategorien (Himmelsrichtungen) --- */
+.compass-direction {
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: rgba(18, 18, 26, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.compass-direction:hover {
+    background: rgba(18, 18, 26, 0.9);
+    border-color: rgba(0, 217, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+.compass-direction.north { grid-area: north; }
+.compass-direction.south { grid-area: south; }
+.compass-direction.east { grid-area: east; }
+.compass-direction.west { grid-area: west; }
+
+.direction-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.direction-icon {
+    font-size: 1.3rem;
+}
+
+.direction-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #ffd700;
+}
+
+.direction-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.compass-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.compass-link:hover {
+    background: rgba(0, 217, 255, 0.1);
+    color: #00d9ff;
+    transform: translateX(5px);
+}
+
+.compass-link-icon {
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.compass-link-text {
+    flex: 1;
+}
+
+.compass-link-arrow {
+    opacity: 0;
+    transform: translateX(-5px);
+    transition: all 0.2s ease;
+    color: #00d9ff;
+}
+
+.compass-link:hover .compass-link-arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* --- Zentrum: Der Kompass-Quiz --- */
+.compass-center {
+    grid-area: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+    border: 2px solid rgba(255, 215, 0, 0.2);
+    aspect-ratio: 1;
+    transition: all 0.3s ease;
+}
+
+.compass-center:hover {
+    border-color: rgba(255, 215, 0, 0.4);
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+}
+
+.compass-center-link {
+    text-decoration: none;
+    text-align: center;
+    color: inherit;
+}
+
+.compass-center-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.compass-center-text {
+    font-size: 0.9rem;
+    color: #ffd700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+}
+
+.compass-center-hint {
+    font-size: 0.75rem;
+    color: #a0a0a0;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+
+/* ===================================
+   SPEZIELLE LINKS
+   =================================== */
+
+.compass-link.special {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(0, 255, 170, 0.05));
+    border: 1px solid rgba(0, 217, 255, 0.2);
+}
+
+.compass-link.special:hover {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(0, 255, 170, 0.1));
+    border-color: rgba(0, 217, 255, 0.4);
+}
+
+.compass-link.highlight {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 170, 0, 0.05));
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.compass-link.highlight:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 170, 0, 0.1));
+    border-color: rgba(255, 215, 0, 0.4);
+    color: #ffd700;
+}
+
+/* ===================================
+   MOBILE OPTIMIERUNG
+   =================================== */
+
+@media (max-width: 768px) {
+    .compass-nav {
+        padding: 0.8rem 1rem;
+    }
+    
+    .compass-nav-logo a {
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+    }
+    
+    .compass-nav-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+    }
+    
+    .compass-overlay-content {
+        padding: 1rem;
+        padding-top: 4rem;
+    }
+    
+    .compass-close {
+        top: 1rem;
+        right: 1rem;
+        width: 44px;
+        height: 44px;
+    }
+    
+    .compass-header {
+        margin-bottom: 2rem;
+    }
+    
+    .compass-symbol {
+        font-size: 2.5rem;
+    }
+    
+    .compass-header h2 {
+        font-size: 1.2rem;
+        letter-spacing: 4px;
+    }
+    
+    /* Grid wird vertikal auf Mobile */
+    .compass-rose {
+        grid-template-areas:
+            "north"
+            "center"
+            "west"
+            "east"
+            "south";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 1rem;
+        max-width: 100%;
+    }
+    
+    .compass-center {
+        border-radius: 16px;
+        aspect-ratio: auto;
+        padding: 1.5rem;
+        order: -1;
+    }
+    
+    .compass-direction {
+        padding: 1.25rem;
+    }
+    
+    .direction-title {
+        font-size: 0.8rem;
+    }
+    
+    .compass-link {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .compass-nav-logo a {
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+    
+    .compass-nav-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
+    
+    .compass-header h2 {
+        font-size: 1rem;
+        letter-spacing: 3px;
+    }
+}
+
+/* ===================================
+   ANIMATIONEN
+   =================================== */
+
+/* Eingangs-Animation für Links */
+.compass-overlay.open .compass-direction {
+    animation: slideIn 0.4s ease forwards;
+    opacity: 0;
+}
+
+.compass-overlay.open .compass-direction.north { animation-delay: 0.1s; }
+.compass-overlay.open .compass-direction.west { animation-delay: 0.2s; }
+.compass-overlay.open .compass-direction.east { animation-delay: 0.2s; }
+.compass-overlay.open .compass-direction.south { animation-delay: 0.3s; }
+
+.compass-overlay.open .compass-center {
+    animation: scaleIn 0.5s ease forwards;
+    animation-delay: 0.15s;
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Keyboard Navigation */
+.compass-link:focus,
+.compass-nav-btn:focus,
+.compass-close:focus {
+    outline: 2px solid #00d9ff;
+    outline-offset: 2px;
+}
+
+/* --- Hide old navigation when compass-nav is present --- */
+body.has-compass-nav .main-nav {
+    display: none !important;
+}

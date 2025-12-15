@@ -1,0 +1,1199 @@
+/* ====================================
+   DIE REISE NACH INNEN - STYLES
+   ==================================== */
+
+:root {
+    --reise-bg: #050510;
+    --reise-card: rgba(15, 20, 40, 0.85);
+    --reise-border: rgba(100, 150, 255, 0.15);
+    --reise-accent: #7b68ee;
+    --reise-gold: #d4af37;
+    --reise-deep: #1a1a2e;
+}
+
+/* ====================================
+   HERO
+   ==================================== */
+.hero-reise {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+}
+
+.hero-reise .hero-content {
+    max-width: 800px;
+}
+
+.hero-symbol {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { 
+        filter: drop-shadow(0 0 20px rgba(123, 104, 238, 0.5));
+        transform: scale(1);
+    }
+    50% { 
+        filter: drop-shadow(0 0 40px rgba(123, 104, 238, 0.8));
+        transform: scale(1.05);
+    }
+}
+
+.hero-reise h1 {
+    font-size: 3.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #fff, var(--reise-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+}
+
+.hero-invitation {
+    background: var(--reise-card);
+    border: 1px solid var(--reise-border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.hero-invitation p {
+    font-size: 1.2rem;
+    line-height: 2;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.hero-question {
+    font-size: 1.3rem !important;
+    color: var(--reise-accent) !important;
+    font-style: italic;
+}
+
+.begin-journey {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 3rem;
+    background: linear-gradient(135deg, var(--reise-accent), #9370db);
+    border-radius: 50px;
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.begin-journey:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(123, 104, 238, 0.4);
+}
+
+.begin-journey .arrow {
+    font-size: 1.5rem;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+}
+
+
+/* ====================================
+   STATIONEN - ALLGEMEIN
+   ==================================== */
+.station {
+    padding: 6rem 2rem;
+    position: relative;
+}
+
+.station-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.station-number {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--reise-accent), #9370db);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+}
+
+.station-icon {
+    font-size: 2.5rem;
+}
+
+.station h2 {
+    text-align: center;
+    font-size: 2.8rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.station-subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--reise-accent);
+    margin-bottom: 3rem;
+    font-style: italic;
+}
+
+.station-intro {
+    max-width: 800px;
+    margin: 0 auto 4rem;
+    text-align: center;
+}
+
+.lead-text {
+    font-size: 1.3rem;
+    line-height: 1.9;
+    color: var(--text-secondary);
+}
+
+.station-reflection {
+    max-width: 700px;
+    margin: 4rem auto;
+    text-align: center;
+    padding: 3rem;
+    background: linear-gradient(135deg, rgba(123, 104, 238, 0.1), rgba(147, 112, 219, 0.05));
+    border: 1px solid var(--reise-border);
+    border-radius: 20px;
+}
+
+.reflection-icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+.station-reflection p {
+    font-size: 1.2rem;
+    line-height: 1.9;
+    color: var(--text-secondary);
+}
+
+.station-reflection strong {
+    color: var(--reise-accent);
+    display: block;
+    margin-top: 1rem;
+}
+
+.next-station {
+    display: block;
+    text-align: center;
+    padding: 1rem 2rem;
+    color: var(--reise-accent);
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    margin-top: 2rem;
+}
+
+.next-station:hover {
+    color: white;
+    transform: translateX(10px);
+}
+
+
+/* ====================================
+   STATION 1: ILLUSIONEN
+   ==================================== */
+.illusion-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.illusion-card {
+    background: var(--reise-card);
+    border: 1px solid var(--reise-border);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.illusion-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.illusion-container {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.illusion-question {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.illusion-insight {
+    color: var(--reise-accent);
+    font-size: 0.9rem;
+    font-style: italic;
+    padding-top: 1rem;
+    border-top: 1px solid var(--reise-border);
+}
+
+/* Hermann Grid */
+.grid-illusion {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #000;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+.grid-row {
+    display: flex;
+    gap: 12px;
+}
+
+.grid-square {
+    width: 35px;
+    height: 35px;
+    background: #fff;
+}
+
+/* Motion Illusion - Bild */
+.motion-illusion-img {
+    max-width: 100%;
+    height: auto;
+    max-height: 200px;
+    border-radius: 10px;
+}
+
+.illusion-credit {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.5rem;
+}
+
+.illusion-credit a {
+    color: rgba(123, 104, 238, 0.6);
+    text-decoration: none;
+}
+
+.illusion-credit a:hover {
+    color: var(--reise-accent);
+}
+
+/* Color Context Illusion */
+.color-context {
+    display: flex;
+    gap: 2rem;
+}
+
+.context-bg {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.context-bg.dark {
+    background: #1a1a1a;
+}
+
+.context-bg.light {
+    background: #e0e0e0;
+}
+
+.inner-square {
+    width: 40px;
+    height: 40px;
+    background: #808080;
+    border-radius: 5px;
+}
+
+
+/* ====================================
+   STATION 2: KOGNITIVE BIASES
+   ==================================== */
+.bias-explorer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.bias-card {
+    background: var(--reise-card);
+    border: 1px solid var(--reise-border);
+    border-radius: 20px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.bias-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--reise-accent);
+}
+
+.bias-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.bias-card h3 {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+}
+
+.bias-latin {
+    font-size: 0.9rem;
+    color: var(--reise-accent);
+    font-style: italic;
+    margin-bottom: 1rem;
+}
+
+.bias-description {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.bias-example {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.bias-example strong {
+    color: var(--reise-gold);
+}
+
+.bias-question {
+    color: var(--reise-accent);
+    font-size: 0.95rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--reise-border);
+}
+
+/* Dunning-Kruger Visualisierung */
+.bias-visual {
+    margin: 1.5rem 0;
+}
+
+.dunning-kruger-curve {
+    position: relative;
+    height: 120px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(123, 104, 238, 0.3) 20%,
+        rgba(123, 104, 238, 0.1) 40%,
+        rgba(123, 104, 238, 0.2) 80%,
+        rgba(123, 104, 238, 0.3) 100%
+    );
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-end;
+    padding: 1rem;
+}
+
+.curve-point {
+    position: absolute;
+    text-align: center;
+}
+
+.curve-point.peak {
+    left: 15%;
+    top: 10px;
+}
+
+.curve-point.valley {
+    left: 45%;
+    bottom: 10px;
+}
+
+.curve-point.mastery {
+    right: 10%;
+    top: 30%;
+}
+
+.point-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* Anchoring Demo */
+.bias-interactive {
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid var(--reise-gold);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.anchor-question {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.anchor-value {
+    color: var(--reise-gold);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.anchor-reveal {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+
+/* ====================================
+   STATION 3: GLAUBENSSÄTZE
+   ==================================== */
+.beliefs-section h3 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.origin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+}
+
+.origin-card {
+    background: var(--reise-card);
+    border: 1px solid var(--reise-border);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.origin-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.origin-card h4 {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 0.8rem;
+}
+
+.origin-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.origin-example {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--reise-border);
+    font-style: italic;
+    color: var(--reise-accent) !important;
+    font-size: 0.85rem !important;
+}
+
+.persistence-explanation {
+    max-width: 700px;
+    margin: 0 auto 4rem;
+}
+
+.persistence-point {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: var(--reise-card);
+    border-radius: 15px;
+    border-left: 4px solid var(--reise-accent);
+}
+
+.point-marker {
+    width: 35px;
+    height: 35px;
+    min-width: 35px;
+    background: var(--reise-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+}
+
+.persistence-point p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+}
+
+.persistence-point strong {
+    color: var(--text-primary);
+}
+
+/* Reflexions-Prompts */
+.reflection-prompts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.prompt-card {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(123, 104, 238, 0.1));
+    border: 1px solid var(--reise-gold);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.prompt-question {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.prompt-challenge {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-style: italic;
+}
+
+
+/* ====================================
+   STATION 4: DAS ICH
+   ==================================== */
+.self-exploration h3 {
+    font-size: 1.6rem;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.layers-visual {
+    max-width: 500px;
+    margin: 0 auto 4rem;
+    position: relative;
+}
+
+.layer {
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.layer:hover {
+    transform: scale(1.02);
+}
+
+.layer-outer {
+    width: 100%;
+    max-width: 450px;
+    height: 450px;
+    background: rgba(123, 104, 238, 0.1);
+    border: 2px solid rgba(123, 104, 238, 0.3);
+}
+
+.layer-middle {
+    width: 340px;
+    height: 340px;
+    background: rgba(123, 104, 238, 0.15);
+    border: 2px solid rgba(123, 104, 238, 0.4);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.layer-inner {
+    width: 230px;
+    height: 230px;
+    background: rgba(123, 104, 238, 0.2);
+    border: 2px solid rgba(123, 104, 238, 0.5);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.layer-core {
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, var(--reise-accent), transparent);
+    border: 2px solid var(--reise-accent);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.layer-label {
+    font-weight: bold;
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.layer p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.layer-core .layer-label {
+    font-size: 1.5rem;
+}
+
+.self-questions {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.question-deep {
+    background: var(--reise-card);
+    border: 1px solid var(--reise-border);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.question-deep h3 {
+    text-align: left;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+.question-deep p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+}
+
+.question-core {
+    color: var(--reise-accent) !important;
+    font-size: 1.1rem;
+    padding: 1rem;
+    background: rgba(123, 104, 238, 0.1);
+    border-radius: 10px;
+}
+
+.observation-hint {
+    font-style: italic;
+    font-size: 0.95rem;
+}
+
+.paradox-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--reise-gold);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.paradox-link:hover {
+    color: white;
+    transform: translateX(5px);
+}
+
+
+/* ====================================
+   STATION 5: FREIER WILLE
+   ==================================== */
+.libet-experiment {
+    max-width: 800px;
+    margin: 0 auto 4rem;
+    text-align: center;
+}
+
+.libet-experiment h3 {
+    font-size: 1.6rem;
+    margin-bottom: 2rem;
+}
+
+.experiment-visual {
+    margin-bottom: 2rem;
+}
+
+.brain-timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 150px;
+    background: linear-gradient(90deg, rgba(123, 104, 238, 0.2), rgba(212, 175, 55, 0.2));
+    border-radius: 15px;
+    padding: 1rem 2rem;
+    position: relative;
+}
+
+.brain-timeline::before {
+    content: '';
+    position: absolute;
+    bottom: 50px;
+    left: 2rem;
+    right: 2rem;
+    height: 3px;
+    background: var(--reise-accent);
+}
+
+.timeline-point {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-point::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    background: var(--reise-accent);
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 15px var(--reise-accent);
+}
+
+.time-label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--reise-gold);
+    margin-bottom: 0.5rem;
+}
+
+.event-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    max-width: 120px;
+    text-align: center;
+}
+
+.experiment-explanation {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+}
+
+.experiment-explanation strong {
+    color: var(--text-primary);
+    display: block;
+    margin: 1rem 0;
+}
+
+.experiment-implication {
+    color: var(--reise-accent);
+    font-style: italic;
+}
+
+/* Perspektiven */
+.free-will-perspectives h3 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 2rem;
+}
+
+.perspective-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.perspective-card {
+    background: var(--reise-card);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid var(--reise-border);
+}
+
+.perspective-card.determinism {
+    border-left: 4px solid #ff6b6b;
+}
+
+.perspective-card.compatibilism {
+    border-left: 4px solid #4ecdc4;
+}
+
+.perspective-card h4 {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.perspective-card p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.perspective-question {
+    color: var(--reise-accent) !important;
+    font-style: italic;
+    padding-top: 1rem;
+    border-top: 1px solid var(--reise-border);
+}
+
+/* Gedankenexperiment */
+.thought-experiment h3 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 2rem;
+}
+
+.experiment-box {
+    max-width: 700px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(123, 104, 238, 0.1));
+    border: 1px solid var(--reise-gold);
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+}
+
+.experiment-box p {
+    color: var(--text-secondary);
+    line-height: 1.9;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+.experiment-twist {
+    color: var(--reise-gold) !important;
+    font-style: italic;
+}
+
+.experiment-question {
+    color: var(--reise-accent) !important;
+    font-size: 1.2rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--reise-border);
+}
+
+
+/* ====================================
+   STATION 6: DIE GRENZE
+   ==================================== */
+.boundary-exploration {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.boundary-section {
+    margin-bottom: 3rem;
+}
+
+.boundary-section h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.boundary-section > p {
+    color: var(--text-secondary);
+    line-height: 1.9;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.boundary-example, .boundary-paradox {
+    background: var(--reise-card);
+    border: 1px solid var(--reise-border);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.boundary-example p, .boundary-paradox p {
+    color: var(--text-secondary);
+    line-height: 2;
+    margin: 0;
+    font-style: italic;
+}
+
+.silence-box {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(30, 30, 50, 0.5));
+    border: 1px solid var(--reise-accent);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.silence-quote {
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    font-style: italic;
+    margin-bottom: 1rem;
+}
+
+.silence-author {
+    color: var(--reise-accent);
+    font-size: 1rem;
+}
+
+.boundary-invitation {
+    text-align: center;
+    padding: 3rem;
+    background: linear-gradient(135deg, rgba(123, 104, 238, 0.15), transparent);
+    border-radius: 20px;
+    margin-top: 3rem;
+}
+
+.boundary-invitation h3 {
+    margin-bottom: 1.5rem;
+}
+
+.boundary-invitation p {
+    color: var(--text-secondary);
+    line-height: 2;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.boundary-invitation strong {
+    color: var(--reise-accent);
+}
+
+/* Station Final */
+.station-final {
+    margin-top: 4rem;
+}
+
+.final-reflection {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 3rem;
+    background: var(--reise-card);
+    border: 2px solid var(--reise-accent);
+    border-radius: 25px;
+}
+
+.final-reflection p {
+    color: var(--text-secondary);
+    line-height: 2;
+    margin-bottom: 1.5rem;
+}
+
+.final-question {
+    font-size: 1.4rem;
+    color: var(--reise-gold) !important;
+    margin: 2rem 0 !important;
+}
+
+
+/* ====================================
+   OUTRO: WEITERREISEN
+   ==================================== */
+.journey-end {
+    padding: 6rem 2rem;
+    text-align: center;
+    background: linear-gradient(180deg, transparent, rgba(123, 104, 238, 0.1));
+}
+
+.journey-end h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.end-text {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+    line-height: 1.8;
+}
+
+.continue-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.continue-card {
+    background: var(--reise-card);
+    border: 1px solid var(--reise-border);
+    border-radius: 20px;
+    padding: 2rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.continue-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--reise-accent);
+    box-shadow: 0 10px 30px rgba(123, 104, 238, 0.2);
+}
+
+.continue-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.continue-card h3 {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.continue-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* ====================================
+   RESPONSIVE
+   ==================================== */
+@media (max-width: 768px) {
+    .hero-reise h1 {
+        font-size: 2.2rem;
+    }
+    
+    .hero-symbol {
+        font-size: 3.5rem;
+    }
+    
+    .hero-invitation {
+        padding: 1.5rem;
+    }
+    
+    .hero-invitation p {
+        font-size: 1rem;
+    }
+    
+    .station {
+        padding: 4rem 1rem;
+    }
+    
+    .station h2 {
+        font-size: 2rem;
+    }
+    
+    .lead-text {
+        font-size: 1.1rem;
+    }
+    
+    .illusion-gallery, .bias-explorer, .origin-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .layer-outer {
+        height: 350px;
+    }
+    
+    .layer-middle {
+        width: 260px;
+        height: 260px;
+    }
+    
+    .layer-inner {
+        width: 170px;
+        height: 170px;
+    }
+    
+    .layer-core {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .layer-label {
+        font-size: 0.85rem;
+    }
+    
+    .layer p {
+        font-size: 0.7rem;
+    }
+    
+    .brain-timeline {
+        flex-direction: column;
+        height: auto;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+    
+    .brain-timeline::before {
+        display: none;
+    }
+    
+    .timeline-point {
+        flex-direction: row;
+        gap: 1rem;
+        text-align: left;
+    }
+    
+    .event-label {
+        max-width: none;
+        text-align: left;
+    }
+    
+    .perspective-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .color-context {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .continue-options {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .continue-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .reflection-prompts {
+        grid-template-columns: 1fr;
+    }
+}

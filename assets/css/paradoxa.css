@@ -1,0 +1,1172 @@
+/* ===================================
+   Paradoxa - Mind-Bending Styles
+   =================================== */
+
+/* --- Logo Link --- */
+.logo a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* --- Hero Paradox --- */
+.hero-paradox {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+}
+
+.hero-paradox h1 {
+    font-size: clamp(3rem, 8vw, 6rem);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.1em;
+    background: linear-gradient(135deg, var(--accent-color), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-description {
+    max-width: 700px;
+    margin: 2rem auto;
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+.hero-quote {
+    margin-top: 3rem;
+    font-size: 1.25rem;
+    font-style: italic;
+    color: var(--accent-color);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* --- Paradox Sections --- */
+.paradox-section {
+    padding: 6rem 2rem;
+    background: rgba(26, 26, 46, 0.3);
+}
+
+.paradox-section.alt {
+    background: rgba(26, 26, 46, 0.3);
+}
+
+.paradox-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.paradox-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-20px) rotate(5deg);
+    }
+}
+
+.paradox-header h2 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--accent-color), #00ffaa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.paradox-subtitle {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.paradox-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    max-width: 1400px;
+    margin: 0 auto 4rem;
+}
+
+.paradox-story h3 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent-color);
+}
+
+.paradox-story p {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.paradox-story strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.paradox-question {
+    background: rgba(255, 200, 0, 0.1);
+    border-left: 4px solid #ffcc00;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ffcc00 !important;
+}
+
+.paradox-twist {
+    background: rgba(255, 100, 255, 0.1);
+    border-left: 4px solid #ff66ff;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: #ff99ff !important;
+}
+
+.paradox-explanation {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+}
+
+.paradox-explanation h3 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--accent-color);
+}
+
+.paradox-explanation p,
+.paradox-explanation li {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 1rem;
+}
+
+.solution-box,
+.why-it-matters {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(0, 217, 255, 0.05);
+    border: 1px solid var(--accent-color);
+    border-radius: 15px;
+}
+
+.solution-box h4,
+.why-it-matters h4 {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.solution-box ul,
+.why-it-matters ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.solution-box li,
+.why-it-matters li {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.solution-box li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.connection-note {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(0, 217, 255, 0.1);
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.connection-note a {
+    color: var(--accent-color);
+    text-decoration: none;
+    border-bottom: 2px solid var(--accent-color);
+    transition: var(--transition);
+}
+
+.connection-note a:hover {
+    color: #00ffaa;
+    border-color: #00ffaa;
+}
+
+/* --- Connection Boxes (Cross-References) --- */
+.connection-box {
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 255, 170, 0.1);
+    border-left: 3px solid #00ffaa;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.connection-box a {
+    color: #00ffaa;
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px solid #00ffaa;
+    transition: var(--transition);
+}
+
+.connection-box a:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+/* --- Schrödinger's Cat --- */
+.box-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    min-height: 400px;
+    justify-content: center;
+}
+
+.box {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
+    border: 3px solid var(--accent-color);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: var(--transition);
+    box-shadow: 0 0 30px var(--accent-glow);
+}
+
+.box.closed {
+    animation: pulse-box 2s infinite;
+}
+
+@keyframes pulse-box {
+    0%, 100% {
+        box-shadow: 0 0 30px var(--accent-glow);
+    }
+    50% {
+        box-shadow: 0 0 50px var(--accent-glow);
+    }
+}
+
+.box-label {
+    font-size: 4rem;
+    color: var(--accent-color);
+}
+
+.box.opened .box-label {
+    font-size: 5rem;
+    animation: reveal 0.5s ease-out;
+}
+
+@keyframes reveal {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.box.alive {
+    border-color: #00ff00;
+    box-shadow: 0 0 40px rgba(0, 255, 0, 0.5);
+}
+
+.box.dead {
+    border-color: #ff0000;
+    box-shadow: 0 0 40px rgba(255, 0, 0, 0.5);
+}
+
+.open-box-btn {
+    position: absolute;
+    bottom: -60px;
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.open-box-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.quantum-state {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(0, 217, 255, 0.1);
+    border-radius: 15px;
+    max-width: 400px;
+}
+
+.quantum-state strong {
+    color: var(--accent-color);
+}
+
+.statistics {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+/* --- Time Travel --- */
+.timeline-visual {
+    position: relative;
+    padding: 3rem 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    min-height: 400px;
+}
+
+.timeline-track {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 0;
+}
+
+.timeline-track::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-color), #00ffaa);
+}
+
+.time-point {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    z-index: 10;
+}
+
+.time-point::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.event {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.time-traveler {
+    position: absolute;
+    font-size: 2rem;
+    transition: all 2s ease-in-out;
+    z-index: 20;
+}
+
+.paradox-status {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    text-align: center;
+    background: rgba(255, 200, 0, 0.1);
+    border: 1px solid rgba(255, 200, 0, 0.3);
+    border-radius: 10px;
+    font-weight: 600;
+    color: #ffcc00;
+}
+
+.logic-chain {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+}
+
+.logic-chain li {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 100, 100, 0.1);
+    border-left: 4px solid #ff6464;
+    color: #ff9999 !important;
+}
+
+/* --- Ship of Theseus --- */
+.ship-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    padding: 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+}
+
+.ship {
+    text-align: center;
+}
+
+.ship h4 {
+    margin-bottom: 2rem;
+    color: var(--accent-color);
+}
+
+.ship-planks {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    margin-bottom: 2rem;
+    background: #000;
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+.plank {
+    height: 40px;
+    background: #8b4513;
+    border: 1px solid #654321;
+    transition: var(--transition);
+}
+
+.plank.new {
+    background: #daa520;
+    border-color: #b8860b;
+}
+
+.plank.original {
+    background: #8b4513;
+    border-color: #654321;
+}
+
+.ship-stat {
+    padding: 1rem;
+    background: rgba(0, 217, 255, 0.1);
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.question-prompt {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: rgba(255, 200, 0, 0.1);
+    border: 2px solid #ffcc00;
+    border-radius: 15px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #ffcc00;
+}
+
+.identity-criteria {
+    list-style: none;
+    padding: 0;
+}
+
+.identity-criteria li {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    background: rgba(0, 217, 255, 0.1);
+    border-left: 4px solid var(--accent-color);
+}
+
+/* --- Fermi Paradox / Drake Equation --- */
+.calculator {
+    padding: 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+}
+
+.calculator h4 {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+    text-align: center;
+}
+
+.equation-desc {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.drake-inputs {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.drake-inputs label {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1rem;
+    align-items: center;
+    color: var(--text-primary);
+}
+
+.drake-inputs input[type="range"] {
+    width: 100%;
+}
+
+.drake-inputs span {
+    font-weight: 600;
+    color: var(--accent-color);
+    min-width: 80px;
+    text-align: right;
+}
+
+.drake-result {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(0, 217, 255, 0.1);
+    border: 2px solid var(--accent-color);
+    border-radius: 15px;
+}
+
+.drake-result h5 {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+.result-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    font-family: 'Courier New', monospace;
+}
+
+/* --- Chinese Room --- */
+.room-simulation {
+    padding: 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.room {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
+    border: 3px solid var(--accent-color);
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+}
+
+.person {
+    font-size: 3rem;
+}
+
+.rulebook {
+    font-size: 1.5rem;
+}
+
+.input-slot,
+.output-slot {
+    position: absolute;
+    padding: 1rem;
+    background: var(--secondary-bg);
+    border: 2px solid var(--accent-color);
+    border-radius: 10px;
+    font-size: 1.5rem;
+}
+
+.input-slot {
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.output-slot {
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.outside-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.observer {
+    font-size: 3rem;
+}
+
+.thought-bubble {
+    background: rgba(0, 217, 255, 0.1);
+    border: 2px solid var(--accent-color);
+    border-radius: 20px;
+    padding: 1.5rem;
+    max-width: 250px;
+    text-align: center;
+    position: relative;
+}
+
+.thought-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid var(--accent-color);
+}
+
+.simulation-note {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(255, 200, 0, 0.1);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* --- Brain in Tank --- */
+.reality-test {
+    padding: 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+}
+
+.reality-layers {
+    display: grid;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.layer {
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.05), rgba(0, 255, 170, 0.05));
+    border: 1px solid var(--accent-color);
+    border-radius: 15px;
+    transform-origin: top center;
+    transition: all 0.5s ease;
+}
+
+.layer.hidden {
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+    opacity: 0;
+    transform: scaleY(0);
+}
+
+.layer h4 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.layer p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.layer[data-level="2"] {
+    border-color: #ff66ff;
+}
+
+.layer[data-level="3"] {
+    border-color: #ffcc00;
+    background: linear-gradient(135deg, rgba(255, 100, 255, 0.1), rgba(255, 200, 0, 0.1));
+}
+
+.vertigo-warning {
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+    border-radius: 10px;
+    font-style: italic;
+    transition: var(--transition);
+}
+
+.vertigo-warning.active {
+    background: rgba(255, 100, 100, 0.2);
+    border: 2px solid #ff6464;
+    color: #ff9999;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.impossibility-list {
+    list-style: none;
+    padding: 0;
+}
+
+.impossibility-list li {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 100, 100, 0.1);
+    border-left: 4px solid #ff6464;
+}
+
+.final-twist {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: rgba(255, 100, 255, 0.1);
+    border: 2px solid #ff66ff;
+    border-radius: 15px;
+    text-align: center;
+    font-style: italic;
+    color: #ff99ff !important;
+}
+
+/* --- Buttons --- */
+.controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.action-btn,
+.reset-btn {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+.action-btn.secondary {
+    background: transparent;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+}
+
+.reset-btn {
+    background: rgba(255, 100, 100, 0.2);
+    border: 1px solid rgba(255, 100, 100, 0.5);
+    color: #ff9999;
+}
+
+/* --- CTA --- */
+.cta-section {
+    padding: 6rem 2rem;
+    background: rgba(26, 26, 46, 0.3);
+    text-align: center;
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.cta-section p {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-bottom: 2.5rem;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cta-button-secondary {
+    background: transparent;
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    padding: 1rem 2.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-block;
+}
+
+.cta-button-secondary:hover {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    transform: translateY(-2px);
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+    .paradox-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .ship-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .room-simulation {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Hero */
+    .hero-paradox {
+        padding: 8rem 1rem 4rem;
+        min-height: 70vh;
+    }
+    
+    .hero-paradox h1 {
+        font-size: 2.5rem;
+    }
+    
+    .hero-description,
+    .hero-quote {
+        font-size: 1rem;
+    }
+    
+    /* Paradox Sections */
+    .paradox-section {
+        padding: 3rem 1rem !important;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+    
+    .paradox-header {
+        margin-bottom: 2rem;
+    }
+    
+    .paradox-icon {
+        font-size: 3rem;
+    }
+    
+    .paradox-header h2 {
+        font-size: 2rem;
+    }
+    
+    .paradox-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    /* Content Layout */
+    .paradox-content {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2rem !important;
+        width: 100% !important;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .paradox-story,
+    .paradox-interactive {
+        width: 100% !important;
+    }
+    
+    .paradox-explanation {
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    /* Questions and Boxes */
+    .paradox-question,
+    .paradox-twist {
+        font-size: 0.95rem;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    /* Schrödinger's Box - Kompakter */
+    .box-container {
+        min-height: auto !important;
+        padding: 1.5rem !important;
+    }
+    
+    .box {
+        width: 150px !important;
+        height: 150px !important;
+    }
+    
+    .box-label {
+        font-size: 3rem !important;
+    }
+    
+    .quantum-state {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    /* ZEITREISE: VERTIKAL! */
+    .timeline-visual {
+        min-height: auto !important;
+        padding: 1.5rem 1rem !important;
+    }
+    
+    .timeline-track {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 2rem !important;
+        padding: 1rem 0 !important;
+    }
+    
+    /* Vertikale Zeitlinie */
+    .timeline-track::before {
+        left: 15px !important;
+        right: auto !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        width: 2px !important;
+        height: 100% !important;
+        background: linear-gradient(180deg, var(--accent-color), #00ffaa) !important;
+    }
+    
+    .time-point {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 1rem !important;
+        width: 100% !important;
+        padding-left: 40px !important;
+        position: relative !important;
+    }
+    
+    .time-point::before {
+        position: absolute !important;
+        left: 10px !important;
+        width: 12px !important;
+        height: 12px !important;
+    }
+    
+    .event {
+        font-size: 0.85rem !important;
+        padding: 0.75rem 1rem !important;
+        white-space: normal !important;
+        width: auto !important;
+        flex: 1 !important;
+    }
+    
+    .time-traveler {
+        font-size: 1.5rem !important;
+        left: 5px !important;
+    }
+    
+    /* Ship of Theseus - Vertikal */
+    .ship-container {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+        padding: 1.5rem !important;
+    }
+    
+    .ship-planks {
+        grid-template-columns: repeat(5, 1fr) !important;
+        padding: 0.75rem !important;
+        gap: 3px !important;
+    }
+    
+    .plank {
+        height: 30px !important;
+    }
+    
+    /* Chinese Room - Vertikal */
+    .room-simulation {
+        flex-direction: column !important;
+        gap: 2rem !important;
+        padding: 1.5rem !important;
+    }
+    
+    .room {
+        width: 250px !important;
+        height: 250px !important;
+        padding: 1.5rem !important;
+    }
+    
+    .person,
+    .observer {
+        font-size: 2.5rem !important;
+    }
+    
+    .thought-bubble {
+        max-width: 100% !important;
+        padding: 1rem !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Drake Equation */
+    .drake-inputs label {
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
+        text-align: left !important;
+    }
+    
+    .drake-inputs span {
+        text-align: left !important;
+    }
+    
+    .result-number {
+        font-size: 2rem !important;
+    }
+    
+    /* Reality Test */
+    .reality-layers {
+        gap: 1rem;
+    }
+    
+    .layer {
+        padding: 1.5rem;
+    }
+    
+    .layer h4 {
+        font-size: 1.1rem;
+    }
+    
+    .layer p {
+        font-size: 0.9rem;
+    }
+    
+    /* Buttons */
+    .controls {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .action-btn,
+    .reset-btn {
+        width: 100% !important;
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Solutions & Explanations */
+    .solution-box,
+    .why-it-matters {
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .solution-box h4,
+    .why-it-matters h4 {
+        font-size: 1.25rem;
+    }
+    
+    .solution-box li,
+    .why-it-matters li {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        padding-left: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-paradox h1 {
+        font-size: 2rem;
+    }
+    
+    .paradox-header h2 {
+        font-size: 1.75rem;
+    }
+    
+    .box {
+        width: 120px !important;
+        height: 120px !important;
+    }
+    
+    .box-label {
+        font-size: 2.5rem !important;
+    }
+    
+    .room {
+        width: 200px !important;
+        height: 200px !important;
+    }
+    
+    .event {
+        font-size: 0.8rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .time-point {
+        padding-left: 35px !important;
+    }
+    
+    .ship-planks {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+    
+    .plank {
+        height: 25px !important;
+    }
+    
+    .paradox-explanation {
+        padding: 1rem;
+    }
+}

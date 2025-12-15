@@ -1,0 +1,98 @@
+/* ===============================================
+   MOBILE FIXES - Vereinfachte Media Query
+   =============================================== */
+
+/* Ohne "only screen" - nur die Breite! */
+@media (max-width: 768px) {
+    /* VIZ CONTAINER */
+    body .viz-container,
+    .viz-container {
+        display: block !important;
+        min-height: 200px !important;
+        max-height: 400px !important;
+        height: auto !important;
+        padding: 1rem !important;
+    }
+    
+    /* SLIT SETUP */
+    body .slit-setup,
+    .slit-setup {
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: auto !important;
+        height: auto !important;
+        gap: 1rem !important;
+        align-items: center !important;
+    }
+    
+    /* SLITS */
+    body .slits,
+    .slits {
+        height: 120px !important;
+        max-height: 120px !important;
+    }
+    
+    /* DETECTION SCREEN */
+    body .detection-screen,
+    .detection-screen {
+        height: 100px !important;
+        max-height: 100px !important;
+        width: 100% !important;
+        max-width: 240px !important;
+    }
+    
+    /* CANVAS */
+    body #detection-canvas,
+    #detection-canvas {
+        height: 100px !important;
+        max-height: 100px !important;
+        width: 100% !important;
+        max-width: 240px !important;
+    }
+    
+    #detection-canvas[style] {
+        height: 100px !important;
+        width: 240px !important;
+    }
+    
+    /* ENTANGLEMENT */
+    body #entanglement-viz,
+    #entanglement-viz {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        gap: 1rem !important;
+    }
+    
+    /* NETWORK */
+    body .network-display,
+    .network-display {
+        min-height: 200px !important;
+        height: auto !important;
+    }
+    
+    /* SCENARIO */
+    body .scenario,
+    .scenario {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .detection-screen {
+        height: 80px !important;
+        max-width: 200px !important;
+    }
+    
+    #detection-canvas {
+        height: 80px !important;
+        max-width: 200px !important;
+    }
+    
+    .slits {
+        height: 100px !important;
+        max-height: 100px !important;
+    }
+}

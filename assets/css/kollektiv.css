@@ -1,0 +1,1140 @@
+/* ============================================
+   KOLLEKTIVES BEWUSSTSEIN SEITE - STYLES
+   ============================================ */
+
+/* === Hero Section === */
+.hero {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    margin-top: 80px;
+}
+
+.hero-content {
+    max-width: 900px;
+    z-index: 1;
+}
+
+.hero h1 {
+    font-size: clamp(1.8rem, 4vw, 3.5rem);
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, var(--accent-color), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.4rem);
+    color: var(--text-secondary);
+    font-weight: 300;
+}
+
+/* === Content Wrapper === */
+.content-wrapper {
+    padding: 2rem 0;
+}
+
+.content-wrapper section {
+    padding: 4rem 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* === Intro Section === */
+.intro-section {
+    background: rgba(26, 26, 46, 0.3);
+}
+
+.intro-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: var(--accent-color);
+}
+
+.intro-text {
+    font-size: 1.2rem;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    line-height: 1.9;
+    color: var(--text-primary);
+}
+
+.key-question {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(0, 217, 255, 0.05));
+    border: 2px solid var(--accent-color);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.key-question .question-icon {
+    font-size: 3rem;
+    flex-shrink: 0;
+}
+
+.key-question p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* === Section Headers === */
+.section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.organism-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.section-header h2 {
+    font-size: 2.5rem;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}
+
+.organism-subtitle {
+    font-size: 1.3rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.organism-intro {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    text-align: center;
+}
+
+.organism-intro p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+/* === Slime Mold Section === */
+.slime-mold {
+    background: rgba(26, 26, 46, 0.3);
+}
+
+/* === Experiment Showcase === */
+.experiment-showcase {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 3rem;
+    margin-bottom: 4rem;
+    align-items: start;
+}
+
+.experiment-visual {
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    min-height: 350px;
+}
+
+.network-animation {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.node {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+.node.central {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    background: rgba(255, 200, 0, 0.3);
+    border: 2px solid #ffc800;
+    box-shadow: 0 0 20px rgba(255, 200, 0, 0.5);
+}
+
+.node:not(.central) {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.node:hover {
+    transform: scale(1.2);
+}
+
+.visual-caption {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.experiment-details h3 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.experiment-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.experiment-meta span {
+    background: rgba(0, 217, 255, 0.1);
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--accent-color);
+}
+
+.experiment-method,
+.experiment-result {
+    margin-bottom: 1.5rem;
+}
+
+.experiment-method h4,
+.experiment-result h4 {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.experiment-method p,
+.experiment-result p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.result-highlight {
+    background: rgba(255, 200, 0, 0.1);
+    border-left: 4px solid #ffc800;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    color: var(--text-primary) !important;
+}
+
+.experiment-quote {
+    background: rgba(0, 217, 255, 0.05);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.experiment-quote blockquote {
+    font-style: italic;
+    color: var(--text-primary);
+    line-height: 1.8;
+    margin: 0 0 1rem 0;
+}
+
+.experiment-quote cite {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* === Capabilities Grid === */
+.capabilities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.capability-card {
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 15px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.capability-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
+}
+
+.capability-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.capability-card h4 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.capability-card p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.study-ref {
+    display: inline-block;
+    background: rgba(0, 217, 255, 0.1);
+    color: var(--accent-color);
+    padding: 0.2rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+/* === Implication Box === */
+.implication-box {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(0, 217, 255, 0.05));
+    border: 2px solid var(--accent-color);
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+}
+
+.implication-box h4 {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.implication-box p {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+}
+
+.implication-box.forest-theme {
+    background: linear-gradient(135deg, rgba(0, 200, 100, 0.15), rgba(0, 200, 100, 0.05));
+    border-color: #00c864;
+}
+
+.implication-box.forest-theme h4 {
+    color: #00c864;
+}
+
+/* === Wood Wide Web Section === */
+.wood-wide-web {
+    background: rgba(26, 26, 46, 0.3);
+}
+
+.discovery-timeline {
+    max-width: 800px;
+    margin: 3rem auto;
+    position: relative;
+    padding-left: 40px;
+}
+
+.discovery-timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #00c864, var(--accent-color));
+}
+
+.discovery-item {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+}
+
+.discovery-item::before {
+    content: '';
+    position: absolute;
+    left: -33px;
+    top: 5px;
+    width: 15px;
+    height: 15px;
+    background: #00c864;
+    border-radius: 50%;
+    border: 3px solid var(--primary-bg);
+}
+
+.discovery-year {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00c864;
+    min-width: 70px;
+}
+
+.discovery-content h4 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.discovery-content p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* === Stats Showcase === */
+.stats-showcase {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin: 3rem 0;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 15px;
+}
+
+.stat-number {
+    font-size: 3.5rem;
+    font-weight: bold;
+    background: linear-gradient(135deg, #00c864, var(--accent-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* === Swarms Section === */
+.swarms {
+    background: rgba(26, 26, 46, 0.3);
+}
+
+.swarm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 3rem;
+}
+
+.swarm-card {
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.swarm-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-5px);
+}
+
+.swarm-visual {
+    height: 200px;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.05), rgba(0, 0, 0, 0.3));
+    position: relative;
+    overflow: hidden;
+}
+
+.murmuration-animation,
+.fish-animation {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.swarm-content {
+    padding: 2rem;
+}
+
+.swarm-content h3 {
+    font-size: 1.5rem;
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.swarm-content > p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+}
+
+.research-finding {
+    background: rgba(0, 217, 255, 0.05);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.research-finding h4 {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.research-finding p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.key-insight-small {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: rgba(0, 217, 255, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 3px solid var(--accent-color);
+}
+
+.key-insight-small span {
+    font-size: 1.5rem;
+}
+
+.key-insight-small p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* === Superorganisms Section === */
+.superorganisms {
+    background: rgba(26, 26, 46, 0.3);
+}
+
+.superorganism-showcase {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 3rem;
+}
+
+.superorganism-card {
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.superorganism-card:hover {
+    border-color: var(--accent-color);
+}
+
+.superorganism-card .card-header {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(0, 217, 255, 0.05));
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.superorganism-card .card-icon {
+    font-size: 2.5rem;
+}
+
+.superorganism-card .card-header h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.superorganism-card .card-body {
+    padding: 2rem;
+}
+
+.superorganism-card .intro {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+/* === Fact List === */
+.fact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.fact-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.fact-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+}
+
+.fact-content h5 {
+    color: var(--accent-color);
+    margin-bottom: 0.3rem;
+    font-size: 1.1rem;
+}
+
+.fact-content p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* === Quote Box === */
+.quote-box {
+    background: rgba(0, 217, 255, 0.05);
+    border-left: 4px solid var(--accent-color);
+    padding: 1.5rem;
+    border-radius: 10px;
+}
+
+.quote-box p {
+    font-style: italic;
+    color: var(--text-primary);
+    line-height: 1.8;
+    margin: 0 0 0.5rem 0;
+}
+
+.quote-box cite {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* === Democracy Process === */
+.democracy-process {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.process-step {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    background: rgba(0, 217, 255, 0.03);
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    transition: all 0.3s ease;
+}
+
+.process-step:hover {
+    border-color: var(--accent-color);
+    background: rgba(0, 217, 255, 0.08);
+}
+
+.step-number {
+    width: 35px;
+    height: 35px;
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-content h5 {
+    color: var(--accent-color);
+    margin-bottom: 0.3rem;
+}
+
+.step-content p {
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.book-reference {
+    background: linear-gradient(135deg, rgba(255, 200, 0, 0.1), rgba(255, 200, 0, 0.05));
+    border: 1px solid rgba(255, 200, 0, 0.3);
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.book-reference h5 {
+    color: #ffc800;
+    margin-bottom: 0.5rem;
+}
+
+.book-reference p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* === Philosophy Section === */
+.philosophy-section {
+    background: rgba(26, 26, 46, 0.3);
+}
+
+.philosophy-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent-color);
+}
+
+.section-intro {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 3rem;
+    line-height: 1.8;
+}
+
+.philosophy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.philosophy-card {
+    background: var(--card-bg);
+    border: 2px solid var(--card-border);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.philosophy-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-5px);
+}
+
+.philosophy-card .card-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.philosophy-card h3 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.philosophy-card p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* === Final Thought === */
+.final-thought {
+    max-width: 800px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.15), rgba(0, 217, 255, 0.05));
+    border: 2px solid var(--accent-color);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+}
+
+.thought-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.final-thought h3 {
+    color: var(--accent-color);
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.final-thought p {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+}
+
+.final-thought .conclusion {
+    font-style: italic;
+    color: var(--accent-color);
+    font-size: 1.3rem;
+}
+
+/* === CTA Section === */
+.cta-section {
+    background: rgba(26, 26, 46, 0.3);
+    padding: 5rem 0;
+}
+
+.cta-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent-color);
+}
+
+.cta-intro {
+    text-align: center;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.cta-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.cta-button {
+    display: inline-block;
+    background: var(--accent-color);
+    color: var(--primary-bg);
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    background: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px var(--accent-glow);
+}
+
+.cta-button.secondary {
+    background: transparent;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+}
+
+.cta-button.secondary:hover {
+    background: var(--accent-color);
+    color: var(--primary-bg);
+}
+
+.book-teaser {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--card-border);
+}
+
+.book-teaser p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.book-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.book-link:hover {
+    color: #fff;
+}
+
+/* === Footer === */
+.main-footer {
+    padding: 2rem;
+    background: rgba(26, 26, 46, 0.3);
+    border-top: 1px solid var(--card-border);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.footer-content p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.footer-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.footer-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: var(--accent-color);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+@media (max-width: 968px) {
+    .experiment-showcase {
+        grid-template-columns: 1fr;
+    }
+
+    .swarm-grid,
+    .superorganism-showcase {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-showcase {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        padding: 1.5rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        min-height: 50vh;
+        margin-top: 60px;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .container {
+        padding: 0 1rem;
+    }
+
+    .content-wrapper section {
+        padding: 3rem 0;
+    }
+
+    .section-header h2 {
+        font-size: 2rem;
+    }
+
+    .organism-icon {
+        font-size: 3rem;
+    }
+
+    .key-question {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .key-question .question-icon {
+        font-size: 2.5rem;
+    }
+
+    .key-question p {
+        font-size: 1rem;
+    }
+
+    .capabilities-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .capability-card {
+        padding: 1.5rem;
+    }
+
+    .discovery-timeline {
+        padding-left: 30px;
+    }
+
+    .discovery-item::before {
+        left: -23px;
+    }
+
+    .discovery-item {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .swarm-card,
+    .superorganism-card {
+        border-radius: 15px;
+    }
+
+    .swarm-content,
+    .superorganism-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .philosophy-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .final-thought {
+        padding: 2rem;
+    }
+
+    .final-thought p {
+        font-size: 1.1rem;
+    }
+
+    .cta-links {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cta-button {
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 1.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+    }
+
+    section h2 {
+        font-size: 1.6rem !important;
+    }
+
+    .intro-text,
+    .organism-intro p {
+        font-size: 1rem;
+    }
+
+    .experiment-visual {
+        min-height: 250px;
+        padding: 1rem;
+    }
+
+    .network-animation {
+        height: 200px;
+    }
+
+    .node.central {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .node:not(.central) {
+        width: 25px;
+        height: 25px;
+    }
+
+    .implication-box {
+        padding: 1.5rem;
+    }
+
+    .implication-box h4 {
+        font-size: 1.2rem;
+    }
+
+    .implication-box p {
+        font-size: 1rem;
+    }
+
+    .fact-item {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .process-step {
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+    }
+
+    .swarm-visual {
+        height: 150px;
+    }
+
+    .thought-icon {
+        font-size: 3rem;
+    }
+
+    .final-thought h3 {
+        font-size: 1.4rem;
+    }
+}
+
+/* === Animationen === */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 20px rgba(255, 200, 0, 0.5);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 40px rgba(255, 200, 0, 0.8);
+    }
+}
+
+.node.central {
+    animation: pulse 2s infinite;
+}

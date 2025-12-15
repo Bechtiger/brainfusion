@@ -1,0 +1,46 @@
+# ===================================
+# BrainFusion - Git Ignore
+# ===================================
+
+# Vercel
+.vercel/
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporäre Dateien
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (falls wir später npm nutzen)
+node_modules/
+package-lock.json
+
+# Lokale Test-Dateien
+*.local
+*.test.html
+
+# Grosse Render-Outputs (Mandelbulb etc.)
+renders/
+frames/
+*.png.tmp
+
+# Python Cache (falls wir wieder scripten)
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Notizen (optional - falls du sie privat halten willst)
+# PROJEKT_DOKUMENTATION.md
+# LAUNCH_CHECKLIST.md

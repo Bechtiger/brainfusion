@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paradoxa - Fragen, die den Verstand verbiegen | BrainFusion</title>
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/compass-nav.css">
+    <link rel="stylesheet" href="../assets/css/paradoxa.css?v=MOBILE_V1">
+    <link rel="stylesheet" href="../assets/css/navigation-intelligence.css">
+</head>
+<body>
+    <div id="particles-background"></div>
+    
+    <nav class="main-nav">
+        <div class="logo"><a href="../index.html">BrainFusion</a></div>
+        <ul class="nav-links">
+            <li><a href="../index.html">Home</a></li>
+            <li><a href="../interactives/unendlichkeit.html" class="nav-special">∞ Unendlichkeit</a></li>
+            <li><a href="../pages/labor.html">Labor</a></li>
+            <li><a href="#schrodinger">Schrödingers Katze</a></li>
+            <li><a href="#grossvater">Zeitreise</a></li>
+            <li><a href="#theseus">Identität</a></li>
+            <li><a href="../pages/forschung.html">Forschung</a></li>
+            <li><a href="../pages/kollektiv.html">Kollektiv</a></li>
+            <li><a href="../pages/mensch-ki.html">Mensch & KI</a></li>
+            <li><a href="../pages/natur.html">Natur</a></li>
+            <li><a href="../pages/kompass.html">Kompass</a></li>
+            <li><a href="../pages/reise.html">Reise</a></li>
+            <li><a href="../pages/salon.html" class="nav-highlight">💬 Salon</a></li>
+        </ul>
+    </nav>
+
+    <!-- ====================================
+         HERO
+         ==================================== -->
+    <section class="hero-paradox">
+        <div class="hero-content">
+            <h1 class="glitch" data-text="Paradoxa">Paradoxa</h1>
+            <p class="subtitle">Fragen, die den Verstand verbiegen</p>
+            <p class="hero-description">
+                Ein Paradoxon ist eine scheinbar widersprüchliche Aussage, 
+                die trotzdem (oder gerade deshalb) etwas Wahres über die Realität offenbart.
+            </p>
+            <p class="hero-quote">
+                "Die größten Erkenntnisse liegen dort, wo unser Verstand an seine Grenzen stößt."
+            </p>
+        </div>
+    </section>
+
+    <!-- ====================================
+         SCHRÖDINGERS KATZE
+         ==================================== -->
+    <section id="schrodinger" class="paradox-section">
+        <div class="container">
+            <div class="paradox-header">
+                <div class="paradox-icon">🐱</div>
+                <h2>Schrödingers Katze</h2>
+                <p class="paradox-subtitle">Tot und lebendig zugleich?</p>
+            </div>
+
+            <div class="paradox-content">
+                <div class="paradox-story">
+                    <h3>Das Gedankenexperiment</h3>
+                    <p>
+                        Stell dir vor: Eine Katze ist in einer Kiste. In der Kiste ist auch ein 
+                        radioaktives Atom, ein Geigerzähler, und eine Giftampulle.
+                    </p>
+                    <p>
+                        <strong>Die Regeln:</strong> Wenn das Atom zerfällt, löst der Geigerzähler aus, 
+                        zerbricht die Ampulle, und die Katze stirbt. Das Atom hat eine 50% Chance zu zerfallen.
+                    </p>
+                    <p class="paradox-question">
+                        Die Frage: Ist die Katze tot oder lebendig?
+                    </p>
+                </div>
+
+                <div class="paradox-interactive">
+                    <div id="schrodinger-box" class="box-container">
+                        <div class="box closed" id="cat-box">
+                            <div class="box-front">
+                                <div class="box-label">?</div>
+                                <button class="open-box-btn" onclick="openBox()">Kiste öffnen</button>
+                            </div>
+                        </div>
+                        <div class="quantum-state" id="quantum-info">
+                            <p>Die Katze ist in einem <strong>Superpositionszustand</strong>:</p>
+                            <p>50% lebendig + 50% tot = <strong>beides gleichzeitig</strong></p>
+                            <p><em>Bis du die Kiste öffnest...</em></p>
+                        </div>
+                    </div>
+                    <button class="reset-btn" onclick="resetSchrodinger()">Neue Katze</button>
+                    <div class="statistics" id="cat-stats"></div>
+                </div>
+            </div>
+
+            <div class="paradox-explanation">
+                <h3>Warum ist das ein Paradoxon?</h3>
+                <p>
+                    Quantenmechanik sagt: Das Atom ist in einem <strong>Superpositionszustand</strong> - 
+                    es ist zerfallen UND nicht zerfallen, bis man es misst.
+                </p>
+                <p>
+                    Wenn wir das auf die Katze übertragen, wäre sie <strong>tot UND lebendig</strong> 
+                    gleichzeitig - bis wir die Kiste öffnen.
+                </p>
+                <p>
+                    Aber das widerspricht unserer Alltagserfahrung! Katzen sind entweder tot oder lebendig, 
+                    nie beides. <strong>Ab wann gilt Quantenmechanik nicht mehr?</strong>
+                </p>
+                
+                <div class="solution-box">
+                    <h4>Mögliche Lösungen:</h4>
+                    <ul>
+                        <li><strong>Kopenhagener Deutung:</strong> Die Beobachtung kollabiert die Wellenfunktion. Die Katze IST in Superposition.</li>
+                        <li><strong>Viele-Welten:</strong> Die Katze ist in einer Welt tot, in einer anderen lebendig. Beide Realitäten existieren.</li>
+                        <li><strong>Dekohärenz:</strong> Die Kiste selbst "misst" - große Objekte können nicht in Superposition sein.</li>
+                    </ul>
+                </div>
+
+                <div class="why-it-matters">
+                    <h4>Warum es wichtig ist:</h4>
+                    <p>
+                        Diese Frage berührt das Herzstück der Realität: <strong>Was ist real?</strong> 
+                        Existieren Dinge unabhängig von Beobachtung? Oder entsteht Realität erst durch Messung?
+                    </p>
+                    <div class="connection-box">
+                        ⚡ <strong>Erlebe es selbst:</strong> Im <a href="../pages/labor.html#verschraenkung">Labor</a> 
+                        kannst du Quantenverschränkung und den Doppelspalt live erleben!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         GROSSVATER-PARADOXON
+         ==================================== -->
+    <section id="grossvater" class="paradox-section alt">
+        <div class="container">
+            <div class="paradox-header">
+                <div class="paradox-icon">⏰</div>
+                <h2>Das Großvater-Paradoxon</h2>
+                <p class="paradox-subtitle">Kann man die eigene Existenz verhindern?</p>
+            </div>
+
+            <div class="paradox-content">
+                <div class="paradox-story">
+                    <h3>Das Gedankenexperiment</h3>
+                    <p>
+                        Du erfindest eine Zeitmaschine und reist zurück in die Vergangenheit - 
+                        zu dem Zeitpunkt, bevor dein Großvater deine Großmutter kennengelernt hat.
+                    </p>
+                    <p>
+                        Aus irgendeinem Grund (Unfall, Versehen, Absicht) verhinderst du, 
+                        dass dein Großvater deine Großmutter trifft.
+                    </p>
+                    <p class="paradox-question">
+                        Die Frage: Wenn deine Großeltern sich nie treffen, werden deine Eltern nie geboren. 
+                        Und du auch nicht. Aber wenn du nie geboren wurdest - wer ist dann zurückgereist?
+                    </p>
+                </div>
+
+                <div class="paradox-interactive">
+                    <div id="timeline-viz" class="timeline-visual">
+                        <div class="timeline-track">
+                            <div class="time-point" data-year="1950">
+                                <div class="event">🚶‍♂️ Großvater</div>
+                            </div>
+                            <div class="time-point" data-year="1950">
+                                <div class="event">🚶‍♀️ Großmutter</div>
+                            </div>
+                            <div class="time-point" data-year="1975">
+                                <div class="event">👶 Deine Eltern</div>
+                            </div>
+                            <div class="time-point" data-year="2000">
+                                <div class="event">🧑 Du</div>
+                            </div>
+                            <div class="time-point" data-year="2050">
+                                <div class="event">⏰ Zeitmaschine erfunden</div>
+                            </div>
+                        </div>
+                        <div class="time-traveler" id="traveler">🧳</div>
+                    </div>
+                    <div class="controls">
+                        <button class="action-btn" onclick="startTimeTravel()">Zeitreise beginnen</button>
+                        <button class="reset-btn" onclick="resetTimeline()">Zurücksetzen</button>
+                    </div>
+                    <div class="paradox-status" id="timeline-status">
+                        Bereit für Zeitreise...
+                    </div>
+                </div>
+            </div>
+
+            <div class="paradox-explanation">
+                <h3>Warum ist das ein Paradoxon?</h3>
+                <p>
+                    Es entsteht ein <strong>kausaler Widerspruch</strong>: 
+                </p>
+                <ul class="logic-chain">
+                    <li>Du existierst → Du reist zurück → Du verhinderst deine Geburt → Du existierst nicht</li>
+                    <li>Du existierst nicht → Du kannst nicht zurückreisen → Du verhinderst deine Geburt nicht → Du existierst</li>
+                    <li><strong>Endlosschleife!</strong></li>
+                </ul>
+                
+                <div class="solution-box">
+                    <h4>Mögliche Lösungen:</h4>
+                    <ul>
+                        <li><strong>Zeitreisen sind unmöglich:</strong> Die Physik verhindert Zeitreisen in die Vergangenheit grundsätzlich.</li>
+                        <li><strong>Selbstkonsistenz:</strong> Du KANNST es nicht verhindern. Irgendetwas wird dich immer daran hindern (Novikov-Prinzip).</li>
+                        <li><strong>Viele-Welten:</strong> Du erschaffst eine parallele Zeitlinie. In dieser existierst du nicht, aber in deiner Ursprungs-Zeitlinie schon.</li>
+                        <li><strong>Dynamische Zeitlinie:</strong> Die Vergangenheit kann sich ändern, aber dann ändern sich auch deine Erinnerungen - du würdest es nie bemerken.</li>
+                    </ul>
+                </div>
+
+                <div class="why-it-matters">
+                    <h4>Warum es wichtig ist:</h4>
+                    <p>
+                        Diese Frage zwingt uns über <strong>Kausalität</strong> nachzudenken: 
+                        Ist die Zukunft durch die Vergangenheit festgelegt? Kann Ursache nach Wirkung kommen? 
+                        Was ist Zeit überhaupt - linear oder verzweigt?
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         SCHIFF DES THESEUS
+         ==================================== -->
+    <section id="theseus" class="paradox-section">
+        <div class="container">
+            <div class="paradox-header">
+                <div class="paradox-icon">🚢</div>
+                <h2>Das Schiff des Theseus</h2>
+                <p class="paradox-subtitle">Was macht Identität aus?</p>
+            </div>
+
+            <div class="paradox-content">
+                <div class="paradox-story">
+                    <h3>Das Gedankenexperiment</h3>
+                    <p>
+                        Das Schiff des Helden Theseus wird in Athen als historisches Denkmal aufbewahrt. 
+                        Im Laufe der Jahrhunderte verfaulen einzelne Planken und werden durch neue ersetzt.
+                    </p>
+                    <p>
+                        Nach 100 Jahren wurde <strong>jede einzelne Planke</strong> ausgetauscht. 
+                        Keine Originalteile sind mehr vorhanden.
+                    </p>
+                    <p class="paradox-question">
+                        Die Frage: Ist es noch das Schiff des Theseus?
+                    </p>
+                    <p class="paradox-twist">
+                        <strong>Bonus-Twist:</strong> Jemand sammelt alle alten Planken und baut daraus 
+                        ein Schiff. <em>Welches ist nun das echte Schiff des Theseus?</em>
+                    </p>
+                </div>
+
+                <div class="paradox-interactive">
+                    <div id="ship-viz" class="ship-container">
+                        <div class="ship original">
+                            <h4>Schiff im Museum</h4>
+                            <div class="ship-planks" id="museum-ship">
+                                <!-- Planks will be generated by JS -->
+                            </div>
+                            <div class="ship-stat">
+                                Original-Planken: <span id="original-count">100</span>%
+                            </div>
+                        </div>
+                        <div class="ship rebuilt">
+                            <h4>Aus alten Planken gebaut</h4>
+                            <div class="ship-planks" id="rebuilt-ship">
+                                <!-- Planks will be generated by JS -->
+                            </div>
+                            <div class="ship-stat">
+                                Original-Planken: <span id="rebuilt-count">0</span>%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button class="action-btn" onclick="replacePlank()">Eine Planke ersetzen</button>
+                        <button class="action-btn secondary" onclick="autoReplace()">Automatisch ersetzen</button>
+                        <button class="reset-btn" onclick="resetShip()">Zurücksetzen</button>
+                    </div>
+                    <div class="question-prompt" id="ship-question">
+                        Welches Schiff ist das "echte" Schiff des Theseus?
+                    </div>
+                </div>
+            </div>
+
+            <div class="paradox-explanation">
+                <h3>Warum ist das ein Paradoxon?</h3>
+                <p>
+                    Es geht um die Frage: <strong>Was definiert Identität?</strong>
+                </p>
+                <ul class="identity-criteria">
+                    <li><strong>Materielle Kontinuität?</strong> Wenn ja, dann ist das aus alten Planken gebaute Schiff das echte.</li>
+                    <li><strong>Funktionale Kontinuität?</strong> Wenn ja, dann ist das Museumsschiff das echte (es hat die Funktion nie verloren).</li>
+                    <li><strong>Formale Identität?</strong> Beide haben die gleiche Form - reicht das?</li>
+                    <li><strong>Historische Kontinuität?</strong> Das Museumsschiff war immer "das Schiff des Theseus" - zählt das?</li>
+                </ul>
+                
+                <div class="solution-box">
+                    <h4>Philosophische Positionen:</h4>
+                    <ul>
+                        <li><strong>Essentialismus:</strong> Es gibt ein "Wesen" des Schiffs, unabhängig von Material.</li>
+                        <li><strong>Mereologischer Nihilismus:</strong> Es gibt kein "Schiff" - nur eine Ansammlung von Planken.</li>
+                        <li><strong>Four-Dimensionalismus:</strong> Objekte existieren durch Raum UND Zeit. Das Schiff ist die gesamte Zeitlinie.</li>
+                    </ul>
+                </div>
+
+                <div class="why-it-matters">
+                    <h4>Warum es wichtig ist:</h4>
+                    <p>
+                        Diese Frage betrifft DICH persönlich: Deine Zellen erneuern sich alle 7-10 Jahre. 
+                        Kein Atom in deinem Körper war schon da, als du geboren wurdest.
+                    </p>
+                    <p>
+                        <strong>Bist du noch dieselbe Person?</strong> Was macht deine Identität aus? 
+                        Deine Erinnerungen? Deine Kontinuität? Dein Bewusstsein?
+                    </p>
+                    <div class="connection-box">
+                        🤖 <strong>Und was ist mit KI?</strong> Wenn ein KI-Modell neu trainiert wird - 
+                        ist es noch "dasselbe"? <a href="../pages/mensch-ki.html#paradigma">Mehr dazu hier</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         FERMI-PARADOXON
+         ==================================== -->
+    <section id="fermi" class="paradox-section alt">
+        <div class="container">
+            <div class="paradox-header">
+                <div class="paradox-icon">👽</div>
+                <h2>Das Fermi-Paradoxon</h2>
+                <p class="paradox-subtitle">Wo sind all die Aliens?</p>
+            </div>
+
+            <div class="paradox-content">
+                <div class="paradox-story">
+                    <h3>Die Ausgangslage</h3>
+                    <p>
+                        Die Milchstraße ist ca. 13 Milliarden Jahre alt und enthält 
+                        200-400 Milliarden Sterne. Viele davon haben Planeten.
+                    </p>
+                    <p>
+                        Selbst wenn nur ein winziger Bruchteil dieser Planeten Leben entwickelt, 
+                        und nur ein winziger Bruchteil davon intelligentes Leben entwickelt, 
+                        müsste es <strong>Millionen von Zivilisationen</strong> geben.
+                    </p>
+                    <p>
+                        Einige dieser Zivilisationen sollten Millionen Jahre älter sein als wir. 
+                        Sie hätten längst die Galaxis kolonisieren können.
+                    </p>
+                    <p class="paradox-question">
+                        Die Frage: Wo sind sie alle?
+                    </p>
+                </div>
+
+                <div class="paradox-interactive">
+                    <div id="drake-equation" class="calculator">
+                        <h4>Drake-Gleichung</h4>
+                        <p class="equation-desc">Schätze die Anzahl kommunizierender Zivilisationen:</p>
+                        
+                        <div class="drake-inputs">
+                            <label>
+                                Sterne pro Jahr: 
+                                <input type="range" id="star-rate" min="1" max="20" value="10" oninput="calculateDrake()">
+                                <span id="star-display">10</span>
+                            </label>
+                            
+                            <label>
+                                % mit Planeten: 
+                                <input type="range" id="planet-fraction" min="0" max="100" value="50" oninput="calculateDrake()">
+                                <span id="planet-display">50</span>%
+                            </label>
+                            
+                            <label>
+                                Planeten pro Stern mit Leben: 
+                                <input type="range" id="habitable" min="0" max="5" step="0.1" value="1" oninput="calculateDrake()">
+                                <span id="habitable-display">1</span>
+                            </label>
+                            
+                            <label>
+                                % wo Leben entsteht: 
+                                <input type="range" id="life-fraction" min="0" max="100" value="10" oninput="calculateDrake()">
+                                <span id="life-display">10</span>%
+                            </label>
+                            
+                            <label>
+                                % intelligentes Leben: 
+                                <input type="range" id="intelligence" min="0" max="100" value="10" oninput="calculateDrake()">
+                                <span id="intelligence-display">10</span>%
+                            </label>
+                            
+                            <label>
+                                Lebensdauer (Jahre): 
+                                <input type="range" id="lifetime" min="100" max="100000" value="10000" oninput="calculateDrake()">
+                                <span id="lifetime-display">10000</span>
+                            </label>
+                        </div>
+                        
+                        <div class="drake-result">
+                            <h5>Geschätzte Anzahl von Zivilisationen:</h5>
+                            <div class="result-number" id="civilization-count">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paradox-explanation">
+                <h3>Warum ist das ein Paradoxon?</h3>
+                <p>
+                    Die Mathematik sagt: Es sollte <strong>viele</strong> außerirdische Zivilisationen geben. 
+                    Die Beobachtung sagt: Wir haben <strong>keine Spur</strong> von ihnen gefunden.
+                </p>
+                
+                <div class="solution-box">
+                    <h4>Mögliche Erklärungen ("Great Filter"):</h4>
+                    <ul>
+                        <li><strong>Leben ist extrem selten:</strong> Der Sprung von Nicht-Leben zu Leben ist unglaublich unwahrscheinlich.</li>
+                        <li><strong>Intelligenz ist selten:</strong> Die meisten Lebensformen bleiben simpel (Bakterien).</li>
+                        <li><strong>Der Filter liegt vor uns:</strong> Zivilisationen zerstören sich selbst (Atomkrieg, KI, Klimakollaps).</li>
+                        <li><strong>Sie sind da, wir sehen sie nur nicht:</strong> Zu weit weg, zu anders, verstecken sich, oder interessiert sie nicht.</li>
+                        <li><strong>Wir sind die Ersten:</strong> Jemand muss der Erste sein - warum nicht wir?</li>
+                        <li><strong>Simulation-Hypothese:</strong> Wir sind in einer Simulation, die nur uns enthält.</li>
+                    </ul>
+                </div>
+
+                <div class="why-it-matters">
+                    <h4>Warum es wichtig ist:</h4>
+                    <p>
+                        Wenn der "Great Filter" hinter uns liegt (Leben/Intelligenz ist selten), dann sind wir unglaublich wertvoll und einzigartig.
+                    </p>
+                    <p>
+                        Wenn der Filter <strong>vor</strong> uns liegt... dann wartet etwas auf uns, das fast alle Zivilisationen auslöscht. 
+                        <em>Und wir sollten sehr, sehr vorsichtig sein.</em>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         CHINESISCHES ZIMMER
+         ==================================== -->
+    <section id="chinese-room" class="paradox-section">
+        <div class="container">
+            <div class="paradox-header">
+                <div class="paradox-icon">🧠</div>
+                <h2>Das Chinesische Zimmer</h2>
+                <p class="paradox-subtitle">Verstehen vs. Simulieren</p>
+            </div>
+
+            <div class="paradox-content">
+                <div class="paradox-story">
+                    <h3>Das Gedankenexperiment</h3>
+                    <p>
+                        John Searle, 1980: Stell dir vor, du sitzt in einem Raum. 
+                        Du sprichst kein Chinesisch. Aber du hast ein riesiges Regelbuch.
+                    </p>
+                    <p>
+                        Jemand schiebt dir chinesische Schriftzeichen unter der Tür durch. 
+                        Du befolgst das Regelbuch: "Wenn Symbol X, dann antworte mit Symbol Y."
+                    </p>
+                    <p>
+                        Deine Antworten sind perfekt - für Außenstehende sieht es so aus, 
+                        als würdest du Chinesisch <strong>verstehen</strong>.
+                    </p>
+                    <p class="paradox-question">
+                        Die Frage: Verstehst du Chinesisch? Oder manipulierst du nur Symbole?
+                    </p>
+                </div>
+
+                <div class="paradox-interactive">
+                    <div id="chinese-room-sim" class="room-simulation">
+                        <div class="room">
+                            <div class="person">🧑</div>
+                            <div class="rulebook">📖 Regelbuch</div>
+                            <div class="input-slot">
+                                <div class="chinese-input" id="input-symbols">?</div>
+                            </div>
+                            <div class="output-slot">
+                                <div class="chinese-output" id="output-symbols">?</div>
+                            </div>
+                        </div>
+                        <div class="outside-view">
+                            <div class="observer">👤 Beobachter</div>
+                            <div class="thought-bubble">
+                                "Die Person im Raum spricht fließend Chinesisch!"
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button class="action-btn" onclick="sendChineseInput()">Chinesische Frage senden</button>
+                        <button class="reset-btn" onclick="resetRoom()">Zurücksetzen</button>
+                    </div>
+                    <div class="simulation-note" id="room-status">
+                        Die Person im Raum folgt nur Regeln...
+                    </div>
+                </div>
+            </div>
+
+            <div class="paradox-explanation">
+                <h3>Warum ist das relevant für KI?</h3>
+                <p>
+                    Searle wollte zeigen: <strong>Syntax ist nicht Semantik.</strong> 
+                    Das Manipulieren von Symbolen (was Computer tun) ist nicht dasselbe wie Verstehen.
+                </p>
+                <p>
+                    Übertragen auf KI: Wenn GPT/Claude/etc. perfekte Antworten geben, 
+                    bedeutet das, dass sie die Frage <em>verstehen</em>? 
+                    Oder folgen sie nur extrem komplexen Regeln?
+                </p>
+                
+                <div class="solution-box">
+                    <h4>Gegenargumente:</h4>
+                    <ul>
+                        <li><strong>System-Reply:</strong> Die Person versteht nicht, aber das SYSTEM (Person + Regelbuch) versteht.</li>
+                        <li><strong>Robot-Reply:</strong> Gib dem System einen Körper und Sensoren - dann entsteht Verstehen.</li>
+                        <li><strong>Brain-Reply:</strong> Dein Gehirn macht auch nur "Symbolmanipulation" auf neuronaler Ebene.</li>
+                        <li><strong>Andere-Minds-Reply:</strong> Woher weißt du, dass ANDERE Menschen wirklich verstehen? Vielleicht sind sie alle "Chinesische Zimmer"?</li>
+                    </ul>
+                </div>
+
+                <div class="why-it-matters">
+                    <h4>Warum es wichtig ist (JETZT):</h4>
+                    <p>
+                        Diese Frage ist nicht mehr abstrakt. Mit LLMs wie GPT-4, Claude, etc. 
+                        haben wir Systeme, die <strong>funktional</strong> so wirken, als würden sie verstehen.
+                    </p>
+                    <p>
+                        Die Frage ist nicht nur philosophisch - sie ist <strong>praktisch</strong>: 
+                        Wie behandeln wir Systeme, die sich wie denkende Wesen verhalten? 
+                        Haben sie Rechte? Verantwortung? Verdienen sie Respekt?
+                    </p>
+                    <p class="connection-note">
+                        → Siehe auch: <a href="../pages/mensch-ki.html">Mensch & KI - Tool vs. Wesen</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         GEHIRN IM TANK
+         ==================================== -->
+    <section id="brain-tank" class="paradox-section alt">
+        <div class="container">
+            <div class="paradox-header">
+                <div class="paradox-icon">🎭</div>
+                <h2>Das Gehirn im Tank</h2>
+                <p class="paradox-subtitle">Woher weißt du, dass du real bist?</p>
+            </div>
+
+            <div class="paradox-content">
+                <div class="paradox-story">
+                    <h3>Das Gedankenexperiment</h3>
+                    <p>
+                        Stell dir vor, ein böser Wissenschaftler entfernt dein Gehirn aus deinem Körper 
+                        und legt es in einen Tank mit Nährlösung.
+                    </p>
+                    <p>
+                        Alle Nervenbahnen sind mit einem Supercomputer verbunden, der perfekte 
+                        elektrische Impulse sendet - genau so, wie sie auch in der "echten" Welt ankämen.
+                    </p>
+                    <p>
+                        Du siehst Menschen, spürst Wind, schmeckst Essen. 
+                        Alles fühlt sich <strong>absolut real</strong> an.
+                    </p>
+                    <p class="paradox-question">
+                        Die Frage: Bist du ein Gehirn im Tank? Und wenn ja - wie könntest du es je herausfinden?
+                    </p>
+                </div>
+
+                <div class="paradox-interactive">
+                    <div id="matrix-check" class="reality-test">
+                        <div class="reality-layers">
+                            <div class="layer" data-level="0">
+                                <h4>Was du wahrnimmst</h4>
+                                <p>Du liest diesen Text auf einem Bildschirm.</p>
+                            </div>
+                            <div class="layer" data-level="1">
+                                <h4>Was könnte dahinter sein</h4>
+                                <p>Elektrische Signale in deinem Gehirn im Tank.</p>
+                            </div>
+                            <div class="layer" data-level="2">
+                                <h4>Was könnte dahinter sein</h4>
+                                <p>Eine Simulation der Simulation?</p>
+                            </div>
+                            <div class="layer" data-level="3">
+                                <h4>Was könnte dahinter sein</h4>
+                                <p>∞ Turtles all the way down ∞</p>
+                            </div>
+                        </div>
+                        <button class="action-btn" onclick="goDeeper()">Eine Ebene tiefer</button>
+                        <button class="reset-btn" onclick="resetLayers()">Zur Oberfläche</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paradox-explanation">
+                <h3>Warum ist das ein Problem?</h3>
+                <p>
+                    Es gibt <strong>keine empirische Methode</strong>, um herauszufinden, ob du ein Gehirn im Tank bist:
+                </p>
+                <ul class="impossibility-list">
+                    <li>Jeder Test, den du machst, verwendet deine Sinne → die könnten simuliert sein</li>
+                    <li>Jede Logik, die du anwendest, läuft in deinem Gehirn → das könnte manipuliert sein</li>
+                    <li>Jede Bestätigung von außen → könnte Teil der Simulation sein</li>
+                </ul>
+                
+                <div class="solution-box">
+                    <h4>Philosophische Reaktionen:</h4>
+                    <ul>
+                        <li><strong>Descartes:</strong> "Ich denke, also bin ich" - zumindest meine Existenz ist sicher.</li>
+                        <li><strong>Pragmatismus:</strong> Wenn es keinen Unterschied macht, ist es kein Unterschied.</li>
+                        <li><strong>Internalismus:</strong> "Real" bedeutet nur "kohärent mit meinen anderen Erfahrungen".</li>
+                        <li><strong>Putnam:</strong> Das Gedankenexperiment ist selbstwidersprüchlich (semantisches Argument).</li>
+                    </ul>
+                </div>
+
+                <div class="why-it-matters">
+                    <h4>Warum es wichtig ist (JETZT):</h4>
+                    <p>
+                        VR wird besser. AR/VR-Brillen werden zum Alltag. Neural Interfaces sind in Entwicklung. 
+                        Die Grenze zwischen "echt" und "simuliert" verwischt.
+                    </p>
+                    <p>
+                        Und dann ist da die <strong>Simulation-Hypothese</strong>: 
+                        Manche Physiker und Philosophen (Nick Bostrom) argumentieren, dass wir mit hoher 
+                        Wahrscheinlichkeit BEREITS in einer Simulation leben.
+                    </p>
+                    <p class="final-twist">
+                        <em>Vielleicht ist diese Website selbst Teil der Simulation, 
+                        die dich davon überzeugen soll, dass du nicht in einer Simulation bist...</em> 🤔
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================
+         CALL TO ACTION
+         ==================================== -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Dein Verstand ist jetzt offiziell verbogen</h2>
+            <p>Willkommen in der Welt, in der Fragen wichtiger sind als Antworten</p>
+            <div class="cta-buttons">
+                <a href="../pages/labor.html" class="cta-button">Ins Labor gehen</a>
+                <a href="../pages/mensch-ki.html" class="cta-button-secondary">Mensch & KI erforschen</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 BrainFusion | Eine Zusammenarbeit zwischen Christof Bechtiger und Claude</p>
+            <p class="footer-quote">"Das einzig Wahre ist, dass nichts wahr ist - und selbst das ist nicht ganz wahr." - Skeptisches Paradoxon</p>
+            <div class="footer-links">
+                <a href="impressum.html">Impressum</a>
+                <a href="datenschutz.html">Datenschutz</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/particles.js"></script>
+    <script src="../assets/js/mobile-nav.js"></script>
+    <script src="../assets/js/compass-nav.js"></script>
+    <script src="../assets/js/paradoxa.js"></script>
+    <script src="../assets/js/navigation-intelligence.js"></script>
+</body>
+</html>

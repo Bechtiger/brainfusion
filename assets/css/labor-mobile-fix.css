@@ -1,0 +1,89 @@
+/* ===================================
+   CRITICAL MOBILE FIXES für Labor
+   Diese Datei überschreibt die Desktop-Größen
+   =================================== */
+
+/* BASE FIX - Slits height MUSS auto sein auf Mobile! */
+@media (max-width: 768px) {
+    /* DAS ist der Hauptfix - Slits nicht mehr 400px hoch! */
+    .slits {
+        height: auto !important;
+        min-height: unset !important;
+        gap: 0.5rem !important;
+        justify-content: center !important;
+        padding: 0.5rem 0 !important;
+    }
+    
+    /* Slit-Setup Container auch kompakt */
+    .slit-setup {
+        min-height: unset !important;
+        gap: 1rem !important;
+        padding: 0.5rem !important;
+    }
+    
+    /* Viz-Container auch nicht so hoch */
+    .viz-container {
+        min-height: unset !important;
+        padding: 1rem !important;
+    }
+    
+    /* Electron Source kleiner */
+    .electron-source {
+        margin: 0.5rem 0 !important;
+    }
+    
+    .electron-source span {
+        font-size: 0.8rem !important;
+        display: block;
+        margin-top: 0.5rem;
+    }
+    
+    /* Detection Screen WIRKLICH responsive */
+    .detection-screen {
+        width: auto !important;
+        max-width: 220px !important;
+        height: 100px !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Canvas selbst auch begrenzen */
+    #detection-canvas {
+        max-width: 220px !important;
+        max-height: 100px !important;
+    }
+    
+    /* Slits Container */
+    .slits-container {
+        height: auto !important;
+        min-height: unset !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .slits {
+        gap: 0.3rem !important;
+    }
+    
+    .detection-screen {
+        max-width: 180px !important;
+        height: 80px !important;
+    }
+    
+    #detection-canvas {
+        max-width: 180px !important;
+        max-height: 80px !important;
+    }
+    
+    .slit {
+        width: 12px !important;
+        height: 30px !important;
+    }
+    
+    .wall-segment {
+        width: 12px !important;
+        height: 50px !important;
+    }
+}

@@ -1,0 +1,10 @@
+# BrainFusion - Robots.txt
+# Willkommen, Suchmaschinen-Crawler!
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://brainfusion.app/sitemap.xml
+
+# Keine Einschränkungen - alle Seiten dürfen indexiert werden

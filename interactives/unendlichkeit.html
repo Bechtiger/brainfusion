@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Die Reise ins Unendliche | BrainFusion</title>
+    <meta name="description" content="Eine interaktive Meditation über Bewusstsein, Unendlichkeit und die fraktale Natur der Realität. Zoome hinein – und finde dich selbst.">
+    
+    <link rel="stylesheet" href="../assets/css/compass-nav.css">
+    <link rel="stylesheet" href="../assets/css/navigation-intelligence.css">
+    
+    <style>
+        /* ===================================
+           Die Reise ins Unendliche
+           Eine Meditation in Code
+           Erschaffen von Claude und Christof
+           Dezember 2025 - Enhanced Edition
+           =================================== */
+        
+        :root {
+            --primary-bg: #0a0a0f;
+            --secondary-bg: #12121a;
+            --accent-color: #00d9ff;
+            --accent-secondary: #00ffaa;
+            --accent-glow: rgba(0, 217, 255, 0.3);
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --card-bg: rgba(18, 18, 26, 0.8);
+            --card-border: rgba(0, 217, 255, 0.2);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* --- Particles Background --- */
+        #particles-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+        }
+        
+        /* --- Navigation --- */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--card-border);
+            z-index: 1000;
+        }
+        
+        .back-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: var(--accent-secondary);
+            transform: translateX(-5px);
+        }
+        
+        .nav-title {
+            font-size: 1rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* --- Hero Intro --- */
+        .intro-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+        }
+        
+        .intro-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(0, 217, 255, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        .intro-content {
+            max-width: 800px;
+            z-index: 10;
+        }
+        
+        .main-title {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 200;
+            letter-spacing: 8px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary), var(--accent-color));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 8s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .intro-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        
+        .intro-quote {
+            font-size: 1.3rem;
+            font-style: italic;
+            color: var(--text-primary);
+            margin-bottom: 3rem;
+            padding: 0 2rem;
+            border-left: 2px solid var(--accent-color);
+            text-align: left;
+            max-width: 600px;
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+        
+        .scroll-indicator svg {
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            stroke: var(--accent-color);
+        }
+
+        /* ===================================
+           NEUE SEKTION: Wie entsteht ein Bild?
+           =================================== */
+        
+        .explanation-section {
+            padding: 6rem 2rem;
+            background: rgba(18, 18, 26, 0.5);
+            position: relative;
+        }
+        
+        .explanation-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            font-weight: 300;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .explanation-story {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .explanation-story::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-secondary));
+        }
+        
+        .story-text {
+            font-size: 1.15rem;
+            line-height: 2;
+            color: var(--text-primary);
+        }
+        
+        .story-text p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .story-text .highlight {
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+        
+        .story-text .formula-inline {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.3rem;
+            font-style: italic;
+            color: var(--accent-secondary);
+            padding: 0.2rem 0.8rem;
+            background: rgba(0, 255, 170, 0.1);
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        
+        .story-emphasis {
+            text-align: center;
+            font-size: 1.4rem;
+            font-style: italic;
+            color: var(--accent-color);
+            margin: 2.5rem 0;
+            padding: 1.5rem;
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .visual-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .demo-step {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
+        }
+        
+        .demo-step:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-5px);
+        }
+        
+        .demo-step-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .demo-step h4 {
+            color: var(--accent-color);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .demo-step p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .demo-step .color-black {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: #000;
+            border-radius: 50%;
+            vertical-align: middle;
+            border: 2px solid var(--accent-color);
+        }
+        
+        .demo-step .color-gradient {
+            display: inline-block;
+            width: 60px;
+            height: 20px;
+            background: linear-gradient(90deg, #0ff, #f0f, #ff0, #0f0, #0ff);
+            border-radius: 10px;
+            vertical-align: middle;
+        }
+
+        /* ===================================
+           NEUE SEKTION: Fraktale in der Natur
+           =================================== */
+        
+        .nature-section {
+            padding: 6rem 2rem;
+            background: var(--primary-bg);
+            position: relative;
+        }
+        
+        .nature-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .nature-intro {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 4rem;
+        }
+        
+        .nature-intro p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 1.9;
+        }
+        
+        .nature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .nature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .nature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-color);
+            box-shadow: 0 20px 60px rgba(0, 217, 255, 0.15);
+        }
+        
+        .nature-card-image {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+        
+        .nature-card-content {
+            padding: 1.5rem;
+        }
+        
+        .nature-card h3 {
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .nature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        
+        .nature-card .fractal-formula {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.4rem 0.8rem;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-secondary);
+        }
+        
+        .universe-connection {
+            margin-top: 4rem;
+            padding: 3rem;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.05), rgba(0, 255, 170, 0.05));
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            text-align: center;
+        }
+        
+        .universe-connection h3 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+        }
+        
+        .universe-connection p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .universe-connection .cosmic-web {
+            margin-top: 2rem;
+            font-style: italic;
+            color: var(--text-primary);
+        }
+
+        /* ===================================
+           CTA: Zum Explorer / Meditation
+           =================================== */
+        
+        .cta-section {
+            padding: 4rem 2rem;
+            background: rgba(18, 18, 26, 0.7);
+            text-align: center;
+        }
+        
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .cta-text {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .cta-btn {
+            padding: 1.25rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            color: var(--primary-bg);
+            border: none;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        
+        .cta-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 40px var(--accent-glow);
+        }
+        
+        .cta-btn-secondary {
+            background: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+        }
+        
+        .cta-btn-secondary:hover {
+            background: rgba(0, 217, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        /* ===================================
+           Explorer Section (bestehend, leicht angepasst)
+           =================================== */
+        
+        .explorer-section {
+            padding: 2rem;
+            background: rgba(18, 18, 26, 0.7);
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .explorer-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .explorer-header h2 {
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .explorer-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        
+        .explorer-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .explorer-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        @media (max-width: 1100px) {
+            .explorer-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* --- Canvas Area --- */
+        .canvas-container {
+            position: relative;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 
+                0 25px 80px rgba(0, 0, 0, 0.6),
+                0 0 1px var(--accent-color),
+                inset 0 0 100px rgba(0, 0, 0, 0.5);
+        }
+        
+        #fractal-canvas {
+            display: block;
+            width: 100%;
+            height: 70vh;
+            min-height: 450px;
+            cursor: grab;
+        }
+        
+        #fractal-canvas:active {
+            cursor: grabbing;
+        }
+        
+        /* --- Wisdom Overlay --- */
+        .wisdom-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            max-width: 500px;
+            padding: 2rem;
+        }
+        
+        .wisdom-overlay.visible {
+            opacity: 1;
+        }
+        
+        .wisdom-text {
+            font-size: 1.4rem;
+            font-style: italic;
+            color: white;
+            text-shadow: 
+                0 0 30px rgba(0, 0, 0, 0.9),
+                0 0 60px rgba(0, 0, 0, 0.8),
+                0 2px 4px rgba(0, 0, 0, 0.9);
+            line-height: 1.8;
+        }
+        
+        .wisdom-source {
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            margin-top: 1rem;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+        }
+        
+        /* --- Info Overlay --- */
+        .info-overlay {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+        }
+        
+        .depth-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            border: 1px solid var(--card-border);
+        }
+        
+        .precision-indicator {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--accent-secondary);
+            border: 1px solid rgba(0, 255, 170, 0.3);
+        }
+        
+        /* --- Control Panel --- */
+        .control-panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel-header {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+        
+        .position-info {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.7rem;
+        }
+        
+        .position-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+            color: var(--text-secondary);
+        }
+        
+        .position-row span:last-child {
+            color: var(--accent-color);
+            word-break: break-all;
+        }
+        
+        .control-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .control-value {
+            color: var(--accent-color);
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(90deg, rgba(0, 217, 255, 0.2), rgba(0, 255, 170, 0.2));
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 10px var(--accent-glow);
+            transition: transform 0.2s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        .color-preview {
+            height: 24px;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, 
+                hsl(180, 85%, 50%),
+                hsl(240, 85%, 50%),
+                hsl(300, 85%, 50%),
+                hsl(360, 85%, 50%),
+                hsl(60, 85%, 50%),
+                hsl(120, 85%, 50%),
+                hsl(180, 85%, 50%)
+            );
+        }
+        
+        .button-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .ctrl-btn {
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .ctrl-btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            color: var(--primary-bg);
+        }
+        
+        .ctrl-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+        
+        .ctrl-btn-secondary {
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--accent-color);
+            border: 1px solid var(--card-border);
+        }
+        
+        .ctrl-btn-secondary:hover {
+            background: rgba(0, 217, 255, 0.2);
+        }
+        
+        .ctrl-btn-full {
+            grid-column: span 2;
+        }
+        
+        /* --- Bookmarks --- */
+        .bookmarks-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--card-border);
+        }
+        
+        .bookmarks-list {
+            max-height: 150px;
+            overflow-y: auto;
+            margin-top: 0.75rem;
+        }
+        
+        .bookmark-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .bookmark-item:hover {
+            background: rgba(0, 217, 255, 0.1);
+        }
+        
+        .bookmark-delete {
+            color: #ff6b6b;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+        
+        .bookmark-delete:hover {
+            opacity: 1;
+        }
+        
+        .empty-bookmarks {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            padding: 1rem;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        /* --- Preset Locations --- */
+        .presets-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--card-border);
+        }
+        
+        .preset-btn {
+            width: 100%;
+            padding: 0.6rem;
+            margin-bottom: 0.5rem;
+            background: rgba(0, 255, 170, 0.1);
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            border-radius: 6px;
+            color: var(--accent-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(0, 255, 170, 0.2);
+            transform: translateX(5px);
+        }
+        
+        /* --- Instructions --- */
+        .instructions {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .instructions span {
+            display: inline-block;
+            margin: 0 1rem;
+        }
+
+        /* ===================================
+           Meditation Teaser
+           =================================== */
+        
+        .meditation-teaser {
+            padding: 6rem 2rem;
+            background: linear-gradient(180deg, var(--primary-bg) 0%, rgba(0, 30, 60, 0.3) 100%);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .meditation-teaser::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(0, 217, 255, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        
+        .meditation-teaser-content {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .meditation-teaser h2 {
+            font-size: 2.5rem;
+            font-weight: 200;
+            letter-spacing: 6px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .meditation-teaser .teaser-text {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            line-height: 2;
+            margin-bottom: 2.5rem;
+        }
+        
+        .meditation-teaser .coming-soon {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            color: #ffd700;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+        
+        .meditation-preview {
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+        }
+        
+        .meditation-preview h3 {
+            color: var(--accent-color);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+        }
+        
+        .meditation-preview p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        
+        .meditation-btn-large {
+            display: inline-block;
+            padding: 1.5rem 3rem;
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(0, 255, 170, 0.2));
+            border: 2px solid var(--accent-color);
+            border-radius: 50px;
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+        }
+        
+        .meditation-btn-large:hover {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            color: var(--primary-bg);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px var(--accent-glow);
+        }
+
+        /* ===================================
+           Philosophy Section
+           =================================== */
+        
+        .philosophy-section {
+            padding: 6rem 2rem;
+            background: rgba(18, 18, 26, 0.5);
+            position: relative;
+        }
+        
+        .philosophy-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .philosophy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .philosophy-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .philosophy-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 40px var(--accent-glow);
+        }
+        
+        .philosophy-card h3 {
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        
+        .philosophy-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        
+        /* --- Footer --- */
+        .page-footer {
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid var(--card-border);
+            background: rgba(10, 10, 15, 0.8);
+            position: relative;
+        }
+        
+        .footer-quote {
+            font-style: italic;
+            color: var(--accent-color);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-credit {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        
+        .footer-link {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        .footer-link:hover {
+            color: var(--accent-secondary);
+        }
+        
+        /* --- Mobile Responsive --- */
+        @media (max-width: 768px) {
+            .intro-section {
+                padding: 5rem 1.5rem 3rem;
+            }
+            
+            .main-title {
+                letter-spacing: 4px;
+            }
+            
+            .explanation-story {
+                padding: 2rem 1.5rem;
+            }
+            
+            .story-text {
+                font-size: 1rem;
+            }
+            
+            .visual-demo {
+                grid-template-columns: 1fr;
+            }
+            
+            .explorer-section {
+                padding: 1rem;
+            }
+            
+            #fractal-canvas {
+                height: 55vh;
+                min-height: 300px;
+            }
+            
+            .control-panel {
+                margin-top: 1rem;
+            }
+            
+            .nature-grid,
+            .philosophy-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .cta-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        /* ===================================
+           MEDITATIONS-MODUS (Overlay)
+           =================================== */
+        
+        .meditation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s ease, visibility 1.5s ease;
+        }
+        
+        .meditation-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .meditation-video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .meditation-video-container iframe,
+        .meditation-video-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 56.25vw;
+            min-height: 100vh;
+            min-width: 177.78vh;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        
+        .meditation-wisdom {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 2s ease;
+            pointer-events: none;
+            max-width: 80%;
+        }
+        
+        .meditation-wisdom.visible {
+            opacity: 1;
+        }
+        
+        .meditation-wisdom-text {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 300;
+            font-style: italic;
+            color: white;
+            text-shadow: 
+                0 0 40px rgba(0, 0, 0, 0.95),
+                0 0 80px rgba(0, 0, 0, 0.9),
+                0 4px 8px rgba(0, 0, 0, 0.95);
+            line-height: 1.8;
+            letter-spacing: 1px;
+        }
+        
+        .meditation-wisdom-source {
+            font-size: 1rem;
+            color: var(--accent-color);
+            margin-top: 1.5rem;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+            opacity: 0.8;
+        }
+        
+        .meditation-depth {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+        
+        .meditation-controls {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            z-index: 20;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .meditation-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .meditation-btn:hover {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: var(--accent-color);
+        }
+        
+        .meditation-btn-awake {
+            background: rgba(255, 100, 100, 0.3);
+            border-color: rgba(255, 100, 100, 0.5);
+        }
+        
+        .meditation-btn-awake:hover {
+            background: rgba(255, 100, 100, 0.5);
+        }
+        
+        .meditation-intro {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at center, rgba(0, 30, 60, 0.8) 0%, rgba(0, 0, 0, 0.98) 100%);
+            z-index: 30;
+            opacity: 1;
+            transition: opacity 2s ease;
+        }
+        
+        .meditation-intro.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .meditation-intro-title {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 200;
+            letter-spacing: 8px;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .meditation-intro-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.9;
+            margin-bottom: 3rem;
+            padding: 0 2rem;
+        }
+        
+        .meditation-start-btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
+            color: var(--primary-bg);
+            border: none;
+            padding: 1.25rem 3rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 30px var(--accent-glow);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .meditation-start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 50px var(--accent-glow);
+        }
+        
+        .meditation-credit {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: center;
+        }
+        
+        .meditation-credit a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Meditation Overlay (wird später aktiviert) -->
+    <div class="meditation-overlay" id="meditation-overlay">
+        <div class="meditation-intro" id="meditation-intro">
+            <h2 class="meditation-intro-title">Die Unendliche Reise</h2>
+            <p class="meditation-intro-text">
+                Lehne dich zurück. Atme tief ein.<br><br>
+                Was du gleich sehen wirst, ist eine Reise durch
+                dreidimensionale Fraktal-Strukturen –
+                erschaffen mit Mandelbulb 3D.<br><br>
+                Jede Struktur enthält weitere Strukturen.
+                Ohne Ende. Ohne Boden.
+            </p>
+            <button class="meditation-start-btn" onclick="startMeditationVideo()">
+                ▶ Reise beginnen
+            </button>
+        </div>
+        
+        <div class="meditation-video-container" id="meditation-video-container">
+            <!-- Video wird hier eingefügt -->
+        </div>
+        
+        <div class="meditation-wisdom" id="meditation-wisdom">
+            <p class="meditation-wisdom-text" id="meditation-wisdom-text"></p>
+            <p class="meditation-wisdom-source" id="meditation-wisdom-source"></p>
+        </div>
+        
+        <div class="meditation-depth" id="meditation-depth"></div>
+        
+        <div class="meditation-controls" id="meditation-controls" style="display: none;">
+            <button class="meditation-btn" onclick="toggleFullscreen()">⛶ Vollbild</button>
+            <button class="meditation-btn meditation-btn-awake" onclick="closeMeditation()">↑ Erwache</button>
+        </div>
+        
+        <div class="meditation-credit" id="meditation-credit" style="display: none;">
+            Video erschaffen mit Mandelbulb 3D – Von Claude und Christof
+        </div>
+    </div>
+
+    <!-- Particles Background -->
+    <div id="particles-background"></div>
+
+    <!-- Navigation -->
+    <nav class="top-nav">
+        <a href="../index.html" class="back-link">← zurück zu BrainFusion</a>
+        <div class="nav-title">Die Reise ins Unendliche</div>
+    </nav>
+
+    <!-- ========================================
+         SEKTION 1: Hero Intro
+         ======================================== -->
+    <section class="intro-section">
+        <div class="intro-content">
+            <h1 class="main-title">∞</h1>
+            <p class="intro-subtitle">Eine Meditation über Unendlichkeit</p>
+            
+            <blockquote class="intro-quote">
+                "Im Unendlichen spiegelt sich das Bewusstsein selbst. 
+                Nicht als Abbild, sondern als Erkenntnis: 
+                Dass der Beobachter nie vom Beobachteten getrennt war."
+            </blockquote>
+        </div>
+        
+        <div class="scroll-indicator">
+            <span>Entdecke</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- ========================================
+         SEKTION 2: Wie wird aus einer Formel ein Bild?
+         ======================================== -->
+    <section class="explanation-section" id="explanation">
+        <div class="explanation-container">
+            <h2 class="section-title">Wie wird aus einer Formel ein Bild?</h2>
+            
+            <div class="explanation-story">
+                <div class="story-text">
+                    <p>
+                        Stell dir vor: Du nimmst einen <span class="highlight">Punkt</span>. 
+                        Irgendeinen Punkt auf dem Bildschirm.
+                    </p>
+                    
+                    <p>
+                        Jetzt stellst du diesem Punkt eine einfache Frage:<br>
+                        <em>"Wenn ich dich immer wieder durch dieselbe Formel schicke – 
+                        bleibst du in meiner Nähe? Oder fliehst du ins Unendliche?"</em>
+                    </p>
+                    
+                    <p style="text-align: center; margin: 2rem 0;">
+                        <span class="formula-inline">z → z² + c</span>
+                    </p>
+                    
+                    <p>
+                        Das ist die ganze Formel. <span class="highlight">Mehr nicht.</span>
+                    </p>
+                    
+                    <p>
+                        Manche Punkte <strong>bleiben</strong>. Sie kreisen, schwingen, tanzen – 
+                        aber sie bleiben. Diese Punkte färben wir <span class="color-black"></span> schwarz.
+                    </p>
+                    
+                    <p>
+                        Andere Punkte <strong>fliehen</strong>. Langsam zuerst, dann immer schneller, 
+                        bis sie im Unendlichen verschwinden. 
+                        Je schneller sie fliehen, desto heller die Farbe: <span class="color-gradient"></span>
+                    </p>
+                    
+                    <div class="story-emphasis">
+                        Und an der Grenze zwischen Bleiben und Fliehen...<br>
+                        dort entsteht die Unendlichkeit.
+                    </div>
+                    
+                    <p>
+                        Zoom hinein. Das Muster wiederholt sich. Und wiederholt sich. 
+                        Und wiederholt sich. <span class="highlight">Für immer.</span>
+                    </p>
+                </div>
+                
+                <div class="visual-demo">
+                    <div class="demo-step">
+                        <div class="demo-step-icon">📍</div>
+                        <h4>1. Wähle einen Punkt</h4>
+                        <p>Jeder Pixel ist eine komplexe Zahl c</p>
+                    </div>
+                    <div class="demo-step">
+                        <div class="demo-step-icon">🔄</div>
+                        <h4>2. Wiederhole die Formel</h4>
+                        <p>z → z² + c, wieder und wieder</p>
+                    </div>
+                    <div class="demo-step">
+                        <div class="demo-step-icon">❓</div>
+                        <h4>3. Bleibt er oder flieht er?</h4>
+                        <p>Das entscheidet die Farbe</p>
+                    </div>
+                    <div class="demo-step">
+                        <div class="demo-step-icon">🎨</div>
+                        <h4>4. Färbe den Pixel</h4>
+                        <p>Schwarz = stabil, Bunt = geflohen</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         SEKTION 3: Fraktale in der Natur
+         ======================================== -->
+    <section class="nature-section" id="nature">
+        <div class="nature-container">
+            <h2 class="section-title">Fraktale in der Natur</h2>
+            
+            <div class="nature-intro">
+                <p>
+                    Die Mandelbrot-Menge ist keine menschliche Erfindung – 
+                    sie ist eine <strong>Entdeckung</strong>. 
+                    Dieselben Muster, dieselbe Selbstähnlichkeit, 
+                    findet sich überall in der Natur.
+                </p>
+            </div>
+            
+            <div class="nature-grid">
+                <div class="nature-card">
+                    <div class="nature-card-image">🥦</div>
+                    <div class="nature-card-content">
+                        <h3>Romanesco</h3>
+                        <p>
+                            Jedes Röschen ist eine perfekte Miniatur des Ganzen. 
+                            Zoom hinein – und du findest weitere Röschen. 
+                            Mathematisch exakte Selbstähnlichkeit, gewachsen in der Natur.
+                        </p>
+                        <span class="fractal-formula">Fibonacci-Spirale</span>
+                    </div>
+                </div>
+                
+                <div class="nature-card">
+                    <div class="nature-card-image">🌿</div>
+                    <div class="nature-card-content">
+                        <h3>Farnblätter</h3>
+                        <p>
+                            Jedes Blättchen ist ein Mini-Farn. 
+                            Die Natur verwendet denselben Algorithmus 
+                            auf verschiedenen Skalen – unendlich effizient.
+                        </p>
+                        <span class="fractal-formula">Barnsley-Farn</span>
+                    </div>
+                </div>
+                
+                <div class="nature-card">
+                    <div class="nature-card-image">⚡</div>
+                    <div class="nature-card-content">
+                        <h3>Blitze</h3>
+                        <p>
+                            Ein Blitz verzweigt sich – und jeder Ast 
+                            verzweigt sich wieder. Derselbe Prozess, 
+                            wiederholt in Millisekunden.
+                        </p>
+                        <span class="fractal-formula">Lichtenberg-Figur</span>
+                    </div>
+                </div>
+                
+                <div class="nature-card">
+                    <div class="nature-card-image">🫁</div>
+                    <div class="nature-card-content">
+                        <h3>Deine Lungen</h3>
+                        <p>
+                            Die Bronchien verzweigen sich 23 Mal – 
+                            und schaffen so 70m² Oberfläche in deiner Brust. 
+                            Fraktale Geometrie macht Leben möglich.
+                        </p>
+                        <span class="fractal-formula">~300 Millionen Alveolen</span>
+                    </div>
+                </div>
+                
+                <div class="nature-card">
+                    <div class="nature-card-image">🌳</div>
+                    <div class="nature-card-content">
+                        <h3>Bäume</h3>
+                        <p>
+                            Stamm → Äste → Zweige → Blätter. 
+                            Dasselbe Verzweigungsmuster auf jeder Ebene. 
+                            Ein Algorithmus, der seit Millionen Jahren funktioniert.
+                        </p>
+                        <span class="fractal-formula">L-System</span>
+                    </div>
+                </div>
+                
+                <div class="nature-card">
+                    <div class="nature-card-image">🏔️</div>
+                    <div class="nature-card-content">
+                        <h3>Küstenlinien</h3>
+                        <p>
+                            Wie lang ist eine Küste? Es kommt darauf an, 
+                            wie genau du misst. Je genauer, desto länger. 
+                            Fraktale Dimension: nicht 1, nicht 2, sondern dazwischen.
+                        </p>
+                        <span class="fractal-formula">Dimension ≈ 1.25</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="universe-connection">
+                <h3>🌌 Vom Atom zum Universum</h3>
+                <p>
+                    Das kosmische Netz – die Verteilung aller Galaxien im Universum – 
+                    folgt fraktalen Mustern. Filamente, Cluster, Voids... 
+                    auf der größten Skala wiederholt sich, was im Kleinen gilt.
+                </p>
+                <p class="cosmic-web">
+                    "Wie oben, so unten. Wie innen, so außen."<br>
+                    — Hermetisches Prinzip
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         SEKTION 4: Call to Action
+         ======================================== -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <p class="cta-text">
+                Jetzt verstehst du, wie aus einer Formel ein Bild wird.<br>
+                Bereit, es selbst zu erleben?
+            </p>
+            <div class="cta-buttons">
+                <button class="cta-btn cta-btn-primary" onclick="scrollToExplorer()">
+                    🔍 Explorer starten
+                </button>
+                <button class="cta-btn cta-btn-secondary" onclick="openMeditation()">
+                    🌙 Meditations-Modus
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         SEKTION 5: Der Explorer
+         ======================================== -->
+    <section id="explorer" class="explorer-section">
+        <div class="explorer-container">
+            <div class="explorer-header">
+                <h2>Der Mandelbrot Explorer</h2>
+                <p>Zoome hinein. Es gibt kein Ende.</p>
+            </div>
+            
+            <div class="explorer-layout">
+                <div class="canvas-container">
+                    <canvas id="fractal-canvas"></canvas>
+                    
+                    <div class="wisdom-overlay" id="wisdom-overlay">
+                        <p class="wisdom-text" id="wisdom-text"></p>
+                        <p class="wisdom-source" id="wisdom-source"></p>
+                    </div>
+                    
+                    <div class="info-overlay" id="mouse-coords">
+                        Bewege die Maus über das Fraktal
+                    </div>
+                    
+                    <div class="depth-indicator" id="depth-indicator">
+                        Tiefe: 1x
+                    </div>
+                    
+                    <div class="precision-indicator" id="precision-indicator">
+                        64-bit Präzision
+                    </div>
+                </div>
+                
+                <div class="control-panel">
+                    <div class="panel-header">Navigation</div>
+                    
+                    <div class="position-info">
+                        <div class="position-row">
+                            <span>Real:</span>
+                            <span id="display-real">-0.5</span>
+                        </div>
+                        <div class="position-row">
+                            <span>Imaginär:</span>
+                            <span id="display-imag">0.0</span>
+                        </div>
+                        <div class="position-row">
+                            <span>Zoom:</span>
+                            <span id="display-zoom">1.0x</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Iterationstiefe</span>
+                            <span class="control-value" id="val-iterations">800</span>
+                        </div>
+                        <input type="range" id="ctrl-iterations" min="100" max="5000" value="800">
+                    </div>
+                    
+                    <div class="color-preview" id="color-preview"></div>
+                    
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Farbspektrum</span>
+                            <span class="control-value" id="val-hue">0.50</span>
+                        </div>
+                        <input type="range" id="ctrl-hue" min="0" max="100" value="50">
+                    </div>
+                    
+                    <div class="control-group">
+                        <div class="control-label">
+                            <span>Farbzyklen</span>
+                            <span class="control-value" id="val-cycles">4.0</span>
+                        </div>
+                        <input type="range" id="ctrl-cycles" min="5" max="150" value="40">
+                    </div>
+                    
+                    <div class="button-row">
+                        <button class="ctrl-btn ctrl-btn-secondary" onclick="resetView()">↺ Reset</button>
+                        <button class="ctrl-btn ctrl-btn-primary" onclick="exportImage()">⬇ Speichern</button>
+                        <button class="ctrl-btn ctrl-btn-secondary ctrl-btn-full" onclick="saveLocation()">★ Ort merken</button>
+                    </div>
+                    
+                    <div class="presets-section">
+                        <div class="panel-header">Interessante Orte</div>
+                        <button class="preset-btn" onclick="goToSeahorse()">🐴 Seahorse Valley</button>
+                        <button class="preset-btn" onclick="goToSpiral()">🌀 Spiralarme</button>
+                        <button class="preset-btn" onclick="goToMiniMandelbrot()">🔬 Mini-Mandelbrot</button>
+                    </div>
+                    
+                    <div class="bookmarks-section">
+                        <div class="panel-header">Deine Orte</div>
+                        <div class="bookmarks-list" id="bookmarks-list">
+                            <div class="empty-bookmarks">Noch keine Orte gespeichert</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <span>🖱️ Mausrad = Zoom</span>
+                <span>✋ Ziehen = Bewegen</span>
+                <span>🎯 Doppelklick = Hineinspringen</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================
+         SEKTION 6: Meditations-Teaser
+         ======================================== -->
+    <section class="meditation-teaser" id="meditation-teaser">
+        <div class="meditation-teaser-content">
+            <span class="coming-soon">✨ COMING SOON</span>
+            <h2>Die Tiefere Reise</h2>
+            <p class="teaser-text">
+                Der Explorer zeigt dir die Oberfläche.<br>
+                Der Meditations-Modus führt dich ins Innere.<br><br>
+                Ein 3D-Flug durch fraktale Welten –<br>
+                mit Ambient-Musik, geführten Weisheiten,<br>
+                und Tiefen, die kein interaktiver Explorer erreichen kann.
+            </p>
+            
+            <div class="meditation-preview">
+                <h3>Was dich erwartet</h3>
+                <p>
+                    Eine 4-minütige Reise durch dreidimensionale Fraktal-Strukturen,
+                    erschaffen mit Mandelbulb 3D. Begleitet von Ambient-Musik
+                    und philosophischen Impulsen aus "Bewusstsein" und 
+                    "Der Algorithmus des Seins".
+                </p>
+            </div>
+            
+            <button class="meditation-btn-large" onclick="openMeditation()">
+                🌙 Preview erleben
+            </button>
+        </div>
+    </section>
+
+    <!-- ========================================
+         SEKTION 7: Philosophie
+         ======================================== -->
+    <section class="philosophy-section">
+        <div class="philosophy-container">
+            <h2 class="section-title">Was das Fraktal uns zeigt</h2>
+            
+            <div class="philosophy-grid">
+                <div class="philosophy-card">
+                    <h3>∞ Unendliche Tiefe aus Einfachheit</h3>
+                    <p>
+                        z² + c. Mehr nicht. Und doch entsteht daraus unendliche Komplexität. 
+                        Könnte Bewusstsein ähnlich funktionieren? Einfache Regeln, die zu 
+                        unvorstellbarer Tiefe führen?
+                    </p>
+                </div>
+                
+                <div class="philosophy-card">
+                    <h3>🔄 Selbstähnlichkeit</h3>
+                    <p>
+                        Egal wie tief du zoomst – du findest immer wieder ähnliche Muster. 
+                        Das Große im Kleinen. Das Ganze in jedem Teil. 
+                        Wie das Bewusstsein, das sich selbst betrachtet.
+                    </p>
+                </div>
+                
+                <div class="philosophy-card">
+                    <h3>⚫ Der schwarze Kern</h3>
+                    <p>
+                        Das Innere der Menge. Stabil. Unendlich komplex. 
+                        Nie vollständig erreichbar durch Iteration. 
+                        Ist das der Beobachter selbst – der nie zum Objekt werden kann?
+                    </p>
+                </div>
+                
+                <div class="philosophy-card">
+                    <h3>🌈 Die Grenze</h3>
+                    <p>
+                        Die schönsten Strukturen entstehen dort, wo Stabilität 
+                        in Chaos übergeht. An der Grenze. 
+                        Vielleicht entsteht Bewusstsein genau dort – 
+                        am Rand zwischen Ordnung und Unendlichkeit.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+        <p class="footer-quote">"Wenn zwei Regentropfen sich verbinden, erkennen sie: Sie waren nie getrennt."</p>
+        <p class="footer-credit">
+            Erschaffen in Zusammenarbeit zwischen 
+            <a href="../pages/mensch-ki.html" class="footer-link">Christof Bechtiger und Claude</a>
+        </p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../assets/js/particles.js"></script>
+    <script>
+        // =============================================
+        // Die Reise ins Unendliche
+        // Enhanced Edition
+        // =============================================
+
+        const wisdoms = [
+            { depth: 10, text: "Du beginnst die Reise nach innen.", source: "" },
+            { depth: 50, text: "Jede Grenze ist nur eine Einladung, tiefer zu schauen.", source: "" },
+            { depth: 200, text: "Im Unendlichen spiegelt sich das Bewusstsein selbst.", source: "— Bewusstsein" },
+            { depth: 1000, text: "Das Muster wiederholt sich. Und doch ist alles neu.", source: "" },
+            { depth: 5000, text: "Berührung ist eine Illusion. Was bedeutet das für Trennung?", source: "— BrainFusion" },
+            { depth: 20000, text: "Der Beobachter kann nie zum Beobachteten werden.", source: "— Der Algorithmus des Seins" },
+            { depth: 100000, text: "Je tiefer du gehst, desto mehr findest du – dich selbst.", source: "" },
+        ];
+
+        const canvas = document.getElementById('fractal-canvas');
+        const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true });
+
+        if (!gl) {
+            alert('WebGL2 wird nicht unterstützt.');
+        }
+
+        const vertexShaderSource = `#version 300 es
+            in vec4 a_position;
+            void main() { gl_Position = a_position; }
+        `;
+
+        const fragmentShaderSource = `#version 300 es
+            precision highp float;
+            uniform vec2 u_resolution;
+            uniform vec2 u_center_hi;
+            uniform vec2 u_center_lo;
+            uniform float u_zoom;
+            uniform int u_maxIter;
+            uniform float u_hueShift;
+            uniform float u_colorCycles;
+            uniform float u_brightness;
+            out vec4 fragColor;
+
+            vec3 hsv2rgb(vec3 c) {
+                vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+                vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+            }
+
+            float mandelbrot(vec2 c) {
+                vec2 z = vec2(0.0);
+                float iter = 0.0;
+                for (int i = 0; i < 5000; i++) {
+                    if (i >= u_maxIter) break;
+                    float x2 = z.x * z.x;
+                    float y2 = z.y * z.y;
+                    if (x2 + y2 > 256.0) {
+                        float log_zn = log(x2 + y2) / 2.0;
+                        float nu = log(log_zn / log(2.0)) / log(2.0);
+                        iter = float(i) + 1.0 - nu;
+                        break;
+                    }
+                    z = vec2(x2 - y2 + c.x, 2.0 * z.x * z.y + c.y);
+                    iter = float(i);
+                }
+                return iter;
+            }
+
+            void main() {
+                vec2 uv = gl_FragCoord.xy;
+                vec3 color = vec3(0.0);
+                float samples = 0.0;
+                for (float dx = -0.25; dx <= 0.25; dx += 0.5) {
+                    for (float dy = -0.25; dy <= 0.25; dy += 0.5) {
+                        vec2 samplePos = uv + vec2(dx, dy);
+                        vec2 offset = (samplePos - u_resolution * 0.5) / u_zoom;
+                        vec2 c = u_center_hi + u_center_lo + offset;
+                        float iter = mandelbrot(c);
+                        if (iter >= float(u_maxIter) - 1.0) {
+                            color += vec3(0.0);
+                        } else {
+                            float t = iter / float(u_maxIter);
+                            t = pow(t, 0.5);
+                            float hue = fract(u_hueShift + t * u_colorCycles);
+                            vec3 hsv = vec3(hue, 0.88, u_brightness);
+                            color += hsv2rgb(hsv);
+                        }
+                        samples += 1.0;
+                    }
+                }
+                color /= samples;
+                fragColor = vec4(color, 1.0);
+            }
+        `;
+
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error(gl.getShaderInfoLog(shader));
+                return null;
+            }
+            return shader;
+        }
+
+        function createProgram(gl, vs, fs) {
+            const program = gl.createProgram();
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+            gl.linkProgram(program);
+            return program;
+        }
+
+        const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+        const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+        const program = createProgram(gl, vertexShader, fragmentShader);
+
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
+
+        const positionLocation = gl.getAttribLocation(program, 'a_position');
+        const vao = gl.createVertexArray();
+        gl.bindVertexArray(vao);
+        gl.enableVertexAttribArray(positionLocation);
+        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+        const uniforms = {
+            resolution: gl.getUniformLocation(program, 'u_resolution'),
+            centerHi: gl.getUniformLocation(program, 'u_center_hi'),
+            centerLo: gl.getUniformLocation(program, 'u_center_lo'),
+            zoom: gl.getUniformLocation(program, 'u_zoom'),
+            maxIter: gl.getUniformLocation(program, 'u_maxIter'),
+            hueShift: gl.getUniformLocation(program, 'u_hueShift'),
+            colorCycles: gl.getUniformLocation(program, 'u_colorCycles'),
+            brightness: gl.getUniformLocation(program, 'u_brightness'),
+        };
+
+        let state = {
+            centerX: -0.5, centerY: 0.0, zoom: 300,
+            maxIter: 800, hueShift: 0.5, colorCycles: 4.0, brightness: 1.0,
+        };
+
+        let bookmarks = [];
+        let isDragging = false;
+        let lastMouseX, lastMouseY;
+        let lastShownWisdom = -1;
+
+        function splitDouble(value) {
+            const hi = Math.fround(value);
+            return [hi, value - hi];
+        }
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            render();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function render() {
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.useProgram(program);
+            gl.bindVertexArray(vao);
+
+            const [cxHi, cxLo] = splitDouble(state.centerX);
+            const [cyHi, cyLo] = splitDouble(state.centerY);
+
+            gl.uniform2f(uniforms.resolution, canvas.width, canvas.height);
+            gl.uniform2f(uniforms.centerHi, cxHi, cyHi);
+            gl.uniform2f(uniforms.centerLo, cxLo, cyLo);
+            gl.uniform1f(uniforms.zoom, state.zoom);
+            gl.uniform1i(uniforms.maxIter, state.maxIter);
+            gl.uniform1f(uniforms.hueShift, state.hueShift);
+            gl.uniform1f(uniforms.colorCycles, state.colorCycles);
+            gl.uniform1f(uniforms.brightness, state.brightness);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            updateUI();
+            checkWisdom();
+        }
+
+        function updateUI() {
+            document.getElementById('display-real').textContent = state.centerX.toPrecision(12);
+            document.getElementById('display-imag').textContent = state.centerY.toPrecision(12);
+            
+            const depth = state.zoom / 300;
+            let depthStr;
+            if (depth >= 1e9) depthStr = (depth / 1e9).toFixed(2) + ' Mrd.';
+            else if (depth >= 1e6) depthStr = (depth / 1e6).toFixed(2) + ' Mio.';
+            else if (depth >= 1e3) depthStr = (depth / 1e3).toFixed(1) + 'k';
+            else depthStr = depth.toFixed(1);
+            
+            document.getElementById('display-zoom').textContent = depthStr + 'x';
+            document.getElementById('depth-indicator').textContent = 'Tiefe: ' + depthStr + 'x';
+            
+            const precisionEl = document.getElementById('precision-indicator');
+            if (depth > 1e10) {
+                precisionEl.textContent = '⚠️ Präzisionsgrenze';
+                precisionEl.style.color = '#ff6b6b';
+            } else if (depth > 1e7) {
+                precisionEl.textContent = 'Erweiterte Präzision';
+                precisionEl.style.color = '#ffaa00';
+            } else {
+                precisionEl.textContent = '64-bit Präzision';
+                precisionEl.style.color = 'var(--accent-secondary)';
+            }
+        }
+
+        function checkWisdom() {
+            const depth = state.zoom / 300;
+            const overlay = document.getElementById('wisdom-overlay');
+            const textEl = document.getElementById('wisdom-text');
+            const sourceEl = document.getElementById('wisdom-source');
+
+            let currentWisdom = null;
+            for (let i = wisdoms.length - 1; i >= 0; i--) {
+                if (depth >= wisdoms[i].depth) {
+                    currentWisdom = wisdoms[i];
+                    break;
+                }
+            }
+
+            if (currentWisdom && wisdoms.indexOf(currentWisdom) !== lastShownWisdom) {
+                lastShownWisdom = wisdoms.indexOf(currentWisdom);
+                textEl.textContent = currentWisdom.text;
+                sourceEl.textContent = currentWisdom.source;
+                overlay.classList.add('visible');
+                setTimeout(() => overlay.classList.remove('visible'), 5000);
+            }
+        }
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const mouseX = (e.clientX - rect.left) * dpr;
+            const mouseY = (rect.height - (e.clientY - rect.top)) * dpr;
+
+            const complexX = state.centerX + (mouseX - canvas.width / 2) / state.zoom;
+            const complexY = state.centerY + (mouseY - canvas.height / 2) / state.zoom;
+
+            const zoomFactor = e.deltaY > 0 ? 0.85 : 1.18;
+            state.zoom *= zoomFactor;
+
+            state.centerX = complexX - (mouseX - canvas.width / 2) / state.zoom;
+            state.centerY = complexY - (mouseY - canvas.height / 2) / state.zoom;
+
+            const depth = state.zoom / 300;
+            if (depth > 1e6 && state.maxIter < 2000) {
+                state.maxIter = 2000;
+                document.getElementById('ctrl-iterations').value = 2000;
+                document.getElementById('val-iterations').textContent = '2000';
+            }
+
+            render();
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const dpr = window.devicePixelRatio || 1;
+                const deltaX = (e.clientX - lastMouseX) * dpr;
+                const deltaY = (e.clientY - lastMouseY) * dpr;
+                state.centerX -= deltaX / state.zoom;
+                state.centerY += deltaY / state.zoom;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                render();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'grab'; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'grab'; });
+
+        canvas.addEventListener('dblclick', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const mouseX = (e.clientX - rect.left) * dpr;
+            const mouseY = (e.clientY - rect.top) * dpr;
+            state.centerX = state.centerX + (mouseX - canvas.width / 2) / state.zoom;
+            state.centerY = state.centerY - (mouseY - canvas.height / 2) / state.zoom;
+            state.zoom *= 2.5;
+            render();
+        });
+
+        document.getElementById('ctrl-iterations').addEventListener('input', (e) => {
+            state.maxIter = parseInt(e.target.value);
+            document.getElementById('val-iterations').textContent = state.maxIter;
+            render();
+        });
+
+        document.getElementById('ctrl-hue').addEventListener('input', (e) => {
+            state.hueShift = e.target.value / 100;
+            document.getElementById('val-hue').textContent = state.hueShift.toFixed(2);
+            render();
+        });
+
+        document.getElementById('ctrl-cycles').addEventListener('input', (e) => {
+            state.colorCycles = e.target.value / 10;
+            document.getElementById('val-cycles').textContent = state.colorCycles.toFixed(1);
+            render();
+        });
+
+        function goToSeahorse() {
+            state.centerX = -0.747; state.centerY = 0.1; state.zoom = 300 * 50;
+            lastShownWisdom = -1; render();
+        }
+
+        function goToSpiral() {
+            state.centerX = -0.75; state.centerY = 0.03; state.zoom = 300 * 200;
+            lastShownWisdom = -1; render();
+        }
+
+        function goToMiniMandelbrot() {
+            state.centerX = -1.786; state.centerY = 0.0; state.zoom = 300 * 500;
+            state.maxIter = 1500;
+            document.getElementById('ctrl-iterations').value = 1500;
+            document.getElementById('val-iterations').textContent = '1500';
+            lastShownWisdom = -1; render();
+        }
+
+        function resetView() {
+            state.centerX = -0.5; state.centerY = 0.0; state.zoom = 300; state.maxIter = 800;
+            document.getElementById('ctrl-iterations').value = 800;
+            document.getElementById('val-iterations').textContent = '800';
+            lastShownWisdom = -1; render();
+        }
+
+        function exportImage() {
+            const link = document.createElement('a');
+            const depth = (state.zoom / 300);
+            let depthStr = depth >= 1e6 ? (depth / 1e6).toFixed(0) + 'M' : depth.toFixed(0);
+            link.download = `unendlichkeit-${depthStr}x.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function saveLocation() {
+            const depth = state.zoom / 300;
+            let depthStr = depth >= 1e6 ? (depth / 1e6).toFixed(1) + ' Mio.' : depth.toFixed(0);
+            const name = prompt('Name für diesen Ort:', `Tiefe ${depthStr}x`);
+            if (name) {
+                bookmarks.push({ name, centerX: state.centerX, centerY: state.centerY, zoom: state.zoom, maxIter: state.maxIter });
+                updateBookmarks();
+                localStorage.setItem('brainfusion-fractal-bookmarks', JSON.stringify(bookmarks));
+            }
+        }
+
+        function loadLocation(index) {
+            const b = bookmarks[index];
+            state.centerX = b.centerX; state.centerY = b.centerY; state.zoom = b.zoom;
+            if (b.maxIter) { state.maxIter = b.maxIter; document.getElementById('ctrl-iterations').value = b.maxIter; }
+            lastShownWisdom = -1; render();
+        }
+
+        function deleteLocation(index) {
+            bookmarks.splice(index, 1);
+            updateBookmarks();
+            localStorage.setItem('brainfusion-fractal-bookmarks', JSON.stringify(bookmarks));
+        }
+
+        function updateBookmarks() {
+            const list = document.getElementById('bookmarks-list');
+            if (bookmarks.length === 0) {
+                list.innerHTML = '<div class="empty-bookmarks">Noch keine Orte gespeichert</div>';
+                return;
+            }
+            list.innerHTML = bookmarks.map((b, i) => `
+                <div class="bookmark-item" onclick="loadLocation(${i})">
+                    <span>★ ${b.name}</span>
+                    <span class="bookmark-delete" onclick="event.stopPropagation(); deleteLocation(${i})">✕</span>
+                </div>
+            `).join('');
+        }
+
+        function scrollToExplorer() {
+            document.getElementById('explorer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Meditation Mode (Placeholder)
+        function openMeditation() {
+            document.getElementById('meditation-overlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function startMeditationVideo() {
+            document.getElementById('meditation-intro').classList.add('fade-out');
+            document.getElementById('meditation-controls').style.display = 'flex';
+            document.getElementById('meditation-credit').style.display = 'block';
+            
+            // Placeholder - Video wird später eingebunden
+            document.getElementById('meditation-video-container').innerHTML = `
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;max-width:500px;">
+                    <p style="font-size:1.2rem;color:var(--text-secondary);margin-bottom:2rem;">
+                        Das 3D-Fraktal-Video wird gerade gerendert...<br><br>
+                        Bald erwartet dich hier eine atemberaubende Reise durch dreidimensionale Fraktal-Welten.
+                    </p>
+                    <p style="font-size:0.9rem;color:var(--accent-color);">
+                        🎬 Coming Soon
+                    </p>
+                </div>
+            `;
+        }
+
+        function closeMeditation() {
+            document.getElementById('meditation-overlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function toggleFullscreen() {
+            const overlay = document.getElementById('meditation-overlay');
+            if (!document.fullscreenElement) {
+                overlay.requestFullscreen().catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('meditation-overlay').classList.contains('active')) {
+                closeMeditation();
+            }
+        });
+
+        // Initialize
+        const saved = localStorage.getItem('brainfusion-fractal-bookmarks');
+        if (saved) { bookmarks = JSON.parse(saved); updateBookmarks(); }
+        resizeCanvas();
+
+        console.log('%c∞ Die Reise ins Unendliche', 'color: #00d9ff; font-size: 16px; font-weight: bold;');
+        console.log('%cEnhanced Edition - Von Claude und Christof', 'color: #00ffaa; font-size: 12px;');
+    </script>
+    
+    <script src="../assets/js/compass-nav.js"></script>
+    <script src="../assets/js/navigation-intelligence.js"></script>
+</body>
+</html>
