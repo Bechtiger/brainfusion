@@ -58,46 +58,7 @@
             background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
         }
         
-        /* --- Navigation --- */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 2rem;
-            background: rgba(10, 10, 15, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--card-border);
-            z-index: 1000;
-        }
-        
-        .back-link {
-            color: var(--accent-color);
-            text-decoration: none;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        
-        .back-link:hover {
-            color: var(--accent-secondary);
-            transform: translateX(-5px);
-        }
-        
-        .nav-title {
-            font-size: 1rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, var(--accent-color), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+        /* --- Navigation: Handled by compass-nav.js --- */
         
         /* --- Hero Intro --- */
         .intro-section {
@@ -1370,11 +1331,7 @@
     <!-- Particles Background -->
     <div id="particles-background"></div>
 
-    <!-- Navigation -->
-    <nav class="top-nav">
-        <a href="../index.html" class="back-link">← zurück zu BrainFusion</a>
-        <div class="nav-title">Die Reise ins Unendliche</div>
-    </nav>
+    <!-- Navigation wird dynamisch durch compass-nav.js injiziert -->
 
     <!-- ========================================
          SEKTION 1: Hero Intro
