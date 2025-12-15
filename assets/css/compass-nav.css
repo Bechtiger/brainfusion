@@ -391,9 +391,17 @@
         font-size: 1.1rem;
     }
     
+    .compass-overlay {
+        align-items: flex-start;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
     .compass-overlay-content {
         padding: 1rem;
-        padding-top: 4rem;
+        padding-top: 5rem;
+        padding-bottom: 2rem;
+        min-height: auto;
     }
     
     .compass-close {
@@ -401,31 +409,26 @@
         right: 1rem;
         width: 44px;
         height: 44px;
+        position: fixed;
     }
     
     .compass-header {
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
     
     .compass-symbol {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
     
     .compass-header h2 {
-        font-size: 1.2rem;
-        letter-spacing: 4px;
+        font-size: 1.1rem;
+        letter-spacing: 3px;
     }
     
     /* Grid wird vertikal auf Mobile */
     .compass-rose {
-        grid-template-areas:
-            "north"
-            "center"
-            "west"
-            "east"
-            "south";
-        grid-template-columns: 1fr;
-        grid-template-rows: auto;
+        display: flex;
+        flex-direction: column;
         gap: 1rem;
         max-width: 100%;
     }
@@ -433,13 +436,18 @@
     .compass-center {
         border-radius: 16px;
         aspect-ratio: auto;
-        padding: 1.5rem;
+        padding: 1.25rem;
         order: -1;
     }
     
     .compass-direction {
-        padding: 1.25rem;
+        padding: 1rem;
     }
+    
+    .compass-direction.north { order: 0; }
+    .compass-direction.west { order: 1; }
+    .compass-direction.east { order: 2; }
+    .compass-direction.south { order: 3; }
     
     .direction-title {
         font-size: 0.8rem;
