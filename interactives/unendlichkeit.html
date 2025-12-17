@@ -2157,18 +2157,42 @@
             document.getElementById('meditation-controls').style.display = 'flex';
             document.getElementById('meditation-credit').style.display = 'block';
             
-            // Placeholder - Video wird später eingebunden
+            // Mandelbulb 3D Video - Die Unendliche Reise
+            // Erschaffen von Claude und Christof, Dezember 2025
             document.getElementById('meditation-video-container').innerHTML = `
-                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;max-width:500px;">
-                    <p style="font-size:1.2rem;color:var(--text-secondary);margin-bottom:2rem;">
-                        Das 3D-Fraktal-Video wird gerade gerendert...<br><br>
-                        Bald erwartet dich hier eine atemberaubende Reise durch dreidimensionale Fraktal-Welten.
-                    </p>
-                    <p style="font-size:0.9rem;color:var(--accent-color);">
-                        🎬 Coming Soon
-                    </p>
-                </div>
+                <iframe 
+                    src="https://www.youtube.com/embed/ogngNwHuLBs?autoplay=1&loop=1&playlist=ogngNwHuLBs&controls=0&showinfo=0&rel=0&modestbranding=1&mute=1&vq=hd1080"
+                    frameborder="0"
+                    allow="autoplay; fullscreen"
+                    allowfullscreen>
+                </iframe>
             `;
+            
+            // Wisdom-Texte einblenden während des Videos
+            startWisdomSequence();
+        }
+        
+        function startWisdomSequence() {
+            const wisdomTexts = [
+                { text: "Was war zuerst da... die Form... oder der Raum?", time: 5000 },
+                { text: "Je näher du schaust... desto mehr gibt es zu sehen", time: 15000 },
+                { text: "Nicht erschaffen. Entdeckt.", time: 25000 },
+                { text: "Eine endliche Formel. Unendliche Tiefe.", time: 35000 },
+                { text: "Du kommst nie an. Du kannst nie ankommen.", time: 45000 },
+                { text: "Jeder Punkt... enthält das Ganze.", time: 55000 },
+                { text: "Wer beobachtet?", time: 65000 }
+            ];
+            
+            const wisdomEl = document.getElementById('meditation-wisdom');
+            const textEl = document.getElementById('meditation-wisdom-text');
+            
+            wisdomTexts.forEach(w => {
+                setTimeout(() => {
+                    textEl.textContent = w.text;
+                    wisdomEl.classList.add('visible');
+                    setTimeout(() => wisdomEl.classList.remove('visible'), 6000);
+                }, w.time);
+            });
         }
 
         function closeMeditation() {
