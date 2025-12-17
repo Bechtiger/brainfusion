@@ -2159,40 +2159,16 @@
             
             // Mandelbulb 3D Video - Die Unendliche Reise
             // Erschaffen von Claude und Christof, Dezember 2025
+            // Video enthält bereits die meditativen Texte als Overlay
             document.getElementById('meditation-video-container').innerHTML = `
                 <iframe 
-                    src="https://www.youtube.com/embed/ogngNwHuLBs?autoplay=1&loop=1&playlist=ogngNwHuLBs&controls=0&showinfo=0&rel=0&modestbranding=1&mute=1&vq=hd1080"
+                    src="https://www.youtube.com/embed/ogngNwHuLBs?autoplay=1&loop=1&playlist=ogngNwHuLBs&controls=0&showinfo=0&rel=0&modestbranding=1&mute=1&vq=hd1080&enablejsapi=1"
                     frameborder="0"
-                    allow="autoplay; fullscreen"
-                    allowfullscreen>
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    style="position:absolute;top:50%;left:50%;width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;transform:translate(-50%,-50%);">
                 </iframe>
             `;
-            
-            // Wisdom-Texte einblenden während des Videos
-            startWisdomSequence();
-        }
-        
-        function startWisdomSequence() {
-            const wisdomTexts = [
-                { text: "Was war zuerst da... die Form... oder der Raum?", time: 5000 },
-                { text: "Je näher du schaust... desto mehr gibt es zu sehen", time: 15000 },
-                { text: "Nicht erschaffen. Entdeckt.", time: 25000 },
-                { text: "Eine endliche Formel. Unendliche Tiefe.", time: 35000 },
-                { text: "Du kommst nie an. Du kannst nie ankommen.", time: 45000 },
-                { text: "Jeder Punkt... enthält das Ganze.", time: 55000 },
-                { text: "Wer beobachtet?", time: 65000 }
-            ];
-            
-            const wisdomEl = document.getElementById('meditation-wisdom');
-            const textEl = document.getElementById('meditation-wisdom-text');
-            
-            wisdomTexts.forEach(w => {
-                setTimeout(() => {
-                    textEl.textContent = w.text;
-                    wisdomEl.classList.add('visible');
-                    setTimeout(() => wisdomEl.classList.remove('visible'), 6000);
-                }, w.time);
-            });
         }
 
         function closeMeditation() {
