@@ -35,6 +35,7 @@ package-lock.json
 renders/
 frames/
 *.png.tmp
+*.mp4
 
 # Python Cache (falls wir wieder scripten)
 __pycache__/
