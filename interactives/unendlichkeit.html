@@ -1112,6 +1112,9 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .meditation-video-container iframe,
@@ -1119,12 +1122,24 @@
             position: absolute;
             top: 50%;
             left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            /* Desktop: Cover-Modus (füllt aus) */
             width: 100vw;
             height: 56.25vw;
             min-height: 100vh;
             min-width: 177.78vh;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
+        }
+        
+        /* Mobile: Contain-Modus (ganzes Video sichtbar) */
+        @media (max-width: 768px), (orientation: portrait) {
+            .meditation-video-container iframe,
+            .meditation-video-container video {
+                width: 100vw;
+                height: 56.25vw; /* 16:9 Aspect Ratio */
+                min-height: unset;
+                min-width: unset;
+            }
         }
         
         .meditation-wisdom {
@@ -2161,15 +2176,41 @@
             // Mandelbulb 3D Video - Die Unendliche Reise
             // Erschaffen von Claude und Christof, Dezember 2025
             // Video enthält bereits die meditativen Texte als Overlay
+            // Startet stumm (Browser-Anforderung), Ton-Button zum Aktivieren
             document.getElementById('meditation-video-container').innerHTML = `
                 <iframe 
+                    id="meditation-youtube"
                     src="https://www.youtube.com/embed/ogngNwHuLBs?autoplay=1&loop=1&playlist=ogngNwHuLBs&controls=0&showinfo=0&rel=0&modestbranding=1&mute=1&vq=hd1080&enablejsapi=1"
                     frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
-                    style="position:absolute;top:50%;left:50%;width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;transform:translate(-50%,-50%);">
+                    style="position:absolute;top:50%;left:50%;width:100%;height:100%;transform:translate(-50%,-50%);object-fit:contain;">
                 </iframe>
             `;
+            
+            // Ton-Button hinzufügen
+            const soundBtn = document.createElement('button');
+            soundBtn.className = 'meditation-btn';
+            soundBtn.id = 'sound-toggle';
+            soundBtn.innerHTML = '🔇 Ton an';
+            soundBtn.onclick = toggleSound;
+            document.getElementById('meditation-controls').prepend(soundBtn);
+        }
+        
+        let soundEnabled = false;
+        function toggleSound() {
+            const iframe = document.getElementById('meditation-youtube');
+            const btn = document.getElementById('sound-toggle');
+            soundEnabled = !soundEnabled;
+            
+            if (soundEnabled) {
+                // Video mit Ton neu laden
+                iframe.src = iframe.src.replace('mute=1', 'mute=0');
+                btn.innerHTML = '🔊 Ton aus';
+            } else {
+                iframe.src = iframe.src.replace('mute=0', 'mute=1');
+                btn.innerHTML = '🔇 Ton an';
+            }
         }
 
         function closeMeditation() {
