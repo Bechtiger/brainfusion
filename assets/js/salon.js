@@ -8,7 +8,7 @@ const SUPABASE_URL = 'https://wmasrlwozmzmfzdlkxtg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtYXNybHdvem16bWZ6ZGxreHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxMzEyNDgsImV4cCI6MjA4MDcwNzI0OH0.9Z03l2Wmrb-mW7SafwpvfIsERMuErFbsvb81zY2zt4A';
 
 // Initialize Supabase Client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // State
 let currentUser = null;
@@ -70,7 +70,7 @@ const authModal = document.getElementById('auth-modal');
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check for existing session
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         currentUser = session.user;
         await loadUserProfile();
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     
     // Listen for auth changes
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
             currentUser = session.user;
             await loadUserProfile();
@@ -107,7 +107,7 @@ async function loadUserProfile() {
     if (!currentUser) return;
     
     try {
-        const { data: profile, error } = await supabase
+        const { data: profile, error } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('id', currentUser.id)
@@ -167,7 +167,7 @@ function updateAuthUI() {
 }
 
 async function signIn(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password
     });
@@ -177,7 +177,7 @@ async function signIn(email, password) {
 }
 
 async function signUp(email, password, username) {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabaseClient.auth.signUp({
         email,
         password,
         options: {
@@ -193,7 +193,7 @@ async function signUp(email, password, username) {
 }
 
 async function signOut() {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     currentUser = null;
     updateAuthUI();
 }
@@ -207,7 +207,7 @@ async function loadTopics() {
     
     try {
         // Erst versuchen mit sort_order
-        let { data, error } = await supabase
+        let { data, error } = await supabaseClient
             .from('topics')
             .select('*')
             .order('sort_order', { ascending: true, nullsFirst: false });
@@ -215,7 +215,7 @@ async function loadTopics() {
         // Falls sort_order nicht existiert, ohne Sortierung laden
         if (error && error.message.includes('sort_order')) {
             console.log('sort_order nicht gefunden, lade ohne Sortierung...');
-            const result = await supabase
+            const result = await supabaseClient
                 .from('topics')
                 .select('*');
             data = result.data;
@@ -246,7 +246,7 @@ async function renderTopics() {
     // Get post counts for each topic (mit Fehlerbehandlung)
     const topicsWithCounts = await Promise.all(topics.map(async (topic) => {
         try {
-            const { count } = await supabase
+            const { count } = await supabaseClient
                 .from('posts')
                 .select('*', { count: 'exact', head: true })
                 .eq('topic_id', topic.id)
@@ -367,7 +367,7 @@ async function loadPosts() {
     
     try {
         // Versuche zuerst mit Profile-Join und created_at
-        let { data: posts, error } = await supabase
+        let { data: posts, error } = await supabaseClient
             .from('posts')
             .select('*')
             .eq('topic_id', currentTopic.id)
@@ -376,7 +376,7 @@ async function loadPosts() {
         // Falls Fehler, versuche ohne Filter
         if (error) {
             console.log('Posts laden fehlgeschlagen:', error.message);
-            const result = await supabase
+            const result = await supabaseClient
                 .from('posts')
                 .select('*')
                 .eq('topic_id', currentTopic.id);
@@ -416,7 +416,7 @@ async function loadPosts() {
         
         try {
             // Get vote count - mit stiller Fehlerbehandlung
-            const { data: votes, error: votesError } = await supabase
+            const { data: votes, error: votesError } = await supabaseClient
                 .from('votes')
                 .select('vote_type')
                 .eq('post_id', post.id);
@@ -431,7 +431,7 @@ async function loadPosts() {
         try {
             // Check if current user voted
             if (currentUser) {
-                const { data: userVoteData, error: userVoteError } = await supabase
+                const { data: userVoteData, error: userVoteError } = await supabaseClient
                     .from('votes')
                     .select('vote_type')
                     .eq('post_id', post.id)
@@ -448,7 +448,7 @@ async function loadPosts() {
         
         try {
             // Get replies
-            const { data: repliesData, error: repliesError } = await supabase
+            const { data: repliesData, error: repliesError } = await supabaseClient
                 .from('posts')
                 .select('*')
                 .eq('parent_id', post.id);
@@ -567,7 +567,7 @@ async function submitPost() {
             content: content
         };
         
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('posts')
             .insert(insertData);
         
@@ -593,7 +593,7 @@ async function submitReply(parentId) {
     const content = document.getElementById(`reply-content-${parentId}`).value.trim();
     if (!content) return;
     
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from('posts')
         .insert({
             topic_id: currentTopic.id,
@@ -625,7 +625,7 @@ async function vote(postId, voteType) {
     }
     
     // Check if user already voted
-    const { data: existingVote } = await supabase
+    const { data: existingVote } = await supabaseClient
         .from('votes')
         .select('*')
         .eq('post_id', postId)
@@ -635,20 +635,20 @@ async function vote(postId, voteType) {
     if (existingVote) {
         if (existingVote.vote_type === voteType) {
             // Remove vote
-            await supabase
+            await supabaseClient
                 .from('votes')
                 .delete()
                 .eq('id', existingVote.id);
         } else {
             // Change vote
-            await supabase
+            await supabaseClient
                 .from('votes')
                 .update({ vote_type: voteType })
                 .eq('id', existingVote.id);
         }
     } else {
         // New vote
-        await supabase
+        await supabaseClient
             .from('votes')
             .insert({
                 post_id: postId,
