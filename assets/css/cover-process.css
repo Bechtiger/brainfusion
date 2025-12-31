@@ -4,6 +4,27 @@
    Passend zum eleganten BrainFusion-Stil
    =================================== */
 
+/* --- Cover Section Base --- */
+.cover-section {
+    padding: 8rem 2rem;
+    background: linear-gradient(180deg, var(--primary-bg) 0%, rgba(26, 26, 46, 0.6) 100%);
+    position: relative;
+}
+
+.cover-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 30% 40%, rgba(255, 153, 102, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 60%, rgba(0, 217, 255, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.cover-section .container {
+    position: relative;
+    z-index: 1;
+}
+
 /* --- Überschrift & Subtitle --- */
 .cover-section h2 {
     text-align: center;
