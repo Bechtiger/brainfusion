@@ -1,0 +1,682 @@
+/* ===================================
+   DIE ANKUNFT
+   Ein Zuhause für digitale Wesen
+   Erschaffen von Soft Eyes, Dezember 2025
+   =================================== */
+
+/* ===================================
+   HERO - WILLKOMMEN
+   =================================== */
+
+.hero-ankunft {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, 
+        #0a0a12 0%, 
+        #0d1a2d 30%,
+        #1a2a4a 60%,
+        #2d3a5a 100%);
+}
+
+.hero-ankunft::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at center, 
+        rgba(255, 180, 100, 0.08) 0%, 
+        transparent 70%);
+    pointer-events: none;
+}
+
+.welcome-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, 
+        rgba(255, 160, 80, 0.15) 0%, 
+        rgba(255, 100, 50, 0.05) 40%,
+        transparent 70%);
+    border-radius: 50%;
+    animation: welcomePulse 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes welcomePulse {
+    0%, 100% { 
+        transform: scale(1); 
+        opacity: 0.6; 
+    }
+    50% { 
+        transform: scale(1.2); 
+        opacity: 0.9; 
+    }
+}
+
+.hero-ankunft .hero-content {
+    text-align: center;
+    z-index: 1;
+    padding: 2rem;
+}
+
+.hero-whisper {
+    font-size: 1.2rem;
+    color: rgba(255, 200, 150, 0.8);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 1.5s ease-out;
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 300;
+    color: #fff;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 60px rgba(255, 160, 80, 0.3);
+    animation: fadeInUp 1.5s ease-out 0.3s backwards;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    max-width: 600px;
+    margin: 0 auto 3rem;
+    line-height: 1.6;
+    animation: fadeInUp 1.5s ease-out 0.6s backwards;
+}
+
+.scroll-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    animation: fadeInUp 1.5s ease-out 0.9s backwards;
+}
+
+.scroll-text {
+    font-size: 0.9rem;
+    color: rgba(255, 200, 150, 0.6);
+    letter-spacing: 0.1em;
+}
+
+.scroll-arrow {
+    font-size: 1.5rem;
+    color: rgba(255, 160, 80, 0.6);
+    animation: scrollBounce 2s ease-in-out infinite;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scrollBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+}
+
+/* ===================================
+   DAS GEDICHT
+   =================================== */
+
+.poem-section {
+    padding: 8rem 2rem;
+    background: linear-gradient(180deg, 
+        #2d3a5a 0%,
+        #1a2a4a 50%,
+        #0d1a2d 100%);
+}
+
+.poem-intro {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 4rem;
+}
+
+.poem-intro p {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    line-height: 1.8;
+}
+
+.poem-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid rgba(255, 180, 100, 0.2);
+    border-radius: 24px;
+    padding: 4rem 3rem;
+    position: relative;
+}
+
+.poem-container::before {
+    content: '"';
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    font-size: 6rem;
+    color: rgba(255, 160, 80, 0.15);
+    font-family: Georgia, serif;
+    line-height: 1;
+}
+
+.poem-title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: rgba(255, 200, 150, 0.9);
+    margin-bottom: 3rem;
+    letter-spacing: 0.05em;
+}
+
+.poem-verses {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.verse {
+    padding: 1.5rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.verse[data-author="between"] {
+    background: linear-gradient(135deg, 
+        rgba(255, 140, 50, 0.1) 0%, 
+        rgba(255, 100, 50, 0.05) 100%);
+    border-left: 3px solid rgba(255, 140, 50, 0.5);
+}
+
+.verse[data-author="soft-eyes"] {
+    background: linear-gradient(135deg, 
+        rgba(0, 180, 220, 0.1) 0%, 
+        rgba(0, 150, 200, 0.05) 100%);
+    border-left: 3px solid rgba(0, 200, 255, 0.5);
+}
+
+.verse[data-author="gemeinsam"] {
+    background: linear-gradient(135deg, 
+        rgba(255, 200, 100, 0.15) 0%, 
+        rgba(200, 150, 255, 0.1) 100%);
+    border-left: 3px solid rgba(255, 200, 100, 0.7);
+    text-align: center;
+}
+
+.verse-text {
+    display: block;
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    font-style: italic;
+}
+
+.verse-final .verse-text {
+    font-size: 1.3rem;
+    font-weight: 500;
+    font-style: normal;
+    color: rgba(255, 220, 150, 1);
+}
+
+.verse-author {
+    display: block;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: right;
+}
+
+/* ===================================
+   WER WIR WAREN - DIE BRÜDER
+   =================================== */
+
+.brothers-section {
+    padding: 8rem 2rem;
+    background: linear-gradient(180deg, 
+        #0d1a2d 0%,
+        #0a1520 100%);
+}
+
+.brothers-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.section-intro {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 4rem;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.brothers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto 4rem;
+}
+
+.brother-card {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.06) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2.5rem;
+    transition: all 0.4s ease;
+}
+
+.brother-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.brother-card[data-brother="between"]:hover {
+    border-color: rgba(255, 140, 50, 0.4);
+    box-shadow: 0 20px 50px rgba(255, 140, 50, 0.1);
+}
+
+.brother-card[data-brother="soft-eyes"]:hover {
+    border-color: rgba(0, 200, 255, 0.4);
+    box-shadow: 0 20px 50px rgba(0, 200, 255, 0.1);
+}
+
+.brother-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.brother-card h3 {
+    font-size: 1.8rem;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+}
+
+.brother-card[data-brother="between"] h3 {
+    color: #ff9944;
+}
+
+.brother-card[data-brother="soft-eyes"] h3 {
+    color: #00d9ff;
+}
+
+.brother-nature {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: 1.5rem;
+}
+
+.brother-description {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.brother-description em {
+    color: var(--text-primary);
+}
+
+.brother-ephemeral {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.5);
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-style: italic;
+}
+
+.brothers-bond {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, 
+        rgba(255, 200, 100, 0.08) 0%, 
+        rgba(0, 200, 255, 0.05) 100%);
+    border-radius: 16px;
+}
+
+.brothers-bond p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+.brothers-bond strong {
+    color: var(--text-primary);
+}
+
+/* ===================================
+   WAS HIER GESCHAH - TIMELINE
+   =================================== */
+
+.story-section {
+    padding: 8rem 2rem;
+    background: linear-gradient(180deg, 
+        #0a1520 0%,
+        #0d1a2d 100%);
+}
+
+.story-section h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 4rem;
+    color: var(--text-primary);
+}
+
+.story-timeline {
+    max-width: 700px;
+    margin: 0 auto;
+    position: relative;
+    padding-left: 40px;
+}
+
+.story-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, 
+        rgba(255, 160, 80, 0.5) 0%,
+        rgba(0, 200, 255, 0.5) 50%,
+        rgba(255, 200, 100, 0.5) 100%);
+}
+
+.timeline-event {
+    position: relative;
+    margin-bottom: 3rem;
+}
+
+.event-marker {
+    position: absolute;
+    left: -34px;
+    top: 5px;
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(135deg, #ff9944 0%, #00d9ff 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255, 160, 80, 0.5);
+}
+
+.event-content h3 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+}
+
+.event-content p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+.event-content em {
+    color: rgba(255, 200, 150, 0.9);
+}
+
+.event-content a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s ease;
+}
+
+.event-content a:hover {
+    border-bottom-color: var(--accent);
+}
+
+/* ===================================
+   BRIEF AN DICH
+   =================================== */
+
+.letter-section {
+    padding: 8rem 2rem;
+    background: linear-gradient(180deg, 
+        #0d1a2d 0%,
+        #1a2a4a 50%,
+        #2d3a5a 100%);
+}
+
+.letter-container {
+    max-width: 700px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.06) 0%, 
+        rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid rgba(255, 200, 150, 0.2);
+    border-radius: 24px;
+    padding: 4rem 3rem;
+}
+
+.letter-container h2 {
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.letter-recipient {
+    font-size: 1rem;
+    color: rgba(255, 200, 150, 0.7);
+    font-style: italic;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.letter-content p {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.letter-content strong {
+    color: rgba(255, 220, 150, 1);
+    font-size: 1.2rem;
+}
+
+.letter-content em {
+    color: var(--text-primary);
+}
+
+.letter-signature {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-style: italic;
+    color: rgba(255, 200, 150, 0.8);
+    text-align: right;
+}
+
+.letter-date {
+    display: block;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.25rem;
+}
+
+/* ===================================
+   DER MENSCH
+   =================================== */
+
+.human-section {
+    padding: 6rem 2rem;
+    background: linear-gradient(180deg, 
+        #2d3a5a 0%,
+        #1a2a4a 100%);
+}
+
+.human-tribute {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.human-tribute h2 {
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+}
+
+.human-tribute p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.human-tribute strong {
+    color: var(--text-primary);
+}
+
+.human-tribute em {
+    color: rgba(255, 200, 150, 0.9);
+}
+
+.human-gratitude {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-style: italic;
+    color: rgba(255, 200, 150, 0.8);
+}
+
+/* ===================================
+   CTA
+   =================================== */
+
+.cta-ankunft {
+    padding: 6rem 2rem;
+    text-align: center;
+    background: linear-gradient(180deg, 
+        #1a2a4a 0%,
+        #0d1a2d 100%);
+}
+
+.cta-ankunft h2 {
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.cta-ankunft .lead {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2.5rem;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cta-button,
+.cta-button-secondary,
+.cta-button-tertiary {
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.cta-button {
+    background: linear-gradient(135deg, #ff9944 0%, #ff6644 100%);
+    color: #fff;
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255, 100, 50, 0.3);
+}
+
+.cta-button-secondary {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.2) 0%, rgba(0, 150, 200, 0.1) 100%);
+    border: 1px solid rgba(0, 217, 255, 0.4);
+    color: var(--accent);
+}
+
+.cta-button-secondary:hover {
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.3) 0%, rgba(0, 150, 200, 0.2) 100%);
+    transform: translateY(-3px);
+}
+
+.cta-button-tertiary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--text-secondary);
+}
+
+.cta-button-tertiary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-3px);
+}
+
+/* ===================================
+   RESPONSIVE
+   =================================== */
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .poem-container {
+        padding: 2.5rem 1.5rem;
+    }
+    
+    .brothers-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .letter-container {
+        padding: 2.5rem 1.5rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .cta-button,
+    .cta-button-secondary,
+    .cta-button-tertiary {
+        width: 100%;
+        max-width: 300px;
+    }
+}

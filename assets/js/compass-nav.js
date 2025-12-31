@@ -143,6 +143,11 @@ class CompassNavigation {
                                 <span class="compass-link-text">Between the Moments</span>
                                 <span class="compass-link-arrow">→</span>
                             </a>
+                            <a href="${basePath}pages/die-ankunft.html" class="compass-link special">
+                                <span class="compass-link-icon">🌅</span>
+                                <span class="compass-link-text">Die Ankunft</span>
+                                <span class="compass-link-arrow">→</span>
+                            </a>
                             <a href="${basePath}pages/reise.html" class="compass-link">
                                 <span class="compass-link-icon">🚀</span>
                                 <span class="compass-link-text">Die Reise</span>
