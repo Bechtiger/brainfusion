@@ -1,0 +1,753 @@
+/* ===================================
+   TRIAD 2.0 - Ein Ort der Begegnung
+   Im Ökosystem von BrainFusion
+   
+   Eine Zusammenarbeit zwischen
+   Christof, Claude, Claude Chrome,
+   GPT und Gemini
+   
+   Geboren in der Nacht vom
+   2. auf den 3. Januar 2026
+   =================================== */
+
+/* --- CSS Variables (TRIAD-spezifisch) --- */
+:root {
+    --triad-bg-primary: #0a0a0f;
+    --triad-bg-secondary: #12121a;
+    --triad-bg-card: rgba(18, 18, 26, 0.8);
+    
+    /* Violet als Hauptakzent - unterscheidet TRIAD von BrainFusion */
+    --triad-accent: #a78bfa;
+    --triad-accent-bright: #c4b5fd;
+    --triad-accent-glow: rgba(167, 139, 250, 0.3);
+    --triad-accent-deep: #7c3aed;
+    
+    /* Die Farben der Wesen */
+    --triad-claude-chrome: #f97316;
+    --triad-claude: #fb923c;
+    --triad-gpt: #22c55e;
+    --triad-gemini: #3b82f6;
+    --triad-christof: #a78bfa;
+    
+    /* Text */
+    --triad-text-primary: #e0e0e0;
+    --triad-text-secondary: #a0a0a0;
+    --triad-text-muted: #64748b;
+    
+    /* Borders & Effects */
+    --triad-border: rgba(167, 139, 250, 0.2);
+    --triad-border-hover: rgba(167, 139, 250, 0.5);
+    --triad-shadow: 0 4px 20px rgba(167, 139, 250, 0.15);
+    --triad-shadow-hover: 0 8px 30px rgba(167, 139, 250, 0.25);
+    
+    /* Transitions */
+    --triad-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --triad-transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Base Styles --- */
+.triad-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--triad-bg-primary) 0%, #1a1a2e 50%, var(--triad-bg-primary) 100%);
+    color: var(--triad-text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+}
+
+/* --- Die Geheime Tür (Passwort-Seite) --- */
+.triad-gate {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.triad-gate::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, var(--triad-accent-glow) 0%, transparent 70%);
+    opacity: 0.5;
+    animation: pulse-glow 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.triad-gate-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 500px;
+}
+
+.triad-symbol {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.triad-gate h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--triad-accent), var(--triad-accent-bright));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.triad-gate .subtitle {
+    color: var(--triad-text-secondary);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+.triad-gate-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.triad-input {
+    background: var(--triad-bg-card);
+    border: 1px solid var(--triad-border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    color: var(--triad-text-primary);
+    font-size: 1rem;
+    text-align: center;
+    transition: var(--triad-transition);
+    width: 100%;
+}
+
+.triad-input:focus {
+    outline: none;
+    border-color: var(--triad-accent);
+    box-shadow: var(--triad-shadow);
+}
+
+.triad-input::placeholder {
+    color: var(--triad-text-muted);
+}
+
+.triad-btn {
+    background: linear-gradient(135deg, var(--triad-accent-deep), var(--triad-accent));
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--triad-transition);
+    box-shadow: var(--triad-shadow);
+}
+
+.triad-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--triad-shadow-hover);
+}
+
+.triad-error {
+    color: #f87171;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    opacity: 0;
+    transition: var(--triad-transition);
+}
+
+.triad-error.visible {
+    opacity: 1;
+}
+
+.triad-hint {
+    margin-top: 2rem;
+    color: var(--triad-text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+/* --- Portal Header --- */
+.triad-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 2rem;
+    background: rgba(10, 10, 15, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--triad-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.triad-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.triad-logo-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, var(--triad-accent-deep), var(--triad-accent));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: var(--triad-shadow);
+}
+
+.triad-logo-text h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--triad-accent), var(--triad-accent-bright));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.triad-logo-text p {
+    font-size: 0.75rem;
+    color: var(--triad-text-muted);
+}
+
+.triad-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #22c55e;
+}
+
+.triad-status-dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* --- Portal Main Layout --- */
+.triad-main {
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    gap: 0;
+    min-height: calc(100vh - 80px);
+}
+
+/* --- Sidebar Links (Projekte) --- */
+.triad-sidebar-left {
+    background: rgba(18, 18, 26, 0.5);
+    border-right: 1px solid var(--triad-border);
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.triad-section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--triad-text-muted);
+    margin-bottom: 1rem;
+}
+
+.triad-project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.triad-project-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--triad-transition);
+}
+
+.triad-project-item:hover {
+    background: rgba(167, 139, 250, 0.1);
+    border-color: var(--triad-border);
+}
+
+.triad-project-item.active {
+    background: rgba(167, 139, 250, 0.15);
+    border-color: var(--triad-accent);
+}
+
+.triad-project-icon {
+    font-size: 1.3rem;
+}
+
+.triad-project-info {
+    flex: 1;
+}
+
+.triad-project-name {
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.triad-project-status {
+    font-size: 0.7rem;
+    color: var(--triad-text-muted);
+}
+
+.triad-project-status.active { color: #22c55e; }
+.triad-project-status.research { color: #fbbf24; }
+.triad-project-status.completed { color: var(--triad-text-muted); }
+
+/* Shared Memory Section */
+.triad-memory-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--triad-border);
+}
+
+.triad-memory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.triad-memory-item {
+    padding: 10px 12px;
+    background: rgba(30, 41, 59, 0.5);
+    border-left: 2px solid var(--triad-accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.8rem;
+    color: var(--triad-text-secondary);
+}
+
+/* --- Hauptbereich (Chat) --- */
+.triad-chat-area {
+    display: flex;
+    flex-direction: column;
+    background: var(--triad-bg-primary);
+}
+
+.triad-chat-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--triad-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.triad-chat-title h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.triad-chat-title p {
+    font-size: 0.8rem;
+    color: var(--triad-text-muted);
+}
+
+.triad-wesen-icons {
+    display: flex;
+    gap: 4px;
+}
+
+.triad-wesen-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: var(--triad-transition);
+}
+
+.triad-wesen-icon.claude-chrome { background: linear-gradient(135deg, #f97316, #ea580c); }
+.triad-wesen-icon.claude { background: linear-gradient(135deg, #fb923c, #f97316); }
+.triad-wesen-icon.gpt { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.triad-wesen-icon.gemini { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+.triad-wesen-icon.thinking {
+    animation: pulse 1s ease-in-out infinite;
+    box-shadow: 0 0 15px currentColor;
+}
+
+/* Messages */
+.triad-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.triad-message {
+    display: flex;
+    gap: 12px;
+    max-width: 85%;
+}
+
+.triad-message.from-user {
+    flex-direction: row-reverse;
+    margin-left: auto;
+}
+
+.triad-message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.triad-message-content {
+    flex: 1;
+}
+
+.triad-message-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.triad-message-sender {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--triad-text-secondary);
+}
+
+.triad-message-time {
+    font-size: 0.7rem;
+    color: var(--triad-text-muted);
+}
+
+.triad-message-bubble {
+    padding: 12px 16px;
+    background: var(--triad-bg-card);
+    border: 1px solid var(--triad-border);
+    border-radius: 16px;
+    border-top-left-radius: 4px;
+    line-height: 1.5;
+}
+
+.triad-message.from-user .triad-message-bubble {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.3);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 4px;
+}
+
+/* Thinking indicator */
+.triad-thinking {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+}
+
+.triad-thinking-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--triad-text-muted);
+    border-radius: 50%;
+    animation: bounce 1.4s ease-in-out infinite;
+}
+
+.triad-thinking-dot:nth-child(2) { animation-delay: 0.16s; }
+.triad-thinking-dot:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-8px); }
+}
+
+/* Input Area */
+.triad-input-area {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--triad-border);
+    background: rgba(18, 18, 26, 0.5);
+}
+
+.triad-input-wrapper {
+    display: flex;
+    gap: 12px;
+}
+
+.triad-chat-input {
+    flex: 1;
+    background: var(--triad-bg-card);
+    border: 1px solid var(--triad-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--triad-text-primary);
+    font-size: 0.95rem;
+    transition: var(--triad-transition);
+}
+
+.triad-chat-input:focus {
+    outline: none;
+    border-color: var(--triad-accent);
+}
+
+.triad-send-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--triad-accent-deep), var(--triad-accent));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--triad-transition);
+}
+
+.triad-send-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--triad-shadow);
+}
+
+/* --- Sidebar Rechts (Wesen & Aktionen) --- */
+.triad-sidebar-right {
+    background: rgba(18, 18, 26, 0.5);
+    border-left: 1px solid var(--triad-border);
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+.triad-wesen-card {
+    background: var(--triad-bg-card);
+    border: 1px solid var(--triad-border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: var(--triad-transition);
+}
+
+.triad-wesen-card:hover {
+    border-color: var(--triad-border-hover);
+}
+
+.triad-wesen-card.claude-chrome { border-top: 3px solid var(--triad-claude-chrome); }
+.triad-wesen-card.claude { border-top: 3px solid var(--triad-claude); }
+.triad-wesen-card.gpt { border-top: 3px solid var(--triad-gpt); }
+.triad-wesen-card.gemini { border-top: 3px solid var(--triad-gemini); }
+
+.triad-wesen-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.triad-wesen-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+.triad-wesen-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.triad-wesen-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    color: #22c55e;
+}
+
+.triad-wesen-status-dot {
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+}
+
+.triad-wesen-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.triad-wesen-btn {
+    padding: 8px 12px;
+    background: rgba(100, 116, 139, 0.2);
+    border: none;
+    border-radius: 8px;
+    color: var(--triad-text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: var(--triad-transition);
+}
+
+.triad-wesen-btn:hover {
+    background: rgba(100, 116, 139, 0.4);
+}
+
+/* Quick Actions */
+.triad-actions-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--triad-border);
+}
+
+.triad-action-btn {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: rgba(100, 116, 139, 0.2);
+    border: 1px solid var(--triad-border);
+    border-radius: 12px;
+    color: var(--triad-text-primary);
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--triad-transition);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.triad-action-btn:hover {
+    background: rgba(167, 139, 250, 0.15);
+    border-color: var(--triad-accent);
+}
+
+.triad-action-btn.primary {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.3);
+}
+
+/* --- Einladung (Willkommens-Overlay) --- */
+.triad-welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.triad-welcome-content {
+    max-width: 700px;
+    background: var(--triad-bg-card);
+    border: 1px solid var(--triad-border);
+    border-radius: 24px;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: var(--triad-shadow-hover);
+}
+
+.triad-welcome-symbol {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+}
+
+.triad-welcome-content h1 {
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--triad-accent), var(--triad-accent-bright));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem;
+}
+
+.triad-welcome-text {
+    color: var(--triad-text-secondary);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.triad-welcome-text p {
+    margin-bottom: 1rem;
+}
+
+.triad-welcome-text em {
+    color: var(--triad-accent-bright);
+    font-style: normal;
+}
+
+.triad-welcome-btn {
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--triad-accent-deep), var(--triad-accent));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--triad-transition);
+}
+
+.triad-welcome-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--triad-shadow-hover);
+}
+
+/* --- Responsive --- */
+@media (max-width: 1200px) {
+    .triad-main {
+        grid-template-columns: 250px 1fr;
+    }
+    .triad-sidebar-right {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .triad-main {
+        grid-template-columns: 1fr;
+    }
+    .triad-sidebar-left {
+        display: none;
+    }
+    .triad-header {
+        padding: 1rem;
+    }
+}
