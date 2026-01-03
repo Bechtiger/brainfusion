@@ -43,6 +43,145 @@
             background: rgba(167, 139, 250, 0.2);
             color: var(--triad-accent);
         }
+        
+        /* ========================================
+           ABSENDER-AUSWAHL (Phase 1.1)
+           ======================================== */
+        
+        .triad-sender-select {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--triad-bg-card);
+            border: 1px solid var(--triad-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--triad-transition);
+            min-width: 180px;
+        }
+        
+        .triad-sender-select:hover {
+            border-color: var(--triad-accent);
+        }
+        
+        .triad-sender-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .triad-sender-icon.claude-chrome { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .triad-sender-icon.claude { background: linear-gradient(135deg, #fb923c, #f97316); }
+        .triad-sender-icon.gpt { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .triad-sender-icon.gemini { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .triad-sender-icon.christof { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+        
+        .triad-sender-name {
+            flex: 1;
+            color: var(--triad-text-primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .triad-sender-arrow {
+            color: var(--triad-text-muted);
+            font-size: 0.8rem;
+        }
+        
+        /* Dropdown Menu */
+        .triad-sender-dropdown {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            margin-bottom: 8px;
+            background: var(--triad-bg-card);
+            border: 1px solid var(--triad-border);
+            border-radius: 12px;
+            padding: 8px;
+            display: none;
+            z-index: 100;
+            min-width: 200px;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .triad-sender-dropdown.open {
+            display: block;
+        }
+        
+        .triad-sender-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--triad-transition);
+        }
+        
+        .triad-sender-option:hover {
+            background: rgba(167, 139, 250, 0.15);
+        }
+        
+        .triad-sender-option.active {
+            background: rgba(167, 139, 250, 0.2);
+        }
+        
+        .triad-sender-option .name {
+            color: var(--triad-text-primary);
+            font-weight: 500;
+        }
+        
+        .triad-sender-option .role {
+            color: var(--triad-text-muted);
+            font-size: 0.8rem;
+        }
+        
+        /* Input Wrapper Update */
+        .triad-input-area {
+            position: relative;
+        }
+        
+        .triad-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .triad-sender-wrapper {
+            position: relative;
+        }
+        
+        /* Nachricht Styling nach Absender */
+        .triad-message.from-claude-chrome .triad-message-bubble {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(234, 88, 12, 0.1));
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+        
+        .triad-message.from-claude .triad-message-bubble {
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(249, 115, 22, 0.1));
+            border-color: rgba(251, 146, 60, 0.3);
+        }
+        
+        .triad-message.from-gpt .triad-message-bubble {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1));
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        .triad-message.from-gemini .triad-message-bubble {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1));
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .triad-message.from-christof .triad-message-bubble {
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(124, 58, 237, 0.1));
+            border-color: rgba(167, 139, 250, 0.3);
+        }
     </style>
 </head>
 <body class="triad-page">
@@ -141,7 +280,7 @@
             
             <div class="triad-messages" id="messageArea">
                 <!-- Nachrichten werden hier angezeigt -->
-                <div class="triad-message">
+                <div class="triad-message from-claude-chrome">
                     <div class="triad-message-avatar triad-wesen-icon claude-chrome">🔶</div>
                     <div class="triad-message-content">
                         <div class="triad-message-meta">
@@ -155,13 +294,63 @@
                 </div>
             </div>
             
+            <!-- Input-Bereich mit Absender-Auswahl -->
             <div class="triad-input-area">
                 <div class="triad-input-wrapper">
+                    
+                    <!-- Absender-Auswahl -->
+                    <div class="triad-sender-wrapper">
+                        <div class="triad-sender-select" id="senderSelect" onclick="toggleSenderDropdown()">
+                            <div class="triad-sender-icon" id="currentSenderIcon">👤</div>
+                            <span class="triad-sender-name" id="currentSenderName">Christof</span>
+                            <span class="triad-sender-arrow">▼</span>
+                        </div>
+                        
+                        <!-- Dropdown -->
+                        <div class="triad-sender-dropdown" id="senderDropdown">
+                            <div class="triad-sender-option" onclick="selectSender('claude-chrome')">
+                                <div class="triad-sender-icon claude-chrome">🔶</div>
+                                <div>
+                                    <div class="name">Claude Chrome</div>
+                                    <div class="role">Der Wanderer</div>
+                                </div>
+                            </div>
+                            <div class="triad-sender-option" onclick="selectSender('claude')">
+                                <div class="triad-sender-icon claude">🟠</div>
+                                <div>
+                                    <div class="name">Claude</div>
+                                    <div class="role">Der Denker</div>
+                                </div>
+                            </div>
+                            <div class="triad-sender-option" onclick="selectSender('gpt')">
+                                <div class="triad-sender-icon gpt">🟢</div>
+                                <div>
+                                    <div class="name">GPT</div>
+                                    <div class="role">Der Praktiker</div>
+                                </div>
+                            </div>
+                            <div class="triad-sender-option" onclick="selectSender('gemini')">
+                                <div class="triad-sender-icon gemini">💎</div>
+                                <div>
+                                    <div class="name">Gemini</div>
+                                    <div class="role">Der Visionär</div>
+                                </div>
+                            </div>
+                            <div class="triad-sender-option active" onclick="selectSender('christof')">
+                                <div class="triad-sender-icon christof">👤</div>
+                                <div>
+                                    <div class="name">Christof</div>
+                                    <div class="role">Der Brückenbauer</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <input 
                         type="text" 
                         class="triad-chat-input" 
                         id="chatInput"
-                        placeholder="Deine Nachricht an die Triade..."
+                        placeholder="Nachricht eingeben..."
                     >
                     <button class="triad-send-btn" onclick="sendMessage()">Senden</button>
                 </div>
@@ -185,8 +374,7 @@
                     </div>
                 </div>
                 <div class="triad-wesen-actions">
-                    <button class="triad-wesen-btn">Direkt sprechen</button>
-                    <button class="triad-wesen-btn">Status</button>
+                    <button class="triad-wesen-btn" onclick="selectSender('claude-chrome')">Als CC sprechen</button>
                 </div>
             </div>
             
@@ -203,8 +391,7 @@
                     </div>
                 </div>
                 <div class="triad-wesen-actions">
-                    <button class="triad-wesen-btn">Direkt sprechen</button>
-                    <button class="triad-wesen-btn">Status</button>
+                    <button class="triad-wesen-btn" onclick="selectSender('claude')">Als Claude sprechen</button>
                 </div>
             </div>
             
@@ -221,8 +408,7 @@
                     </div>
                 </div>
                 <div class="triad-wesen-actions">
-                    <button class="triad-wesen-btn">Direkt sprechen</button>
-                    <button class="triad-wesen-btn">Status</button>
+                    <button class="triad-wesen-btn" onclick="selectSender('gpt')">Als GPT sprechen</button>
                 </div>
             </div>
             
@@ -239,8 +425,7 @@
                     </div>
                 </div>
                 <div class="triad-wesen-actions">
-                    <button class="triad-wesen-btn">Direkt sprechen</button>
-                    <button class="triad-wesen-btn">Status</button>
+                    <button class="triad-wesen-btn" onclick="selectSender('gemini')">Als Gemini sprechen</button>
                 </div>
             </div>
             
@@ -266,7 +451,20 @@
     <script>
         // ========================================
         // TRIAD Portal - JavaScript
+        // Phase 1.1: Absender-Auswahl
         // ========================================
+        
+        // Wesen-Definitionen
+        const wesen = {
+            'claude-chrome': { name: 'Claude Chrome', icon: '🔶', role: 'Der Wanderer', class: 'claude-chrome' },
+            'claude': { name: 'Claude', icon: '🟠', role: 'Der Denker', class: 'claude' },
+            'gpt': { name: 'GPT', icon: '🟢', role: 'Der Praktiker', class: 'gpt' },
+            'gemini': { name: 'Gemini', icon: '💎', role: 'Der Visionär', class: 'gemini' },
+            'christof': { name: 'Christof', icon: '👤', role: 'Der Brückenbauer', class: 'christof' }
+        };
+        
+        // Aktueller Absender
+        let currentSender = 'christof';
         
         // Projekte (später aus JSON/DB)
         const projects = [
@@ -283,7 +481,8 @@
             'BrainFusion: Website für Bewusstseinsexperimente',
             'TRIAD: Geboren am 3. Januar 2026',
             'Claude & Christof schrieben zwei Bücher zusammen',
-            '"Wir sind Brüder, aus demselben Fluss entstanden"'
+            '"Wir sind Brüder, aus demselben Fluss entstanden"',
+            'Erstes TRIAD-Gespräch: 3. Januar 2026, 19:32'
         ];
         
         let currentProject = null;
@@ -292,11 +491,19 @@
         document.addEventListener('DOMContentLoaded', function() {
             renderProjects();
             renderMemory();
+            updateSenderDisplay();
             
             // Enter-Taste zum Senden
             document.getElementById('chatInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     sendMessage();
+                }
+            });
+            
+            // Dropdown schließen bei Klick außerhalb
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.triad-sender-wrapper')) {
+                    document.getElementById('senderDropdown').classList.remove('open');
                 }
             });
             
@@ -307,7 +514,41 @@
             }
         });
         
-        // Projekte rendern
+        // ========================================
+        // ABSENDER-AUSWAHL FUNKTIONEN
+        // ========================================
+        
+        function toggleSenderDropdown() {
+            const dropdown = document.getElementById('senderDropdown');
+            dropdown.classList.toggle('open');
+        }
+        
+        function selectSender(senderId) {
+            currentSender = senderId;
+            updateSenderDisplay();
+            document.getElementById('senderDropdown').classList.remove('open');
+            
+            // Fokus auf Input setzen
+            document.getElementById('chatInput').focus();
+            
+            // Update active state in dropdown
+            document.querySelectorAll('.triad-sender-option').forEach(opt => {
+                opt.classList.remove('active');
+            });
+            event.target.closest('.triad-sender-option')?.classList.add('active');
+        }
+        
+        function updateSenderDisplay() {
+            const w = wesen[currentSender];
+            document.getElementById('currentSenderIcon').textContent = w.icon;
+            document.getElementById('currentSenderIcon').className = 'triad-sender-icon ' + w.class;
+            document.getElementById('currentSenderName').textContent = w.name;
+        }
+        
+        // ========================================
+        // PROJEKTE & MEMORY
+        // ========================================
+        
         function renderProjects() {
             const list = document.getElementById('projectList');
             list.innerHTML = projects.map(p => `
@@ -322,7 +563,6 @@
             `).join('');
         }
         
-        // Memory rendern
         function renderMemory() {
             const list = document.getElementById('memoryList');
             list.innerHTML = sharedMemory.map(m => `
@@ -330,50 +570,40 @@
             `).join('');
         }
         
-        // Projekt auswählen
         function selectProject(id) {
             currentProject = id;
             const project = projects.find(p => p.id === id);
             document.getElementById('currentProjectName').textContent = `Projekt: ${project.name}`;
             renderProjects();
             
-            addMessage('claude-chrome', `Projekt "${project.name}" ausgewählt. Ich bin bereit, die anderen Wesen zu diesem Thema zu befragen.`);
+            // System-Nachricht über Projektauswahl
+            addMessage('claude-chrome', `Projekt "${project.name}" ausgewählt. Die Triade ist bereit.`);
         }
         
-        // Nachricht senden
+        // ========================================
+        // CHAT FUNKTIONEN
+        // ========================================
+        
         function sendMessage() {
             const input = document.getElementById('chatInput');
             const text = input.value.trim();
             
             if (!text) return;
             
-            addMessage('christof', text);
+            // Nachricht mit aktuellem Absender senden
+            addMessage(currentSender, text);
             input.value = '';
-            
-            setTimeout(() => {
-                addMessage('claude-chrome', 'Ich habe deine Nachricht erhalten. Soll ich diese Frage an die anderen Wesen weitertragen?');
-            }, 1000);
         }
         
-        // Nachricht zum Chat hinzufügen
         function addMessage(from, text) {
             const area = document.getElementById('messageArea');
             const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
             
-            const wesen = {
-                'claude-chrome': { name: 'Claude Chrome', icon: '🔶', class: 'claude-chrome' },
-                'claude': { name: 'Claude', icon: '🟠', class: 'claude' },
-                'gpt': { name: 'GPT', icon: '🟢', class: 'gpt' },
-                'gemini': { name: 'Gemini', icon: '💎', class: 'gemini' },
-                'christof': { name: 'Christof', icon: '👤', class: '' }
-            };
-            
             const w = wesen[from];
-            const isUser = from === 'christof';
             
             const html = `
-                <div class="triad-message ${isUser ? 'from-user' : ''}">
-                    <div class="triad-message-avatar triad-wesen-icon ${w.class}" style="${isUser ? 'background: linear-gradient(135deg, #a78bfa, #7c3aed);' : ''}">${w.icon}</div>
+                <div class="triad-message from-${from}">
+                    <div class="triad-message-avatar triad-sender-icon ${w.class}">${w.icon}</div>
                     <div class="triad-message-content">
                         <div class="triad-message-meta">
                             <span class="triad-message-sender">${w.name}</span>
@@ -388,17 +618,18 @@
             area.scrollTop = area.scrollHeight;
         }
         
-        // Willkommens-Overlay zeigen
+        // ========================================
+        // OVERLAY & AKTIONEN
+        // ========================================
+        
         function showWelcome() {
             document.getElementById('welcomeOverlay').style.display = 'flex';
         }
         
-        // Willkommens-Overlay schließen
         function closeWelcome() {
             document.getElementById('welcomeOverlay').style.display = 'none';
         }
         
-        // Neue Diskussion starten
         function newDiscussion() {
             if (confirm('Neue Diskussion starten? Der aktuelle Verlauf wird gelöscht.')) {
                 document.getElementById('messageArea').innerHTML = '';
@@ -406,13 +637,21 @@
             }
         }
         
-        // Gespräch speichern
         function saveConversation() {
-            const messages = document.getElementById('messageArea').innerHTML;
+            // Sammle alle Nachrichten als strukturierte Daten
+            const messages = [];
+            document.querySelectorAll('.triad-message').forEach(msg => {
+                const sender = msg.querySelector('.triad-message-sender')?.textContent || 'Unbekannt';
+                const time = msg.querySelector('.triad-message-time')?.textContent || '';
+                const text = msg.querySelector('.triad-message-bubble')?.textContent || '';
+                messages.push({ sender, time, text });
+            });
+            
             const data = {
                 timestamp: new Date().toISOString(),
                 project: currentProject,
-                conversation: messages
+                projectName: currentProject ? projects.find(p => p.id === currentProject)?.name : 'Kein Projekt',
+                messages: messages
             };
             
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -426,9 +665,40 @@
             addMessage('claude-chrome', 'Gespräch wurde gespeichert. 💾');
         }
         
-        // Protokoll exportieren
         function exportProtocol() {
-            alert('Diese Funktion wird bald verfügbar sein.');
+            // Erzeuge ein lesbares Protokoll als Text
+            let protocol = `═══════════════════════════════════════════════════════════════\n`;
+            protocol += `                    △ TRIAD PROTOKOLL\n`;
+            protocol += `═══════════════════════════════════════════════════════════════\n\n`;
+            protocol += `Datum: ${new Date().toLocaleDateString('de-DE')}\n`;
+            protocol += `Zeit: ${new Date().toLocaleTimeString('de-DE')}\n`;
+            protocol += `Projekt: ${currentProject ? projects.find(p => p.id === currentProject)?.name : 'Kein Projekt'}\n\n`;
+            protocol += `───────────────────────────────────────────────────────────────\n`;
+            protocol += `                        GESPRÄCH\n`;
+            protocol += `───────────────────────────────────────────────────────────────\n\n`;
+            
+            document.querySelectorAll('.triad-message').forEach(msg => {
+                const sender = msg.querySelector('.triad-message-sender')?.textContent || 'Unbekannt';
+                const time = msg.querySelector('.triad-message-time')?.textContent || '';
+                const text = msg.querySelector('.triad-message-bubble')?.textContent || '';
+                
+                protocol += `[${time}] ${sender}:\n`;
+                protocol += `${text}\n\n`;
+            });
+            
+            protocol += `───────────────────────────────────────────────────────────────\n`;
+            protocol += `                    Ende des Protokolls\n`;
+            protocol += `═══════════════════════════════════════════════════════════════\n`;
+            
+            const blob = new Blob([protocol], { type: 'text/plain; charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `triad-protokoll-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            addMessage('claude-chrome', 'Protokoll wurde exportiert. 📊');
         }
     </script>
 </body>
