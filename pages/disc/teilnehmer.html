@@ -932,6 +932,71 @@ const SUPABASE_URL = 'https://dnoecftuybkoqvrkfvei.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRub2VjZnR1eWJrb3F2cmtmdmVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzIzMjAsImV4cCI6MjA4ODMwODMyMH0.XzQJtx0bxO0sk1T68c_0MczeSOdblLxpJLGRbzDMiS4';
 const EDGE_BASE = SUPABASE_URL + '/functions/v1';
 
+// ─── REALTIME LISTENER ────────────────────────────
+let realtimeChannel = null;
+
+function startRealtimeListener(workshopId) {
+  if (realtimeChannel) return; // schon aktiv
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  realtimeChannel = sb
+    .channel('workshop-' + workshopId)
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'workshops',
+      filter: `id=eq.${workshopId}`
+    }, (payload) => {
+      const { current_module, module_data } = payload.new;
+      handleModuleChange(current_module, module_data || {});
+    })
+    .subscribe();
+}
+
+function handleModuleChange(module, moduleData) {
+  showModuleOverlay(module, moduleData);
+}
+
+// ─── MODULE OVERLAY ───────────────────────────────
+const MODULE_LABELS = {
+  waiting:      { icon: '⏳', title: 'Warte auf den Moderator...', desc: 'Der Workshop beginnt gleich. Bitte warte.' },
+  intro:        { icon: '💬', title: 'Einstiegsfrage', desc: moduleData => moduleData?.question || 'Der Moderator stellt eine Frage. Bitte schau auf den Beamer.' },
+  disc_test:    { icon: '📊', title: 'DISC-Test', desc: 'Bitte fülle jetzt den Test aus.' },
+  live_map:     { icon: '🗺', title: 'Live-Map', desc: 'Schau auf den Beamer — dein Ergebnis ist jetzt sichtbar!' },
+  reflexion:    { icon: '🔍', title: 'Reflexion', desc: 'Was überrascht dich an deinem Ergebnis?' },
+  team_pattern: { icon: '🧩', title: 'Team-Muster', desc: 'Schau auf den Beamer und beobachte das Team-Profil.' },
+  exercise_1:   { icon: '💪', title: 'Übung 1 – Stärken', desc: 'Tausche dich mit deinem Sitznachbar aus.' },
+  exercise_2:   { icon: '⚡', title: 'Übung 2 – Reibung', desc: 'Besprecht: Wo gibt es im Team Reibungspunkte?' },
+  exercise_3:   { icon: '📋', title: 'Übung 3 – Spielregeln', desc: 'Was sind eure Team-Spielregeln?' },
+  closing:      { icon: '🏆', title: 'Abschluss', desc: 'Vielen Dank für deine Teilnahme!' },
+};
+
+function showModuleOverlay(module, moduleData) {
+  let overlay = document.getElementById('moduleOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'moduleOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(9,9,18,0.97);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;font-family:IBM Plex Sans,sans-serif;animation:fadeUp 0.35s ease';
+    document.body.appendChild(overlay);
+  }
+
+  const info = MODULE_LABELS[module] || { icon: '📡', title: module, desc: 'Bitte schau auf den Beamer.' };
+  const descText = typeof info.desc === 'function' ? info.desc(moduleData) : info.desc;
+
+  // Spezialfall: DISC-Test soll App bedienbar lassen
+  if (module === 'disc_test') {
+    overlay.remove();
+    realtimeChannel = null; // damit kein Loop entsteht
+    return;
+  }
+
+  overlay.innerHTML = `
+    <div style="font-size:72px;margin-bottom:24px">${info.icon}</div>
+    <div style="font-family:Rajdhani,sans-serif;font-size:36px;font-weight:700;color:#fff;margin-bottom:12px">${info.title}</div>
+    <div style="font-size:16px;color:#9ca9cc;max-width:440px;line-height:1.6">${descText}</div>
+    <div style="margin-top:32px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,0.15);border:1px solid rgba(42,157,143,0.4);color:#2a9d8f;font-size:12px;letter-spacing:2px;text-transform:uppercase">🔴 Live · Modul: ${module}</div>
+  `;
+}
+
 function getStoredWorkshopMeta() {
   return { code:localStorage.getItem('disc_workshop_code')||'', alias:localStorage.getItem('disc_alias')||'', participantId:localStorage.getItem('disc_participant_id')||'', joinToken:localStorage.getItem('disc_join_token')||'' };
 }
@@ -958,6 +1023,8 @@ async function ensureWorkshopRegistration() {
   if (!res.ok) throw new Error(data.error || 'Beitritt fehlgeschlagen');
   localStorage.setItem('disc_participant_id', data.participantId);
   localStorage.setItem('disc_join_token', data.joinToken);
+  if (data.workshopId) localStorage.setItem('disc_workshop_id', data.workshopId);
+  startRealtimeListener(data.workshopId);
   return getStoredWorkshopMeta();
 }
 
