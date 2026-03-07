@@ -658,7 +658,7 @@
     <div id="headerMeta"></div>
   </header>
 
-  <div id="sIntro" class="screen active">
+  <div id="sIntro" class="screen">
     <div class="intro-hero">
       <div class="disc-row">
         <div class="disc-badge d">D</div>
@@ -968,6 +968,8 @@ const MODULE_LABELS = {
   exercise_2:   { icon: '⚡', title: 'Übung 2 – Reibung', desc: 'Besprecht: Wo gibt es im Team Reibungspunkte?' },
   exercise_3:   { icon: '📋', title: 'Übung 3 – Spielregeln', desc: 'Was sind eure Team-Spielregeln?' },
   closing:      { icon: '🏆', title: 'Abschluss', desc: 'Vielen Dank für deine Teilnahme!' },
+  closed:       { icon: '🔒', title: 'Workshop beendet', desc: 'Der Moderator hat den Workshop geschlossen. Danke für deine Teilnahme!' },
+  idle:         { icon: '⏳', title: 'Warte auf den Moderator...', desc: 'Der Workshop beginnt gleich. Bitte warte.' },
 };
 
 function showModuleOverlay(module, moduleData) {
@@ -1001,10 +1003,14 @@ function showModuleOverlay(module, moduleData) {
 }
 
 function leaveWorkshop() {
+  // Supabase Realtime Channel sauber trennen
+  if (realtimeChannel) {
+    try { realtimeChannel.unsubscribe(); } catch(e) {}
+    realtimeChannel = null;
+  }
   // Alle Workshop-Daten löschen
   ['disc_workshop_code','disc_alias','disc_participant_id','disc_join_token','disc_workshop_id'].forEach(k => localStorage.removeItem(k));
   document.getElementById('moduleOverlay')?.remove();
-  realtimeChannel = null;
   showJoinOverlay('');
 }
 

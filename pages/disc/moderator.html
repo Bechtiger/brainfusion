@@ -307,6 +307,7 @@ async function connectOnlineWorkshop(){
 async function refreshOnlineWorkshop(){
   if(!onlineSession?.code||!onlineSession?.adminToken) return;
   try{
+    // Ergebnisse laden
     const res = await fetch(EDGE_BASE+'/list-workshop-results',{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},
@@ -325,13 +326,27 @@ async function refreshOnlineWorkshop(){
       map: r.computed?.map||null,
       exportedAt: r.submittedAt||new Date().toISOString()
     }));
-    // merge: online overrides local with same alias
     online.forEach(p => {
       const i = participants.findIndex(x=>x.alias.toLowerCase()===p.alias.toLowerCase());
       if(i>=0) participants[i]=p; else participants.push(p);
     });
     saveStored();
-    document.getElementById('onlineStatus').textContent = `${online.length} Ergebnis${online.length!==1?'se':''} eingegangen · zuletzt ${new Date().toLocaleTimeString('de-CH')}`;
+
+    // Auch beigetretene (noch nicht fertige) TN zählen
+    let joinedCount = online.length;
+    if(!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    if(onlineSession?.workshopId){
+      const { count } = await supabaseClient
+        .from('participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('workshop_id', onlineSession.workshopId);
+      if(count !== null) joinedCount = count;
+    }
+
+    const submitLabel = online.length === 1 ? '1 Ergebnis' : `${online.length} Ergebnisse`;
+    const joinLabel   = joinedCount > online.length ? ` · ${joinedCount} beigetreten` : '';
+    document.getElementById('onlineStatus').textContent =
+      `${submitLabel} eingegangen${joinLabel} · zuletzt ${new Date().toLocaleTimeString('de-CH')}`;
     renderAll();
   } catch(e){ document.getElementById('onlineStatus').textContent = 'Fehler: '+e.message; }
 }
@@ -343,11 +358,28 @@ function startAutoRefresh(){
 }
 
 function stopOnlineWorkshop(){
-  clearInterval(autoRefreshTimer);
-  autoRefreshTimer = null;
-  onlineSession = null;
-  saveSession();
-  hideOnlineBar();
+  // Modul auf 'closed' setzen damit Teilnehmer es sehen
+  if(onlineSession?.workshopId && onlineSession?.adminToken){
+    if(!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    supabaseClient.rpc('set_workshop_module', {
+      p_workshop_id: onlineSession.workshopId,
+      p_admin_token: onlineSession.adminToken,
+      p_module: 'closed',
+      p_module_data: {}
+    }).then(() => {
+      clearInterval(autoRefreshTimer);
+      autoRefreshTimer = null;
+      onlineSession = null;
+      saveSession();
+      hideOnlineBar();
+    });
+  } else {
+    clearInterval(autoRefreshTimer);
+    autoRefreshTimer = null;
+    onlineSession = null;
+    saveSession();
+    hideOnlineBar();
+  }
 }
 
 function showOnlineBar(){
