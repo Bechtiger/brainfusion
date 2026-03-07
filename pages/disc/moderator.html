@@ -152,6 +152,7 @@
 
     <div class="card list">
       <h2 style="margin-top:0">Teilnehmerübersicht</h2>
+      <div id="waitingParticipantsBox" style="display:none;background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px"></div>
       <table>
         <thead><tr><th>Alias</th><th>N</th><th>R</th><th>Stress</th><th>Quadrant</th></tr></thead>
         <tbody id="rows"></tbody>
@@ -332,15 +333,34 @@ async function refreshOnlineWorkshop(){
     });
     saveStored();
 
-    // Auch beigetretene (noch nicht fertige) TN zählen
+    // Auch beigetretene (noch nicht fertige) TN zählen und anzeigen
     let joinedCount = online.length;
+    let waitingAliases = [];
     if(!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
     if(onlineSession?.workshopId){
-      const { count } = await supabaseClient
+      const { data: joined, count } = await supabaseClient
         .from('participants')
-        .select('*', { count: 'exact', head: true })
+        .select('alias,joined_at', { count: 'exact' })
         .eq('workshop_id', onlineSession.workshopId);
       if(count !== null) joinedCount = count;
+      if(joined) {
+        const finishedAliases = new Set(online.map(p => p.alias.toLowerCase()));
+        waitingAliases = joined
+          .filter(p => !finishedAliases.has((p.alias||'').toLowerCase()))
+          .map(p => p.alias || '?');
+      }
+    }
+
+    // Wartende Teilnehmer-Box aktualisieren
+    const waitBox = document.getElementById('waitingParticipantsBox');
+    if(waitBox){
+      if(waitingAliases.length > 0){
+        waitBox.style.display='block';
+        waitBox.innerHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">⏳ Beigetreten – wartet auf Test</div>`
+          + waitingAliases.map(a => `<span style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:13px;margin:3px">${escapeHtml(a)}</span>`).join('');
+      } else {
+        waitBox.style.display='none';
+      }
     }
 
     const submitLabel = online.length === 1 ? '1 Ergebnis' : `${online.length} Ergebnisse`;
