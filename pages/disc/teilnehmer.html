@@ -985,16 +985,27 @@ function showModuleOverlay(module, moduleData) {
   // Spezialfall: DISC-Test soll App bedienbar lassen
   if (module === 'disc_test') {
     overlay.remove();
-    realtimeChannel = null; // damit kein Loop entsteht
     return;
   }
 
+  const currentCode = localStorage.getItem('disc_workshop_code') || '?';
   overlay.innerHTML = `
     <div style="font-size:72px;margin-bottom:24px">${info.icon}</div>
     <div style="font-family:Rajdhani,sans-serif;font-size:36px;font-weight:700;color:#fff;margin-bottom:12px">${info.title}</div>
     <div style="font-size:16px;color:#9ca9cc;max-width:440px;line-height:1.6">${descText}</div>
-    <div style="margin-top:32px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,0.15);border:1px solid rgba(42,157,143,0.4);color:#2a9d8f;font-size:12px;letter-spacing:2px;text-transform:uppercase">🔴 Live · Modul: ${module}</div>
+    <div style="margin-top:32px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,0.15);border:1px solid rgba(42,157,143,0.4);color:#2a9d8f;font-size:12px;letter-spacing:2px;text-transform:uppercase">🔴 Live · Workshop: ${currentCode}</div>
+    <button onclick="leaveWorkshop()" style="margin-top:24px;background:transparent;border:1px solid #2b3657;color:#6a6a8a;font-size:12px;padding:8px 18px;border-radius:20px;cursor:pointer;letter-spacing:1px">
+      Anderen Workshop beitreten
+    </button>
   `;
+}
+
+function leaveWorkshop() {
+  // Alle Workshop-Daten löschen
+  ['disc_workshop_code','disc_alias','disc_participant_id','disc_join_token','disc_workshop_id'].forEach(k => localStorage.removeItem(k));
+  document.getElementById('moduleOverlay')?.remove();
+  realtimeChannel = null;
+  showJoinOverlay('');
 }
 
 function getStoredWorkshopMeta() {
@@ -1139,29 +1150,32 @@ async function doJoin(code, alias) {
 
 // ─── INIT: URL-Code lesen + aktuellen Modul-Status holen ─────────────────────
 (async function initWorkshopSession() {
-  // 1. Code aus URL-Parameter lesen (?code=XXXXX)
   const params = new URLSearchParams(window.location.search);
-  const urlCode = params.get('code');
-  if (urlCode) localStorage.setItem('disc_workshop_code', urlCode.trim().toUpperCase());
+  const urlCode = params.get('code')?.trim().toUpperCase();
+  const storedCode = localStorage.getItem('disc_workshop_code');
+  const storedId   = localStorage.getItem('disc_workshop_id');
 
-  // 2. Wenn Workshop-ID gespeichert → Realtime sofort starten + Modul holen
-  const storedId = localStorage.getItem('disc_workshop_id');
+  // Wenn URL-Code ANDERS als gespeicherter Code → alles resetten, frischer Join
+  if (urlCode && urlCode !== storedCode) {
+    ['disc_workshop_code','disc_participant_id','disc_join_token','disc_workshop_id'].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('disc_workshop_code', urlCode);
+    showJoinOverlay(urlCode);
+    return;
+  }
+
+  // Wenn Workshop-ID gespeichert → Realtime sofort starten + Modul holen
   if (storedId) {
     startRealtimeListener(storedId);
     try {
-      const res = await fetch(
-        SUPABASE_URL + '/rest/v1/workshops?id=eq.' + storedId + '&select=current_module,module_data',
-        { headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY } }
-      );
+      const res  = await fetch(SUPABASE_URL + '/rest/v1/workshops?id=eq.' + storedId + '&select=current_module,module_data', { headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY } });
       const data = await res.json();
       if (data?.[0]?.current_module) handleModuleChange(data[0].current_module, data[0].module_data || {});
     } catch(e) { console.warn('Modul-Status Fehler:', e); }
     return;
   }
 
-  // 3. Code vorhanden aber noch kein Join → Join-Overlay mit vorausgefülltem Code zeigen
-  const storedCode = localStorage.getItem('disc_workshop_code');
-  showJoinOverlay(storedCode || urlCode || '');
+  // Kein gespeicherter Workshop → Join-Overlay zeigen
+  showJoinOverlay(urlCode || storedCode || '');
 })();
 </script>
 </body>
