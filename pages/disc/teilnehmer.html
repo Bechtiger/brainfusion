@@ -986,7 +986,11 @@ function showModuleOverlay(module, moduleData) {
 
   // Spezialfall: DISC-Test soll App bedienbar lassen
   if (module === 'disc_test') {
-    overlay.remove();
+    if (overlay) overlay.remove();
+    // Wenn kein Screen aktiv → Test-Intro zeigen
+    if (!document.querySelector('.screen.active')) {
+      show('sIntro');
+    }
     return;
   }
 
