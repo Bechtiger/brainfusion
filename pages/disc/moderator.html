@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DISC Workshop Dashboard</title>
+  <style>
+    :root {
+      --bg:#0b1020; --surface:#141b2d; --surface2:#1c2740; --surface3:#101726; --border:#2b3657;
+      --text:#ecf1ff; --muted:#9ca9cc;
+      --D:#e84a5f; --I:#f4a261; --S:#2a9d8f; --C:#4a90d9;
+      --good:#3ecf8e; --warn:#f7c46c; --bad:#ff8e8e;
+      --quad1:rgba(232,74,95,.08); --quad2:rgba(244,162,97,.08);
+      --quad3:rgba(74,144,217,.08); --quad4:rgba(42,157,143,.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0a1020,#0d1428 30%,#0a1020);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+    .wrap{max-width:1380px;margin:0 auto;padding:24px}
+    .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+    h1{margin:0;font-size:32px;letter-spacing:.2px}
+    .sub{color:var(--muted);margin-top:6px;max-width:780px;line-height:1.45}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:10px;cursor:pointer;font-size:14px;transition:background .15s}
+    .btn:hover{background:var(--surface2)}
+    .btn.primary{background:linear-gradient(135deg,var(--C),#6aa7e4);border:none;font-weight:600}
+    .btn.green{background:linear-gradient(135deg,#1a6b4a,#2a9d8f);border:none;font-weight:600}
+    .btn.danger{background:linear-gradient(135deg,#6b1a1a,var(--bad));border:none}
+    .toggle{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;user-select:none;font-size:14px}
+    .grid{display:grid;grid-template-columns:1.35fr .9fr;gap:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+    .stat{background:var(--surface2);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,.03)}
+    .stat .k{font-size:13px;color:var(--muted)} .stat .v{font-size:28px;font-weight:700;margin-top:6px}
+    .chart-wrap{position:relative;background:#0f1528;border:1px solid var(--border);border-radius:18px;padding:12px;overflow:hidden}
+    canvas{width:100%;height:600px;display:block}
+    .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:14px}
+    .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+    .list{max-height:960px;overflow:auto}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px 8px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    th{position:sticky;top:0;background:var(--surface);z-index:2;font-size:13px;color:var(--muted)}
+    .pill{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:999px;color:#fff;font-weight:700;font-size:13px}
+    .pD{background:var(--D)} .pI{background:var(--I)} .pS{background:var(--S)} .pC{background:var(--C)}
+    .coach p{margin:.5rem 0;color:#d7dff8;line-height:1.45;font-size:14px}
+    .small{font-size:13px;color:var(--muted)}
+    .empty{color:var(--muted);padding:26px 0;text-align:center}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .danger-text{color:var(--bad)} .ok-text{color:#a8f0c8} .warn-text{color:var(--warn)}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .note{padding:12px 14px;border-radius:14px;background:var(--surface3);border:1px solid var(--border);line-height:1.5;font-size:14px}
+    .hint-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+    .online-bar{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+    .online-bar .code{font-family:monospace;font-size:24px;font-weight:700;letter-spacing:4px;color:#fff;background:#0b1020;padding:6px 16px;border-radius:8px;border:1px solid var(--border)}
+    .online-bar .status{font-size:13px;color:var(--muted)}
+    .pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--good);margin-right:6px;animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    @media (max-width:1140px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}canvas{height:480px}}
+    @media (max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.split,.hint-grid{grid-template-columns:1fr}}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>DISC Workshop Dashboard</h1>
+      <div class="sub">Moderator-Ansicht. Erstelle einen Online-Workshop und sieh zu, wie Ergebnisse live eingehen.</div>
+    </div>
+    <div class="actions">
+      <button class="btn green" id="createWorkshopBtn">+ Online-Workshop erstellen</button>
+      <button class="btn primary" id="connectWorkshopBtn">Workshop verbinden</button>
+      <button class="btn" id="refreshWorkshopBtn" style="display:none">🔄 Aktualisieren</button>
+      <label class="btn">JSON importieren <input id="fileInput" type="file" accept=".json" multiple hidden></label>
+      <button class="btn" id="demoBtn">Demo-Daten</button>
+      <button class="btn" id="csvBtn">CSV</button>
+      <button class="btn danger" id="clearBtn">Alles löschen</button>
+    </div>
+  </div>
+
+  <!-- Online Workshop Status Bar (hidden by default) -->
+  <div class="online-bar" id="onlineBar" style="display:none">
+    <div>
+      <div class="status"><span class="pulse"></span>Live-Workshop aktiv</div>
+      <div class="code" id="onlineCode">–</div>
+    </div>
+    <div class="small" id="onlineStatus">Warte auf Teilnehmer...</div>
+    <div style="margin-left:auto">
+      <div class="small">Teilnehmer-Link:</div>
+      <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:13px">brainfusion.app/pages/disc/teilnehmer.html</a>
+    </div>
+    <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="k">Teilnehmer</div><div class="v" id="statCount">0</div></div>
+    <div class="stat"><div class="k">Ø Rollenstress</div><div class="v" id="statStress">0</div></div>
+    <div class="stat"><div class="k">Dominanter Stil</div><div class="v" id="statDominant">–</div></div>
+    <div class="stat"><div class="k">Teamtendenz X</div><div class="v" id="statAxisX">–</div></div>
+    <div class="stat"><div class="k">Arbeitsmodus Y</div><div class="v" id="statAxisY">–</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <div>
+          <h2 style="margin:0 0 4px 0">Quadranten-Map</h2>
+          <div class="small">X = D − S · Y = I − C · Weiss = natürlich · Blau = Rolle</div>
+        </div>
+        <div class="row">
+          <label class="toggle"><input type="checkbox" id="anonToggle"> Namen ausblenden</label>
+          <label class="toggle"><input type="checkbox" id="showRoleToggle" checked> Rolle zeigen</label>
+          <label class="toggle"><input type="checkbox" id="showLinesToggle" checked> Weg zeigen</label>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="mapCanvas" width="920" height="600"></canvas></div>
+      <div class="legend">
+        <span><span class="dot" style="background:#fff"></span>natürlich</span>
+        <span><span class="dot" style="background:#7cc4ff"></span>Rolle</span>
+        <span><span class="dot" style="background:var(--bad)"></span>hoher Rollenweg</span>
+        <span><span class="dot" style="background:var(--warn)"></span>mittlerer Rollenweg</span>
+      </div>
+      <div class="hint-grid">
+        <div class="note"><strong>oben rechts</strong> – Drive + People<br><span class="small">Schnell, initiativ, sichtbar</span></div>
+        <div class="note"><strong>oben links</strong> – Stabilität + People<br><span class="small">Verbindend, teamorientiert</span></div>
+        <div class="note"><strong>unten rechts</strong> – Drive + Struktur<br><span class="small">Entschlossen, analytisch</span></div>
+        <div class="note"><strong>unten links</strong> – Stabilität + Struktur<br><span class="small">Verlässlich, systematisch</span></div>
+      </div>
+      <div class="coach" id="coachText"></div>
+    </div>
+
+    <div class="card list">
+      <h2 style="margin-top:0">Teilnehmerübersicht</h2>
+      <table>
+        <thead><tr><th>Alias</th><th>N</th><th>R</th><th>Stress</th><th>Quadrant</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="emptyState" class="empty">Noch keine Daten vorhanden.</div>
+      <div class="split">
+        <div class="note" id="teamDnaBox"><strong>Team-DNA</strong><br><span class="small">Nach Import berechnet.</span></div>
+        <div class="note" id="followUpBox"><strong>Follow-up</strong><br><span class="small">Nach Import berechnet.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────
+const SUPABASE_URL = 'https://dnoecftuybkoqvrkfvei.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_U2GvuBQaGBGK8Ww_bZ5wxw_bVxSl_4P';
+const EDGE_BASE = SUPABASE_URL + '/functions/v1';
+const STORAGE_KEY = 'disc-dashboard-v3';
+const SESSION_KEY = 'disc-online-session-v2';
+const PARTICIPANT_URL = 'https://brainfusion.app/pages/disc/teilnehmer.html';
+
+let participants = [];
+let onlineSession = null;
+let autoRefreshTimer = null;
+const state = { anonymous:false, showRole:true, showLines:true };
+
+// ─── HELPERS ──────────────────────────────────────
+function getMapPoint(p){ return { x:(p.D||0)-(p.S||0), y:(p.I||0)-(p.C||0) }; }
+function dominantType(s){ return Object.entries(s).sort((a,b)=>b[1]-a[1])[0]?.[0]||'–'; }
+function avg(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+function std(arr){ if(!arr.length)return 0; const m=avg(arr); return Math.sqrt(avg(arr.map(v=>(v-m)**2))); }
+function axisWord(v,n,p){ return v>8?p:v<-8?n:'balanciert'; }
+function quadrantName(pt){
+  if(pt.x>=0&&pt.y>=0) return 'Drive + People';
+  if(pt.x<0&&pt.y>=0)  return 'Stabilität + People';
+  if(pt.x>=0&&pt.y<0)  return 'Drive + Struktur';
+  return 'Stabilität + Struktur';
+}
+function rolePathLength(p){ const n=p.map?.natural||getMapPoint(p.natural),r=p.map?.role||getMapPoint(p.role); return Math.hypot(r.x-n.x,r.y-n.y); }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function anonymize(a){ if(!a)return 'X'; const c=a.trim(); if(c.length<=2)return c[0]+'•'; return c[0]+'•'.repeat(Math.min(c.length-1,3)); }
+function getCSS(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+// ─── STORAGE ──────────────────────────────────────
+function loadStored(){
+  try{ participants=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch{ participants=[]; }
+  try{ onlineSession=JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); }catch{ onlineSession=null; }
+}
+function saveStored(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(participants)); }
+function saveSession(){ localStorage.setItem(SESSION_KEY,JSON.stringify(onlineSession)); }
+
+// ─── ONLINE WORKSHOP ──────────────────────────────
+async function createOnlineWorkshop(){
+  const title = prompt('Workshop-Titel (z.B. Team Swisstronics):', 'DISC Workshop '+new Date().toLocaleDateString('de-CH'));
+  if(!title) return;
+  try{
+    const res = await fetch(EDGE_BASE+'/create-workshop',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},
+      body: JSON.stringify({title, createdBy:'moderator'})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error||'Fehler beim Erstellen');
+    onlineSession = { workshopId:data.workshopId, code:data.workshopCode, adminToken:data.adminToken, title };
+    saveSession();
+    showOnlineBar();
+    startAutoRefresh();
+    alert(`Workshop erstellt!\nCode: ${data.workshopCode}\nDen Code an Teilnehmer weitergeben!`);
+  } catch(e){ alert('Fehler: '+e.message); }
+}
+
+async function connectOnlineWorkshop(){
+  const code = prompt('Workshop-Code eingeben:','');
+  if(!code) return;
+  const token = prompt('Admin-Token (aus Workshop-Erstellung):','');
+  if(!token) return;
+  onlineSession = { code:code.trim().toUpperCase(), adminToken:token.trim(), workshopId:null };
+  saveSession();
+  await refreshOnlineWorkshop();
+  showOnlineBar();
+  startAutoRefresh();
+}
+
+async function refreshOnlineWorkshop(){
+  if(!onlineSession?.code||!onlineSession?.adminToken) return;
+  try{
+    const res = await fetch(EDGE_BASE+'/list-workshop-results',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},
+      body: JSON.stringify({workshopCode:onlineSession.code, adminToken:onlineSession.adminToken})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error||'Fehler');
+    const online = (data.results||[]).map(r => ({
+      alias: r.alias||'?',
+      naturalType: dominantType(r.natural||{}),
+      roleType: dominantType(r.role||{}),
+      natural: r.natural||{D:50,I:50,S:50,C:50},
+      role: r.role||{D:50,I:50,S:50,C:50},
+      stress: r.computed?.stress||0,
+      deltas: r.computed?.deltas||{},
+      map: r.computed?.map||null,
+      exportedAt: r.submittedAt||new Date().toISOString()
+    }));
+    // merge: online overrides local with same alias
+    online.forEach(p => {
+      const i = participants.findIndex(x=>x.alias.toLowerCase()===p.alias.toLowerCase());
+      if(i>=0) participants[i]=p; else participants.push(p);
+    });
+    saveStored();
+    document.getElementById('onlineStatus').textContent = `${online.length} Ergebnis${online.length!==1?'se':''} eingegangen · zuletzt ${new Date().toLocaleTimeString('de-CH')}`;
+    renderAll();
+  } catch(e){ document.getElementById('onlineStatus').textContent = 'Fehler: '+e.message; }
+}
+
+function startAutoRefresh(){
+  clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(refreshOnlineWorkshop, 5000);
+  document.getElementById('refreshWorkshopBtn').style.display='';
+}
+
+function stopOnlineWorkshop(){
+  clearInterval(autoRefreshTimer);
+  autoRefreshTimer = null;
+  onlineSession = null;
+  saveSession();
+  hideOnlineBar();
+}
+
+function showOnlineBar(){
+  if(!onlineSession) return;
+  document.getElementById('onlineBar').style.display='flex';
+  document.getElementById('onlineCode').textContent = onlineSession.code||'?';
+  const url = PARTICIPANT_URL+'?code='+(onlineSession.code||'');
+  document.getElementById('participantLink').href = url;
+  document.getElementById('participantLink').textContent = url;
+}
+
+function hideOnlineBar(){ document.getElementById('onlineBar').style.display='none'; }
+
+// ─── FILE IMPORT ──────────────────────────────────
+async function importFiles(files){
+  for(const file of files){
+    const text = await file.text();
+    try{
+      const obj = JSON.parse(text);
+      if(!obj||obj.schema!=='disc-workshop-export-v1') throw new Error('Kein gültiger Export');
+      const p = {
+        alias:(obj.participant?.alias||'unbekannt').trim(),
+        naturalType: obj.naturalType||dominantType(obj.natural||{}),
+        roleType: obj.roleType||dominantType(obj.role||{}),
+        natural: obj.natural||{}, role: obj.role||{},
+        stress: Number(obj.stress||0), deltas: obj.deltas||{},
+        map: obj.map||null, exportedAt: obj.exportedAt||new Date().toISOString()
+      };
+      const i = participants.findIndex(x=>x.alias.toLowerCase()===p.alias.toLowerCase());
+      if(i>=0) participants[i]=p; else participants.push(p);
+    } catch(e){ alert(`${file.name}: ${e.message}`); }
+  }
+  participants.sort((a,b)=>a.alias.localeCompare(b.alias,'de'));
+  saveStored(); renderAll();
+}
+
+// ─── STATS ────────────────────────────────────────
+function teamSummary(){
+  if(!participants.length) return null;
+  const dims=['D','I','S','C'];
+  const mN=Object.fromEntries(dims.map(d=>[d,Math.round(avg(participants.map(p=>p.natural[d]||0)))]));
+  const mR=Object.fromEntries(dims.map(d=>[d,Math.round(avg(participants.map(p=>p.role[d]||0)))]));
+  const dc={D:0,I:0,S:0,C:0};
+  participants.forEach(p=>dc[p.naturalType]=(dc[p.naturalType]||0)+1);
+  const dom=dominantType(dc);
+  const axisX=avg(participants.map(p=>(p.natural.D||0)-(p.natural.S||0)));
+  const axisY=avg(participants.map(p=>(p.natural.I||0)-(p.natural.C||0)));
+  const pathAvg=avg(participants.map(rolePathLength));
+  const pathSd=std(participants.map(rolePathLength));
+  const highStress=participants.filter(p=>p.stress>=60).length;
+  const meanGap=dims.map(d=>({d,delta:mR[d]-mN[d]})).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta))[0];
+  const clusters={q1:0,q2:0,q3:0,q4:0};
+  participants.forEach(p=>{
+    const pt=p.map?.natural||getMapPoint(p.natural);
+    if(pt.x>=0&&pt.y>=0)clusters.q1++;
+    else if(pt.x<0&&pt.y>=0)clusters.q2++;
+    else if(pt.x>=0&&pt.y<0)clusters.q3++;
+    else clusters.q4++;
+  });
+  return {mN,mR,dc,dom,axisX,axisY,pathAvg,pathSd,highStress,meanGap,clusters};
+}
+
+// ─── RENDER ───────────────────────────────────────
+function renderStats(){
+  const s=teamSummary();
+  document.getElementById('statCount').textContent=participants.length;
+  document.getElementById('statStress').textContent=s?Math.round(avg(participants.map(p=>p.stress))):'0';
+  document.getElementById('statDominant').innerHTML=s?`<span class="pill p${s.dom}">${s.dom}</span>`:'–';
+  document.getElementById('statAxisX').textContent=s?axisWord(s.axisX,'ruhiger','schneller'):'–';
+  document.getElementById('statAxisY').textContent=s?axisWord(s.axisY,'strukturiert','people'):'–';
+}
+
+function renderRows(){
+  const tbody=document.getElementById('rows');
+  tbody.innerHTML=participants.map(p=>`<tr>
+    <td>${escapeHtml(state.anonymous?anonymize(p.alias):p.alias)}</td>
+    <td><span class="pill p${p.naturalType}">${p.naturalType}</span></td>
+    <td><span class="pill p${p.roleType}">${p.roleType}</span></td>
+    <td>${Math.round(p.stress)}</td>
+    <td style="font-size:12px;color:var(--muted)">${quadrantName(p.map?.natural||getMapPoint(p.natural))}</td>
+  </tr>`).join('');
+  document.getElementById('emptyState').style.display=participants.length?'none':'block';
+}
+
+function renderCoach(){
+  const el=document.getElementById('coachText');
+  const dna=document.getElementById('teamDnaBox');
+  const follow=document.getElementById('followUpBox');
+  if(!participants.length){ el.innerHTML=''; dna.innerHTML='<strong>Team-DNA</strong><br><span class="small">Nach Import berechnet.</span>'; follow.innerHTML='<strong>Follow-up</strong><br><span class="small">Nach Import berechnet.</span>'; return; }
+  const s=teamSummary();
+  const counts=Object.entries(s.dc).sort((a,b)=>b[1]-a[1]);
+  const under=counts[counts.length-1][0];
+  const notes=[];
+  notes.push(`Das Team wirkt <strong>${axisWord(s.axisX,'eher stabilisierend','eher tempobetont')}</strong> und <strong>${axisWord(s.axisY,'eher faktenorientiert','eher people-orientiert')}</strong>.`);
+  notes.push(`Dominant: <strong>${counts[0][0]}</strong> (${counts[0][1]}×). Am wenigsten: <strong>${under}</strong> – dort fehlt die Gegenperspektive.`);
+  if(s.highStress>=4) notes.push(`<span class="danger-text">${s.highStress} Personen mit erhöhtem Rollenstress</span> – mehrere müssen sich täglich stark anpassen.`);
+  else if(s.highStress>0) notes.push(`<span class="warn-text">${s.highStress} Person(en) mit erhöhtem Rollenstress</span> – guter Follow-up-Indikator.`);
+  else notes.push(`<span class="ok-text">Kein auffälliger Rollenstress</span> – die Rollen passen gut zu den natürlichen Profilen.`);
+  notes.push(`Grösste Teamverschiebung: <strong>${s.meanGap.d}</strong> (${s.meanGap.delta>0?'+':''}${s.meanGap.delta})`);
+  const rules=[];
+  if(s.axisX>8) rules.push('Entscheidungen bewusst verlangsamen – Gegenchecks einbauen.');
+  if(s.axisX<-8) rules.push('Klare Entscheidungszeitfenster setzen – nicht endlos vorprüfen.');
+  if(s.axisY>8) rules.push('Meetings mit klaren Next Steps abschliessen.');
+  if(s.axisY<-8) rules.push('In Retros explizit Stimmung und Zusammenarbeit ansprechen.');
+  if(!rules.length) rules.push('Team ist gut balanciert – Kommunikationsregeln feinjustieren statt Kulturprogramm.');
+  rules.push('Pairing-Idee: "Drive+Struktur" mit "Stabilität+People" zusammenbringen.');
+  const topC=Object.entries(s.clusters).sort((a,b)=>b[1]-a[1])[0];
+  const cLabel={q1:'Drive+People',q2:'Stabilität+People',q3:'Drive+Struktur',q4:'Stabilität+Struktur'}[topC[0]];
+  dna.innerHTML=`<strong>Team-DNA</strong><br><span class="small">Hauptcluster: <strong>${cLabel}</strong> (${topC[1]}×)<br>Ø Rollenweg: <strong>${Math.round(s.pathAvg)}</strong> · Streuung: <strong>${Math.round(s.pathSd)}</strong></span>`;
+  follow.innerHTML=`<strong>Follow-up Fokus</strong><br><span class="small">1. ${rules[0]}<br>2. ${rules[1]||'Tempo-vs-Sorgfalt besprechen.'}</span>`;
+  el.innerHTML=`<h3 style="margin:16px 0 8px;font-size:15px">Team-Hinweise</h3>${notes.map(t=>`<p>${t}</p>`).join('')}<h3 style="margin:14px 0 8px;font-size:15px">Moderationsregeln</h3>${rules.map(t=>`<p>• ${t}</p>`).join('')}`;
+}
+
+function renderCanvas(){
+  const canvas=document.getElementById('mapCanvas');
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height,pad=60;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#0f1528'; ctx.fillRect(0,0,w,h);
+  const cx=w/2,cy=h/2;
+  // quadrants
+  const iW=w-2*pad,iH=h-2*pad;
+  ctx.fillStyle=getCSS('--quad2');ctx.fillRect(cx,pad,iW/2,iH/2);
+  ctx.fillStyle=getCSS('--quad1');ctx.fillRect(pad,pad,iW/2,iH/2);
+  ctx.fillStyle=getCSS('--quad4');ctx.fillRect(pad,cy,iW/2,iH/2);
+  ctx.fillStyle=getCSS('--quad3');ctx.fillRect(cx,cy,iW/2,iH/2);
+  // grid
+  ctx.strokeStyle='#324162';ctx.lineWidth=1;
+  for(let i=1;i<=4;i++){
+    const x=pad+(w-2*pad)*(i/5),y=pad+(h-2*pad)*(i/5);
+    ctx.beginPath();ctx.moveTo(x,pad);ctx.lineTo(x,h-pad);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();
+  }
+  ctx.strokeStyle='#5f739f';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(cx,pad);ctx.lineTo(cx,h-pad);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad,cy);ctx.lineTo(w-pad,cy);ctx.stroke();
+  // axis labels
+  ctx.fillStyle='#dfe8ff';ctx.font='600 13px sans-serif';
+  ctx.fillText('stabiler',pad+8,cy-8);
+  ctx.fillText('schneller',w-pad-70,cy-8);
+  ctx.fillText('people/spontan',cx+8,pad+18);
+  ctx.fillText('struktur/fakten',cx+8,h-pad+22);
+  // quadrant labels
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='700 14px sans-serif';
+  ctx.fillText('Verbindend',pad+14,pad+22);
+  ctx.fillText('Initiativ',w-pad-76,pad+22);
+  ctx.fillText('Systematisch',pad+14,h-pad-10);
+  ctx.fillText('Entschlossen',w-pad-104,h-pad-10);
+
+  const mX=x=>cx+(x/100)*((w/2)-pad-20);
+  const mY=y=>cy-(y/100)*((h/2)-pad-20);
+
+  participants.forEach((p,idx)=>{
+    const n=p.map?.natural||getMapPoint(p.natural);
+    const r=p.map?.role||getMapPoint(p.role);
+    const nx=mX(n.x),ny=mY(n.y),rx=mX(r.x),ry=mY(r.y);
+    const path=Math.hypot(rx-nx,ry-ny);
+    const lc=path>80?getCSS('--bad'):path>45?getCSS('--warn'):'rgba(124,196,255,.65)';
+    if(state.showLines&&state.showRole){ctx.strokeStyle=lc;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(nx,ny);ctx.lineTo(rx,ry);ctx.stroke();}
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(nx,ny,8,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#0b1020';ctx.lineWidth=2;ctx.stroke();
+    if(state.showRole){ctx.fillStyle='#7cc4ff';ctx.beginPath();ctx.arc(rx,ry,7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#0b1020';ctx.lineWidth=2;ctx.stroke();}
+    const lx=state.showRole?rx:nx,ly=state.showRole?ry:ny;
+    ctx.fillStyle='#dbe6ff';ctx.font='13px sans-serif';
+    const label=state.anonymous?anonymize(p.alias):p.alias;
+    ctx.fillText(label,lx+10,ly-6+(idx%2?10:0));
+  });
+}
+
+function renderAll(){ renderStats();renderRows();renderCoach();renderCanvas(); }
+
+// ─── DEMO ─────────────────────────────────────────
+function loadDemo(){
+  participants=[
+    ['CB','D','D',{D:78,I:54,S:34,C:46},{D:70,I:58,S:42,C:52},48],
+    ['MB','I','I',{D:44,I:81,S:57,C:28},{D:50,I:72,S:60,C:35},36],
+    ['JS','C','C',{D:38,I:35,S:52,C:84},{D:42,I:40,S:48,C:79},22],
+    ['AL','S','S',{D:29,I:51,S:82,C:49},{D:41,I:48,S:70,C:55},52],
+    ['PN','D','C',{D:73,I:47,S:31,C:60},{D:55,I:40,S:39,C:78},72],
+    ['TR','I','S',{D:41,I:77,S:50,C:33},{D:32,I:61,S:72,C:41},68],
+    ['LK','C','D',{D:49,I:29,S:43,C:79},{D:68,I:33,S:35,C:70},57],
+    ['SN','S','I',{D:31,I:63,S:74,C:39},{D:36,I:72,S:61,C:41},44]
+  ].map(([alias,nType,rType,natural,role,stress])=>({
+    alias,naturalType:nType,roleType:rType,natural,role,stress,
+    exportedAt:new Date().toISOString(),
+    map:{natural:getMapPoint(natural),role:getMapPoint(role)}
+  }));
+  saveStored();renderAll();
+}
+
+// ─── EXPORTS ──────────────────────────────────────
+function exportCSV(){
+  if(!participants.length)return alert('Keine Daten.');
+  const h=['alias','nType','rType','stress','quadrant','nD','nI','nS','nC','rD','rI','rS','rC'];
+  const rows=participants.map(p=>[p.alias,p.naturalType,p.roleType,p.stress,quadrantName(p.map?.natural||getMapPoint(p.natural)),p.natural.D,p.natural.I,p.natural.S,p.natural.C,p.role.D,p.role.I,p.role.S,p.role.C]);
+  const blob=new Blob([[h,...rows].map(r=>r.join(';')).join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='disc_team.csv';a.click();
+}
+
+// ─── EVENTS ───────────────────────────────────────
+document.getElementById('createWorkshopBtn').addEventListener('click',createOnlineWorkshop);
+document.getElementById('connectWorkshopBtn').addEventListener('click',connectOnlineWorkshop);
+document.getElementById('refreshWorkshopBtn').addEventListener('click',refreshOnlineWorkshop);
+document.getElementById('stopWorkshopBtn').addEventListener('click',()=>{if(confirm('Online-Workshop beenden?')){stopOnlineWorkshop();}});
+document.getElementById('fileInput').addEventListener('change',e=>importFiles([...e.target.files]));
+document.getElementById('demoBtn').addEventListener('click',loadDemo);
+document.getElementById('csvBtn').addEventListener('click',exportCSV);
+document.getElementById('clearBtn').addEventListener('click',()=>{if(confirm('Alle Daten löschen?')){participants=[];saveStored();renderAll();}});
+document.getElementById('anonToggle').addEventListener('change',e=>{state.anonymous=e.target.checked;renderAll();});
+document.getElementById('showRoleToggle').addEventListener('change',e=>{state.showRole=e.target.checked;renderAll();});
+document.getElementById('showLinesToggle').addEventListener('change',e=>{state.showLines=e.target.checked;renderAll();});
+
+// ─── INIT ─────────────────────────────────────────
+loadStored();
+renderAll();
+if(onlineSession?.code&&onlineSession?.adminToken){ showOnlineBar(); refreshOnlineWorkshop(); startAutoRefresh(); }
+</script>
+</body>
+</html>
