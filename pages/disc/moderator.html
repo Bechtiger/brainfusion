@@ -195,11 +195,11 @@ async function createOnlineWorkshop(){
     });
     const data = await res.json();
     if(!res.ok) throw new Error(data.error||'Fehler beim Erstellen');
-    onlineSession = { workshopId:data.workshopId, code:data.workshopCode, adminToken:data.adminToken, title };
+    onlineSession = { workshopId:data.workshopId, code:data.code, adminToken:data.adminToken, title };
     saveSession();
     showOnlineBar();
     startAutoRefresh();
-    alert(`Workshop erstellt!\nCode: ${data.workshopCode}\nDen Code an Teilnehmer weitergeben!`);
+    alert(`Workshop erstellt!\nCode: ${data.code}\nDen Code an Teilnehmer weitergeben!`);
   } catch(e){ alert('Fehler: '+e.message); }
 }
 
