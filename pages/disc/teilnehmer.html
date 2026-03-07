@@ -964,7 +964,7 @@ const MODULE_LABELS = {
   live_map:     { icon: '🗺', title: 'Live-Map', desc: 'Schau auf den Beamer — dein Ergebnis ist jetzt sichtbar!' },
   reflexion:    { icon: '🔍', title: 'Reflexion', desc: 'Was überrascht dich an deinem Ergebnis?' },
   team_pattern: { icon: '🧩', title: 'Team-Muster', desc: 'Schau auf den Beamer und beobachte das Team-Profil.' },
-  exercise_1:   { icon: '💪', title: 'Übung 1 – Stärken', desc: 'Tausche dich mit deinem Sitznachbar aus.' },
+  exercise_1:   { icon: '💪', title: 'Übung 1 – Stärken', desc: 'exercise', prompt: 'Meine grösste Stärke im Team:', maxLength: 300 },
   exercise_2:   { icon: '⚡', title: 'Übung 2 – Reibung', desc: 'Besprecht: Wo gibt es im Team Reibungspunkte?' },
   exercise_3:   { icon: '📋', title: 'Übung 3 – Spielregeln', desc: 'Was sind eure Team-Spielregeln?' },
   closing:      { icon: '🏆', title: 'Abschluss', desc: 'Vielen Dank für deine Teilnahme!' },
@@ -995,15 +995,108 @@ function showModuleOverlay(module, moduleData) {
   }
 
   const currentCode = localStorage.getItem('disc_workshop_code') || '?';
-  overlay.innerHTML = `
-    <div style="font-size:72px;margin-bottom:24px">${info.icon}</div>
-    <div style="font-family:Rajdhani,sans-serif;font-size:36px;font-weight:700;color:#fff;margin-bottom:12px">${info.title}</div>
-    <div style="font-size:16px;color:#9ca9cc;max-width:440px;line-height:1.6">${descText}</div>
-    <div style="margin-top:32px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,0.15);border:1px solid rgba(42,157,143,0.4);color:#2a9d8f;font-size:12px;letter-spacing:2px;text-transform:uppercase">🔴 Live · Workshop: ${currentCode}</div>
-    <button onclick="leaveWorkshop()" style="margin-top:24px;background:transparent;border:1px solid #2b3657;color:#6a6a8a;font-size:12px;padding:8px 18px;border-radius:20px;cursor:pointer;letter-spacing:1px">
-      Anderen Workshop beitreten
-    </button>
-  `;
+  const isExercise = info.desc === 'exercise';
+
+  if (isExercise) {
+    // Exercise overlay with input field
+    const maxLen = info.maxLength || 300;
+    overlay.innerHTML = `
+      <div style="font-size:72px;margin-bottom:24px">${info.icon}</div>
+      <div style="font-family:Rajdhani,sans-serif;font-size:36px;font-weight:700;color:#fff;margin-bottom:12px">${info.title}</div>
+      <div style="font-size:16px;color:#9ca9cc;max-width:440px;line-height:1.6;margin-bottom:24px">${info.prompt}</div>
+      <textarea id="exerciseInput" maxlength="${maxLen}" rows="4"
+        style="width:90%;max-width:440px;padding:14px;border-radius:12px;border:2px solid #2b3657;background:#141b2d;color:#fff;font-size:16px;font-family:inherit;resize:none;outline:none"
+        placeholder="Tippe hier deine Antwort..."></textarea>
+      <div id="exerciseCharCount" style="font-size:12px;color:#6a6a8a;margin-top:6px">0 / ${maxLen}</div>
+      <button id="exerciseSubmitBtn" onclick="submitExerciseResponse('${module}')"
+        style="margin-top:16px;background:linear-gradient(135deg,#2a9d8f,#4a90d9);border:none;color:#fff;font-size:18px;font-weight:700;padding:14px 40px;border-radius:12px;cursor:pointer;width:90%;max-width:440px">
+        Absenden
+      </button>
+      <div id="exerciseFeedback" style="margin-top:12px;font-size:14px;min-height:20px"></div>
+      <div style="margin-top:24px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,0.15);border:1px solid rgba(42,157,143,0.4);color:#2a9d8f;font-size:12px;letter-spacing:2px;text-transform:uppercase">🔴 Live · Workshop: ${currentCode}</div>
+      <button onclick="leaveWorkshop()" style="margin-top:16px;background:transparent;border:1px solid #2b3657;color:#6a6a8a;font-size:12px;padding:8px 18px;border-radius:20px;cursor:pointer;letter-spacing:1px">
+        Anderen Workshop beitreten
+      </button>
+    `;
+    const textarea = document.getElementById('exerciseInput');
+    textarea.addEventListener('input', () => {
+      document.getElementById('exerciseCharCount').textContent = textarea.value.length + ' / ' + maxLen;
+    });
+    setTimeout(() => textarea.focus(), 200);
+  } else {
+    // Standard overlay (non-exercise modules)
+    overlay.innerHTML = `
+      <div style="font-size:72px;margin-bottom:24px">${info.icon}</div>
+      <div style="font-family:Rajdhani,sans-serif;font-size:36px;font-weight:700;color:#fff;margin-bottom:12px">${info.title}</div>
+      <div style="font-size:16px;color:#9ca9cc;max-width:440px;line-height:1.6">${descText}</div>
+      <div style="margin-top:32px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,0.15);border:1px solid rgba(42,157,143,0.4);color:#2a9d8f;font-size:12px;letter-spacing:2px;text-transform:uppercase">🔴 Live · Workshop: ${currentCode}</div>
+      <button onclick="leaveWorkshop()" style="margin-top:24px;background:transparent;border:1px solid #2b3657;color:#6a6a8a;font-size:12px;padding:8px 18px;border-radius:20px;cursor:pointer;letter-spacing:1px">
+        Anderen Workshop beitreten
+      </button>
+    `;
+  }
+}
+
+async function submitExerciseResponse(module) {
+  const textarea = document.getElementById('exerciseInput');
+  const btn = document.getElementById('exerciseSubmitBtn');
+  const feedback = document.getElementById('exerciseFeedback');
+  const content = (textarea?.value || '').trim();
+
+  if (!content) {
+    feedback.style.color = '#e63946';
+    feedback.textContent = 'Bitte gib eine Antwort ein.';
+    return;
+  }
+
+  const participantId = localStorage.getItem('disc_participant_id');
+  const joinToken = localStorage.getItem('disc_join_token');
+  if (!participantId || !joinToken) {
+    feedback.style.color = '#e63946';
+    feedback.textContent = 'Keine Session gefunden. Bitte tritt dem Workshop erneut bei.';
+    return;
+  }
+
+  // Disable UI
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  btn.textContent = 'Wird gesendet...';
+  textarea.disabled = true;
+
+  try {
+    const res = await fetch(EDGE_BASE + '/submit-exercise', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_PUBLISHABLE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({ participantId, joinToken, module, content, responseType: 'text' })
+    });
+
+    const data = await res.json();
+
+    if (res.status === 409 || data.alreadySubmitted) {
+      feedback.style.color = '#f4a261';
+      feedback.textContent = 'Du hast bereits geantwortet.';
+      btn.textContent = 'Bereits gesendet';
+      return;
+    }
+
+    if (!res.ok) throw new Error(data.error || 'Fehler beim Senden');
+
+    feedback.style.color = '#2a9d8f';
+    feedback.textContent = 'Antwort gesendet ✓';
+    btn.textContent = 'Gesendet ✓';
+    btn.style.background = '#2a9d8f';
+  } catch (err) {
+    feedback.style.color = '#e63946';
+    feedback.textContent = 'Fehler: ' + err.message;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.textContent = 'Absenden';
+    textarea.disabled = false;
+  }
 }
 
 function leaveWorkshop() {

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DISC Workshop – Beamer</title>
+  <style>
+    :root {
+      --bg:#0b1020; --surface:#141b2d; --surface2:#1c2740; --surface3:#101726; --border:#2b3657;
+      --text:#ecf1ff; --muted:#9ca9cc;
+      --D:#e84a5f; --I:#f4a261; --S:#2a9d8f; --C:#4a90d9;
+      --good:#3ecf8e; --warn:#f7c46c; --bad:#ff8e8e;
+      --quad1:rgba(232,74,95,.08); --quad2:rgba(244,162,97,.08);
+      --quad3:rgba(74,144,217,.08); --quad4:rgba(42,157,143,.08);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,sans-serif;overflow:hidden;height:100vh;width:100vw}
+    .screen{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center}
+    .screen.active{display:flex}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .fade-in{animation:fadeUp .4s ease}
+    .pill{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:999px;color:#fff;font-weight:700;font-size:18px}
+    .pD{background:var(--D)} .pI{background:var(--I)} .pS{background:var(--S)} .pC{background:var(--C)}
+
+    /* ─── waiting ─── */
+    #bm-waiting .code-display{font-family:'Courier New',monospace;font-size:96px;font-weight:900;letter-spacing:16px;color:var(--S);margin:24px 0}
+    #bm-waiting .join-url{font-size:22px;color:var(--muted);word-break:break-all;max-width:800px;text-align:center;line-height:1.5}
+    #bm-waiting .live-dot{width:14px;height:14px;border-radius:50%;background:var(--good);display:inline-block;animation:pulse 2s infinite;margin-right:10px;vertical-align:middle}
+
+    /* ─── disc_test ─── */
+    #bm-disc_test .progress-bar{width:600px;height:24px;background:var(--surface2);border-radius:12px;overflow:hidden;margin-top:24px}
+    #bm-disc_test .progress-fill{height:100%;background:linear-gradient(90deg,var(--S),var(--C));border-radius:12px;transition:width .5s ease}
+    #bm-disc_test .progress-text{font-size:28px;font-weight:700;margin-top:16px}
+
+    /* ─── live_map ─── */
+    #bm-live_map{padding:20px}
+    #bm-live_map canvas{display:block}
+
+    /* ─── exercise ─── */
+    .exercise-layout{display:grid;grid-template-columns:380px 1fr;gap:40px;width:100%;height:100%;padding:60px}
+    .exercise-task{display:flex;flex-direction:column;justify-content:center}
+    .exercise-task h2{font-size:36px;font-weight:700;margin-bottom:16px}
+    .exercise-task p{font-size:20px;color:var(--muted);line-height:1.6}
+    .exercise-feed{overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:10px}
+    .feed-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 22px;animation:fadeUp .35s ease}
+    .feed-card .alias{font-weight:700;color:var(--S);font-size:16px;margin-bottom:6px}
+    .feed-card .content{font-size:20px;line-height:1.5;color:var(--text)}
+    .feed-empty{color:var(--muted);font-size:20px;text-align:center;margin-top:100px}
+
+    /* ─── generic / closing / closed ─── */
+    .generic-screen{text-align:center}
+    .generic-screen .icon{font-size:96px;margin-bottom:24px}
+    .generic-screen .title{font-size:48px;font-weight:700;margin-bottom:16px}
+    .generic-screen .desc{font-size:24px;color:var(--muted);max-width:600px;line-height:1.5}
+  </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<!-- ═══ SCREENS ═══ -->
+
+<!-- WAITING -->
+<div class="screen" id="bm-waiting">
+  <div style="font-size:20px;color:var(--muted);text-transform:uppercase;letter-spacing:3px">
+    <span class="live-dot"></span>Workshop bereit
+  </div>
+  <div id="waitingTitle" style="font-size:42px;font-weight:700;margin-top:16px">DISC Workshop</div>
+  <div class="code-display" id="waitingCode">------</div>
+  <div class="join-url" id="waitingUrl">brainfusion.app/pages/disc/teilnehmer.html</div>
+  <div style="margin-top:40px;display:flex;gap:16px">
+    <span class="pill pD">D</span><span class="pill pI">I</span><span class="pill pS">S</span><span class="pill pC">C</span>
+  </div>
+</div>
+
+<!-- DISC TEST -->
+<div class="screen" id="bm-disc_test">
+  <div class="generic-screen fade-in">
+    <div class="icon">📊</div>
+    <div class="title">DISC-Test läuft...</div>
+    <div class="progress-bar"><div class="progress-fill" id="testProgressFill" style="width:0%"></div></div>
+    <div class="progress-text" id="testProgressText">0 von 0 fertig</div>
+  </div>
+</div>
+
+<!-- LIVE MAP -->
+<div class="screen" id="bm-live_map">
+  <canvas id="beamerCanvas" width="1800" height="900"></canvas>
+</div>
+
+<!-- EXERCISE 1 -->
+<div class="screen" id="bm-exercise_1">
+  <div class="exercise-layout">
+    <div class="exercise-task">
+      <div style="font-size:64px;margin-bottom:20px">💪</div>
+      <h2>Übung 1 – Stärken</h2>
+      <p>Meine grösste Stärke im Team:</p>
+      <div style="margin-top:32px;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:2px">
+        <span id="exerciseCount">0</span> Antworten
+      </div>
+    </div>
+    <div class="exercise-feed" id="exerciseFeed">
+      <div class="feed-empty" id="feedEmpty">Warte auf Antworten...</div>
+    </div>
+  </div>
+</div>
+
+<!-- INTRO (placeholder) -->
+<div class="screen" id="bm-intro">
+  <div class="generic-screen fade-in">
+    <div class="icon">💬</div>
+    <div class="title">Einstiegsfrage</div>
+    <div class="desc" id="introQuestion">Was macht ein gutes Team aus?</div>
+  </div>
+</div>
+
+<!-- REFLEXION (placeholder) -->
+<div class="screen" id="bm-reflexion">
+  <div class="generic-screen fade-in">
+    <div class="icon">🔍</div>
+    <div class="title">Reflexion</div>
+    <div class="desc">Was überrascht dich an deinem Ergebnis?</div>
+  </div>
+</div>
+
+<!-- TEAM PATTERN (placeholder) -->
+<div class="screen" id="bm-team_pattern">
+  <div class="generic-screen fade-in">
+    <div class="icon">🧩</div>
+    <div class="title">Team-Muster</div>
+    <div class="desc">Analyse des Team-Profils</div>
+  </div>
+</div>
+
+<!-- EXERCISE 2 (placeholder) -->
+<div class="screen" id="bm-exercise_2">
+  <div class="generic-screen fade-in">
+    <div class="icon">⚡</div>
+    <div class="title">Übung 2 – Reibung</div>
+    <div class="desc">Wo entstehen Reibungspunkte im Team?</div>
+  </div>
+</div>
+
+<!-- EXERCISE 3 (placeholder) -->
+<div class="screen" id="bm-exercise_3">
+  <div class="generic-screen fade-in">
+    <div class="icon">📋</div>
+    <div class="title">Übung 3 – Spielregeln</div>
+    <div class="desc">Team-Spielregeln erarbeiten</div>
+  </div>
+</div>
+
+<!-- CLOSING -->
+<div class="screen" id="bm-closing">
+  <div class="generic-screen fade-in">
+    <div class="icon">🏆</div>
+    <div class="title">Vielen Dank!</div>
+    <div class="desc" id="closingTitle">Workshop abgeschlossen</div>
+    <div style="margin-top:40px;display:flex;gap:16px">
+      <span class="pill pD">D</span><span class="pill pI">I</span><span class="pill pS">S</span><span class="pill pC">C</span>
+    </div>
+  </div>
+</div>
+
+<!-- CLOSED -->
+<div class="screen" id="bm-closed">
+  <div class="generic-screen fade-in">
+    <div class="icon">🔒</div>
+    <div class="title">Workshop beendet</div>
+    <div class="desc">Der Workshop wurde geschlossen.</div>
+  </div>
+</div>
+
+<!-- ERROR -->
+<div class="screen" id="bm-error">
+  <div class="generic-screen">
+    <div class="icon">⚠️</div>
+    <div class="title" id="errorTitle">Kein Workshop aktiv</div>
+    <div class="desc" id="errorDesc">Bitte zuerst im Dashboard einen Workshop starten.</div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────
+const SUPABASE_URL = 'https://dnoecftuybkoqvrkfvei.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRub2VjZnR1eWJrb3F2cmtmdmVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzIzMjAsImV4cCI6MjA4ODMwODMyMH0.XzQJtx0bxO0sk1T68c_0MczeSOdblLxpJLGRbzDMiS4';
+const EDGE_BASE = SUPABASE_URL + '/functions/v1';
+const SESSION_KEY = 'disc-online-session-v2';
+
+let session = null;
+let supabaseClient = null;
+let workshopChannel = null;
+let exerciseChannel = null;
+let exerciseResponses = [];
+let participants = [];
+let pollTimer = null;
+let currentModule = 'waiting';
+
+// ─── HELPERS (reused from moderator.html) ─────────
+function getMapPoint(p){ return { x:(p.D||0)-(p.S||0), y:(p.I||0)-(p.C||0) }; }
+function dominantType(s){ return Object.entries(s).sort((a,b)=>b[1]-a[1])[0]?.[0]||'–'; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function getCSS(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+// ─── INIT ──────────────────────────────────────────
+function init(){
+  try{ session = JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); }catch{ session=null; }
+  if(!session?.workshopId){
+    showScreen('bm-error'); return;
+  }
+  if(!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  startWorkshopRealtime(session.workshopId);
+  startExerciseRealtime(session.workshopId);
+  fetchCurrentModule();
+  startPolling();
+}
+
+// ─── SCREEN ROUTER ─────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
+function showBeamerModule(module, moduleData){
+  currentModule = module;
+  const screenId = 'bm-' + module;
+  const el = document.getElementById(screenId);
+
+  if(el){
+    showScreen(screenId);
+  } else {
+    // Fallback: show closed screen for unknown modules
+    showScreen('bm-closed');
+    return;
+  }
+
+  // Module-specific updates
+  switch(module){
+    case 'waiting':
+      document.getElementById('waitingCode').textContent = session?.code || '------';
+      document.getElementById('waitingTitle').textContent = session?.title || 'DISC Workshop';
+      document.getElementById('waitingUrl').textContent = 'brainfusion.app/pages/disc/teilnehmer.html?code=' + (session?.code||'');
+      break;
+    case 'disc_test':
+      updateProgress();
+      break;
+    case 'live_map':
+      renderBeamerCanvas();
+      break;
+    case 'exercise_1':
+      renderExerciseFeed();
+      break;
+    case 'intro':
+      if(moduleData?.question) document.getElementById('introQuestion').textContent = moduleData.question;
+      break;
+    case 'closing':
+      document.getElementById('closingTitle').textContent = session?.title || 'Workshop abgeschlossen';
+      break;
+  }
+}
+
+// ─── REALTIME: workshop module changes ─────────────
+function startWorkshopRealtime(workshopId){
+  workshopChannel = supabaseClient
+    .channel('beamer-workshop-'+workshopId)
+    .on('postgres_changes',{
+      event:'UPDATE', schema:'public', table:'workshops',
+      filter:'id=eq.'+workshopId
+    },(payload)=>{
+      const mod = payload.new.current_module;
+      const data = payload.new.module_data || {};
+      showBeamerModule(mod, data);
+    })
+    .subscribe();
+}
+
+// ─── REALTIME: exercise responses (live feed) ──────
+function startExerciseRealtime(workshopId){
+  exerciseChannel = supabaseClient
+    .channel('beamer-exercises-'+workshopId)
+    .on('postgres_changes',{
+      event:'INSERT', schema:'public', table:'exercise_responses',
+      filter:'workshop_id=eq.'+workshopId
+    },(payload)=>{
+      exerciseResponses.unshift(payload.new);
+      renderExerciseFeed();
+    })
+    .subscribe();
+}
+
+// ─── POLLING: data for map + progress ──────────────
+function startPolling(){
+  pollTimer = setInterval(refreshData, 5000);
+  refreshData();
+}
+
+async function refreshData(){
+  if(!session?.code || !session?.adminToken) return;
+  try{
+    // Fetch test results
+    const res = await fetch(EDGE_BASE+'/list-workshop-results',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},
+      body:JSON.stringify({workshopCode:session.code, adminToken:session.adminToken})
+    });
+    const data = await res.json();
+    if(!res.ok) return;
+
+    participants = (data.results||[]).map(r=>({
+      alias: r.alias||'?',
+      naturalType: dominantType(r.natural||{}),
+      roleType: dominantType(r.role||{}),
+      natural: r.natural||{D:50,I:50,S:50,C:50},
+      role: r.role||{D:50,I:50,S:50,C:50},
+      stress: r.computed?.stress||0,
+      map: r.computed?.map||null
+    }));
+
+    // Count joined participants
+    if(session.workshopId){
+      const { count } = await supabaseClient
+        .from('participants')
+        .select('id',{count:'exact',head:true})
+        .eq('workshop_id',session.workshopId);
+      window._joinedCount = count || participants.length;
+    }
+
+    // Update current screen if needed
+    if(currentModule==='disc_test') updateProgress();
+    if(currentModule==='live_map') renderBeamerCanvas();
+  }catch(e){ console.warn('refreshData error:',e.message); }
+}
+
+async function fetchCurrentModule(){
+  try{
+    const { data } = await supabaseClient
+      .from('workshops')
+      .select('current_module,module_data')
+      .eq('id',session.workshopId)
+      .single();
+    if(data) showBeamerModule(data.current_module||'waiting', data.module_data||{});
+  }catch(e){ showBeamerModule('waiting',{}); }
+}
+
+// ─── PROGRESS (disc_test) ──────────────────────────
+function updateProgress(){
+  const done = participants.length;
+  const total = window._joinedCount || done;
+  const pct = total>0 ? Math.round((done/total)*100) : 0;
+  document.getElementById('testProgressFill').style.width = pct+'%';
+  document.getElementById('testProgressText').textContent = `${done} von ${total} fertig`;
+}
+
+// ─── EXERCISE FEED ─────────────────────────────────
+function renderExerciseFeed(){
+  const feed = document.getElementById('exerciseFeed');
+  const empty = document.getElementById('feedEmpty');
+  const countEl = document.getElementById('exerciseCount');
+  // Filter to current module
+  const filtered = exerciseResponses.filter(r=>r.module===currentModule);
+  countEl.textContent = filtered.length;
+  if(!filtered.length){
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+  // Keep only feed cards (remove empty placeholder, rebuild)
+  feed.innerHTML = filtered.map(r=>`
+    <div class="feed-card">
+      <div class="alias">${escapeHtml(r.alias||'?')}</div>
+      <div class="content">${escapeHtml(r.content||'')}</div>
+    </div>
+  `).join('') + '<div class="feed-empty" id="feedEmpty" style="display:none">Warte auf Antworten...</div>';
+}
+
+// ─── CANVAS: Quadranten-Map (adapted from moderator) ─
+function renderBeamerCanvas(){
+  const canvas = document.getElementById('beamerCanvas');
+  const ctx = canvas.getContext('2d');
+  const w=canvas.width, h=canvas.height, pad=80;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#0f1528'; ctx.fillRect(0,0,w,h);
+  const cx=w/2, cy=h/2;
+  const iW=w-2*pad, iH=h-2*pad;
+
+  // Quadrants
+  ctx.fillStyle=getCSS('--quad2'); ctx.fillRect(cx,pad,iW/2,iH/2);
+  ctx.fillStyle=getCSS('--quad1'); ctx.fillRect(pad,pad,iW/2,iH/2);
+  ctx.fillStyle=getCSS('--quad4'); ctx.fillRect(pad,cy,iW/2,iH/2);
+  ctx.fillStyle=getCSS('--quad3'); ctx.fillRect(cx,cy,iW/2,iH/2);
+
+  // Grid lines
+  ctx.strokeStyle='#324162'; ctx.lineWidth=1;
+  for(let i=1;i<=4;i++){
+    const x=pad+(w-2*pad)*(i/5), y=pad+(h-2*pad)*(i/5);
+    ctx.beginPath();ctx.moveTo(x,pad);ctx.lineTo(x,h-pad);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();
+  }
+  // Center axes
+  ctx.strokeStyle='#5f739f'; ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(cx,pad);ctx.lineTo(cx,h-pad);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad,cy);ctx.lineTo(w-pad,cy);ctx.stroke();
+
+  // Axis labels (larger for beamer)
+  ctx.fillStyle='#dfe8ff'; ctx.font='600 18px sans-serif';
+  ctx.fillText('stabiler',pad+12,cy-10);
+  ctx.fillText('schneller',w-pad-100,cy-10);
+  ctx.fillText('people / spontan',cx+12,pad+24);
+  ctx.fillText('struktur / fakten',cx+12,h-pad+28);
+
+  // Quadrant labels
+  ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font='700 20px sans-serif';
+  ctx.fillText('Verbindend',pad+18,pad+30);
+  ctx.fillText('Initiativ',w-pad-110,pad+30);
+  ctx.fillText('Systematisch',pad+18,h-pad-14);
+  ctx.fillText('Entschlossen',w-pad-150,h-pad-14);
+
+  // Coordinate transform
+  const mX = x=>cx+(x/100)*((w/2)-pad-30);
+  const mY = y=>cy-(y/100)*((h/2)-pad-30);
+
+  // Plot participants
+  participants.forEach((p,idx)=>{
+    const n = p.map?.natural || getMapPoint(p.natural);
+    const r = p.map?.role || getMapPoint(p.role);
+    const nx=mX(n.x), ny=mY(n.y), rx=mX(r.x), ry=mY(r.y);
+    const path = Math.hypot(rx-nx,ry-ny);
+    const lc = path>80?getCSS('--bad') : path>45?getCSS('--warn') : 'rgba(124,196,255,.65)';
+
+    // Role path line
+    ctx.strokeStyle=lc; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(nx,ny); ctx.lineTo(rx,ry); ctx.stroke();
+
+    // Natural dot (white, larger)
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(nx,ny,12,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#0b1020'; ctx.lineWidth=2.5; ctx.stroke();
+
+    // Role dot (blue)
+    ctx.fillStyle='#7cc4ff';
+    ctx.beginPath(); ctx.arc(rx,ry,10,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#0b1020'; ctx.lineWidth=2.5; ctx.stroke();
+
+    // Name label (larger)
+    ctx.fillStyle='#dbe6ff'; ctx.font='600 16px sans-serif';
+    ctx.fillText(p.alias, rx+14, ry-8+(idx%2?14:0));
+  });
+
+  // "No data" message
+  if(!participants.length){
+    ctx.fillStyle='var(--muted)'; ctx.font='24px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('Noch keine Ergebnisse',cx,cy);
+    ctx.textAlign='start';
+  }
+}
+
+// ─── START ─────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

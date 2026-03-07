@@ -110,6 +110,7 @@
       <div class="small">Teilnehmer-Link:</div>
       <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:13px">brainfusion.app/pages/disc/teilnehmer.html</a>
     </div>
+    <button class="btn" id="openBeamerBtn" onclick="window.open('beamer.html','beamer','width=1920,height=1080')" style="background:var(--C);color:#fff;margin-right:8px">Beamer öffnen</button>
     <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
   </div>
 
@@ -153,6 +154,10 @@
     <div class="card list">
       <h2 style="margin-top:0">Teilnehmerübersicht</h2>
       <div id="waitingParticipantsBox" style="display:none;background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px"></div>
+      <div id="exerciseResponsesBox" style="display:none;background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
+        <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--S)">💪 Übungs-Antworten <span id="exerciseResponseCount" style="font-weight:400;color:var(--text-muted)">(0)</span></div>
+        <div id="exerciseResponsesList" style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
       <table>
         <thead><tr><th>Alias</th><th>N</th><th>R</th><th>Stress</th><th>Quadrant</th></tr></thead>
         <tbody id="rows"></tbody>
@@ -368,6 +373,34 @@ async function refreshOnlineWorkshop(){
     document.getElementById('onlineStatus').textContent =
       `${submitLabel} eingegangen${joinLabel} · zuletzt ${new Date().toLocaleTimeString('de-CH')}`;
     renderAll();
+
+    // Exercise-Antworten laden wenn aktuelles Modul exercise_*
+    const exBox = document.getElementById('exerciseResponsesBox');
+    if(exBox && onlineSession?.workshopId && onlineSession?.currentModule?.startsWith('exercise_')){
+      const { data: exResponses } = await supabaseClient
+        .from('exercise_responses')
+        .select('alias, content, created_at')
+        .eq('workshop_id', onlineSession.workshopId)
+        .eq('module', onlineSession.currentModule)
+        .order('created_at', { ascending: true });
+      if(exResponses && exResponses.length > 0){
+        exBox.style.display = 'block';
+        document.getElementById('exerciseResponseCount').textContent = `(${exResponses.length})`;
+        document.getElementById('exerciseResponsesList').innerHTML = exResponses.map(r =>
+          `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px">
+            <strong style="color:var(--S)">${escapeHtml(r.alias||'?')}</strong>
+            <span style="color:var(--text-muted);margin-left:8px;font-size:11px">${new Date(r.created_at).toLocaleTimeString('de-CH')}</span>
+            <div style="margin-top:4px;color:var(--text)">${escapeHtml(r.content||'')}</div>
+          </div>`
+        ).join('');
+      } else {
+        exBox.style.display = 'block';
+        document.getElementById('exerciseResponseCount').textContent = '(0)';
+        document.getElementById('exerciseResponsesList').innerHTML = '<div style="color:var(--text-muted);font-size:13px">Noch keine Antworten...</div>';
+      }
+    } else if(exBox){
+      exBox.style.display = 'none';
+    }
   } catch(e){ document.getElementById('onlineStatus').textContent = 'Fehler: '+e.message; }
 }
 
