@@ -1156,32 +1156,40 @@ async function doJoin(code, alias) {
 
 // ─── INIT: URL-Code lesen + aktuellen Modul-Status holen ─────────────────────
 (async function initWorkshopSession() {
-  const params = new URLSearchParams(window.location.search);
+  const params  = new URLSearchParams(window.location.search);
   const urlCode = params.get('code')?.trim().toUpperCase();
   const storedCode = localStorage.getItem('disc_workshop_code');
   const storedId   = localStorage.getItem('disc_workshop_id');
 
-  // Wenn URL-Code ANDERS als gespeicherter Code → alles resetten, frischer Join
-  if (urlCode && urlCode !== storedCode) {
+  // REGEL: Nur mit URL-Code darf auto-reconnect stattfinden.
+  // Ohne ?code= → IMMER Join-Screen zeigen (keine stille Auto-Verbindung).
+  if (!urlCode) {
+    showJoinOverlay(storedCode || '');
+    return;
+  }
+
+  // URL-Code vorhanden aber ANDERS als gespeichert → alles resetten
+  if (urlCode !== storedCode) {
     ['disc_workshop_code','disc_participant_id','disc_join_token','disc_workshop_id'].forEach(k => localStorage.removeItem(k));
     localStorage.setItem('disc_workshop_code', urlCode);
     showJoinOverlay(urlCode);
     return;
   }
 
-  // Wenn Workshop-ID gespeichert → Realtime sofort starten + Modul holen
+  // URL-Code stimmt mit gespeichertem überein + Workshop-ID vorhanden → reconnect
   if (storedId) {
     startRealtimeListener(storedId);
     try {
       const res  = await fetch(SUPABASE_URL + '/rest/v1/workshops?id=eq.' + storedId + '&select=current_module,module_data', { headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY } });
       const data = await res.json();
       if (data?.[0]?.current_module) handleModuleChange(data[0].current_module, data[0].module_data || {});
-    } catch(e) { console.warn('Modul-Status Fehler:', e); }
+      else handleModuleChange('waiting', {});
+    } catch(e) { console.warn('Modul-Status Fehler:', e); handleModuleChange('waiting', {}); }
     return;
   }
 
-  // Kein gespeicherter Workshop → Join-Overlay zeigen
-  showJoinOverlay(urlCode || storedCode || '');
+  // URL-Code da, aber noch kein Join → Join-Screen mit vorausgefülltem Code
+  showJoinOverlay(urlCode);
 })();
 </script>
 </body>
