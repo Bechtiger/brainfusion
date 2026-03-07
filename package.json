@@ -1,0 +1,20 @@
+{
+  "name": "brainfusion",
+  "version": "1.0.0",
+  "description": "**Eine lebendige Webpräsenz für Denker, Skeptiker und Neugierige**",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:26592/git/Bechtiger/brainfusion"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jsdom": "^28.1.0",
+    "vitest": "^4.0.18"
+  }
+}
