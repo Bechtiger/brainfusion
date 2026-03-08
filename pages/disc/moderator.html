@@ -217,7 +217,7 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
     <div class="small">Teilnehmer-Link (mit Code):</div>
     <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:12px">–</a>
   </div>
-  <button class="btn gold" onclick="window.open('beamer.html?module='+(onlineSession?.currentModule||'waiting')+'&code='+(onlineSession?.code||''),'beamer','width=1920,height=1080')">📽 Beamer</button>
+  <button class="btn gold" onclick="openBeamer()">&#127893; Beamer</button>
   <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
 </div>
 
@@ -538,6 +538,16 @@ function rolePathLength(p){const n=p.map?.natural||getMapPoint(p.natural),r=p.ma
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function anonymize(a){if(!a)return'X';const c=a.trim();if(c.length<=2)return c[0]+'•';return c[0]+'•'.repeat(Math.min(c.length-1,3))}
 function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+// BEAMER POPUP – chromeloses Fenster, ideal zum Fenster-Streamen
+function openBeamer(){
+  const code = onlineSession?.code || '';
+  const mod  = onlineSession?.currentModule || 'waiting';
+  const url  = 'beamer.html?module='+mod+'&code='+code+'&t='+Date.now();
+  const w = window.open(url,'BeamerFenster',
+    'width=1920,height=1080,menubar=no,toolbar=no,location=no,status=no,scrollbars=no,resizable=yes');
+  if(w) w.focus();
+}
+
 function initSupabase(){if(!sb)sb=window.supabase.createClient(SUPABASE_URL,ANON_KEY);}
 function fmtTime(iso){return new Date(iso).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})}
 
