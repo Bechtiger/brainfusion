@@ -217,7 +217,7 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
     <div class="small">Teilnehmer-Link (mit Code):</div>
     <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:12px">–</a>
   </div>
-  <button class="btn gold" onclick="window.open('beamer.html?module='+(onlineSession?.currentModule||'waiting'),'beamer','width=1920,height=1080')">📽 Beamer</button>
+  <button class="btn gold" onclick="window.open('beamer.html?module='+(onlineSession?.currentModule||'waiting')+'&code='+(onlineSession?.code||''),'beamer','width=1920,height=1080')">📽 Beamer</button>
   <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
 </div>
 

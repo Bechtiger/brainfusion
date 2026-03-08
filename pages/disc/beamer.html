@@ -218,6 +218,18 @@ body{font-family:'IBM Plex Sans',sans-serif}
    ERROR
 ═══════════════════════════════════ */
 #sError{align-items:center;justify-content:center;text-align:center;}
+
+/* Fullscreen Button */
+#fsBtn{
+  position:fixed;bottom:18px;right:18px;z-index:9999;
+  background:rgba(20,27,45,0.7);border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.5);font-size:20px;width:44px;height:44px;
+  border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;backdrop-filter:blur(8px);
+  opacity:0;
+}
+body:hover #fsBtn{ opacity:1; }
+#fsBtn:hover{ background:rgba(42,157,143,0.4);color:#fff;border-color:var(--S); }
 </style>
 </head>
 <body>
@@ -397,10 +409,13 @@ function handleGenericModule(mod, data) {
    WAITING
 ═══════════════════════════════════════════════════════ */
 function showWaiting() {
-  document.getElementById('wCode').textContent  = session?.code || '——————';
+  // Code aus Session ODER direkt aus URL-Param (sicherster Weg)
+  const urlParams = new URLSearchParams(location.search);
+  const code = session?.code || urlParams.get('code') || '——————';
+  document.getElementById('wCode').textContent  = code;
   document.getElementById('wTitle').textContent = session?.title || WORKSHOP_NAME;
   document.getElementById('wLogo').textContent  = WORKSHOP_NAME;
-  document.getElementById('wUrl').textContent   = 'brainfusion.app/pages/disc/teilnehmer.html?code=' + (session?.code || '');
+  document.getElementById('wUrl').textContent   = 'brainfusion.app/pages/disc/teilnehmer.html?code=' + code;
   show('sWaiting');
 }
 
@@ -732,5 +747,33 @@ window.addEventListener('resize', () => { if(currentModule==='disc_map'){ resize
   pollTimer = setInterval(refreshData, 5000);
 })();
 </script>
+
+<!-- Fullscreen Button -->
+<button id="fsBtn" title="Vollbild (F)">&#x26F6;</button>
+
+<script>
+// Fullscreen toggle
+function toggleFullscreen(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  } else {
+    document.exitFullscreen();
+  }
+}
+document.getElementById('fsBtn').addEventListener('click', toggleFullscreen);
+document.addEventListener('keydown', e=>{
+  if(e.key==='f'||e.key==='F') toggleFullscreen();
+});
+// Auto-fullscreen beim Start (wenn als Popup geöffnet)
+window.addEventListener('load', ()=>{
+  // Nur auto-fullscreen wenn als Popup geöffnet (nicht als normaler Tab)
+  if(window.opener) {
+    setTimeout(()=>{
+      document.documentElement.requestFullscreen().catch(()=>{});
+    }, 500);
+  }
+});
+</script>
+
 </body>
 </html>
