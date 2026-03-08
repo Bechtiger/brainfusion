@@ -556,12 +556,13 @@ function stopFeedPolling() {
 async function pollFeed(mod) {
   if (!sb || !session?.workshopId || currentModule !== mod) { stopFeedPolling(); return; }
   try {
-    const { data } = await sb
+    const { data, error } = await sb
       .from('exercise_responses')
-      .select('alias, content, anonymous, created_at, module')
+      .select('alias, content, created_at, module, response_type')
       .eq('workshop_id', session.workshopId)
       .eq('module', mod)
       .order('created_at', { ascending: false });
+    if (error) { console.warn('pollFeed error:', error.message); return; }
     if (!data) return;
     // Nur neu rendern wenn sich Anzahl geändert hat
     if (data.length !== feedResponses.length) {
@@ -592,7 +593,7 @@ function renderFeed() {
   }
   const visible = feedResponses.slice(0, MAX_VISIBLE);
   cards.innerHTML = visible.map(r => {
-    const isAnon = r.anonymous || !r.alias;
+    const isAnon = !r.alias || r.alias === 'anon';
     const content = typeof r.content === 'string' ? r.content : (r.content ? JSON.stringify(r.content) : '');
     // Parse ritual JSON
     let displayContent = content;
