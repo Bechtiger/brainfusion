@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>WahrheitsfÃ¤higkeit im Team â€” Dashboard</title>
+<title>Wahrheitsfähigkeit im Team — Dashboard</title>
 <style>
 :root{
   --bg:#0b1020;--surf:#141b2d;--surf2:#1c2740;--surf3:#101726;--border:#2b3657;
@@ -84,7 +84,7 @@ h1{font-size:26px;letter-spacing:.2px;margin-bottom:4px}
   letter-spacing:1.2px;margin-bottom:8px}
 .mod-hints ul{list-style:none;display:flex;flex-direction:column;gap:5px}
 .mod-hints li{font-size:13px;color:var(--muted);padding-left:18px;position:relative;line-height:1.4}
-.mod-hints li::before{content:'â†’';position:absolute;left:0;color:var(--gold)}
+.mod-hints li::before{content:'→';position:absolute;left:0;color:var(--gold)}
 .section-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
   margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 
@@ -189,49 +189,49 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
 <body>
 <div class="wrap">
 
-<!-- â”€â”€â”€ HEADER â”€â”€â”€ -->
+<!-- ─── HEADER ─── -->
 <div class="top">
   <div>
-    <h1>WahrheitsfÃ¤higkeit im Team</h1>
-    <div class="sub">Moderator-Dashboard Â· Steuere Module, sieh Antworten live, behalte den Ãœberblick</div>
+    <h1>Wahrheitsfähigkeit im Team</h1>
+    <div class="sub">Moderator-Dashboard · Steuere Module, sieh Antworten live, behalte den Überblick</div>
   </div>
   <div class="actions">
     <button class="btn green" id="createWorkshopBtn">+ Workshop erstellen</button>
     <button class="btn primary" id="connectWorkshopBtn">Workshop verbinden</button>
-    <button class="btn" id="refreshWorkshopBtn" style="display:none">ðŸ”„</button>
+    <button class="btn" id="refreshWorkshopBtn" style="display:none">🔄</button>
     <label class="btn">JSON <input id="fileInput" type="file" accept=".json" multiple hidden></label>
     <button class="btn" id="demoBtn">Demo</button>
     <button class="btn" id="csvBtn">CSV</button>
-    <button class="btn danger" id="clearBtn">LÃ¶schen</button>
+    <button class="btn danger" id="clearBtn">Löschen</button>
   </div>
 </div>
 
-<!-- â”€â”€â”€ STATUS BAR â”€â”€â”€ -->
+<!-- ─── STATUS BAR ─── -->
 <div class="online-bar" id="onlineBar" style="display:none">
   <div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:3px"><span class="pulse"></span>Live-Workshop aktiv</div>
-    <div class="code" id="onlineCode">â€“</div>
+    <div class="code" id="onlineCode">–</div>
   </div>
   <div class="small" id="onlineStatus">Warte auf Teilnehmer...</div>
   <div style="margin-left:auto;display:flex;flex-direction:column;gap:3px">
     <div class="small">Teilnehmer-Link (mit Code):</div>
-    <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:12px">â€“</a>
+    <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:12px">–</a>
   </div>
-  <button class="btn gold" onclick="window.open('beamer.html','beamer','width=1920,height=1080')">ðŸ“½ Beamer</button>
+  <button class="btn gold" onclick="window.open('beamer.html','beamer','width=1920,height=1080')">📽 Beamer</button>
   <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
 </div>
 
-<!-- â”€â”€â”€ MODULE NAV â”€â”€â”€ -->
+<!-- ─── MODULE NAV ─── -->
 <div class="module-panel" id="modulePanel" style="display:none">
-  <div class="module-panel-title">ðŸŽ¯ Modul aktivieren â€” Teilnehmer sehen dies sofort auf ihrem Notebook</div>
+  <div class="module-panel-title">🎯 Modul aktivieren — Teilnehmer sehen dies sofort auf ihrem Notebook</div>
   <div id="moduleGrid"></div>
 </div>
 
-<!-- â”€â”€â”€ WORKSHOP VIEW (dynamisch) â”€â”€â”€ -->
+<!-- ─── WORKSHOP VIEW (dynamisch) ─── -->
 <div id="workshopView" style="display:none">
   <div class="ws-grid">
     <div id="moduleContentArea">
-      <div class="module-card"><div class="feed-empty">WÃ¤hle ein Modul oben...</div></div>
+      <div class="module-card"><div class="feed-empty">Wähle ein Modul oben...</div></div>
     </div>
     <div class="participant-panel">
       <div class="panel-header">
@@ -250,20 +250,20 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
   </div>
 </div>
 
-<!-- â”€â”€â”€ OFFLINE VIEW (JSON-Import / Demo) â”€â”€â”€ -->
+<!-- ─── OFFLINE VIEW (JSON-Import / Demo) ─── -->
 <div id="offlineView">
   <div class="stats">
     <div class="stat"><div class="k">Teilnehmer</div><div class="v" id="statCount">0</div></div>
-    <div class="stat"><div class="k">Ã˜ Rollenstress</div><div class="v" id="statStress">0</div></div>
-    <div class="stat"><div class="k">Dominanter Stil</div><div class="v" id="statDominant">â€“</div></div>
-    <div class="stat"><div class="k">Teamtendenz X</div><div class="v" id="statAxisX">â€“</div></div>
-    <div class="stat"><div class="k">Arbeitsmodus Y</div><div class="v" id="statAxisY">â€“</div></div>
+    <div class="stat"><div class="k">Ø Rollenstress</div><div class="v" id="statStress">0</div></div>
+    <div class="stat"><div class="k">Dominanter Stil</div><div class="v" id="statDominant">–</div></div>
+    <div class="stat"><div class="k">Teamtendenz X</div><div class="v" id="statAxisX">–</div></div>
+    <div class="stat"><div class="k">Arbeitsmodus Y</div><div class="v" id="statAxisY">–</div></div>
   </div>
   <div class="offline-grid">
     <div class="card">
       <div class="row" style="justify-content:space-between;margin-bottom:12px">
         <div><h2 style="margin:0 0 4px;font-size:18px">Quadranten-Map</h2>
-          <div class="small">X=Dâˆ’S Â· Y=Iâˆ’C Â· Weiss=natÃ¼rlich Â· Blau=Rolle</div></div>
+          <div class="small">X=D−S · Y=I−C · Weiss=natürlich · Blau=Rolle</div></div>
         <div class="row">
           <label class="toggle"><input type="checkbox" id="anonToggle"> Anonym</label>
           <label class="toggle"><input type="checkbox" id="showRoleToggle" checked> Rolle</label>
@@ -272,16 +272,16 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
       </div>
       <div class="chart-wrap"><canvas id="mapCanvas" width="900" height="540"></canvas></div>
       <div class="legend">
-        <span><span class="dot" style="background:#fff"></span>natÃ¼rlich</span>
+        <span><span class="dot" style="background:#fff"></span>natürlich</span>
         <span><span class="dot" style="background:#7cc4ff"></span>Rolle</span>
         <span><span class="dot" style="background:var(--bad)"></span>hoher Weg</span>
         <span><span class="dot" style="background:var(--warn)"></span>mittlerer Weg</span>
       </div>
       <div class="hint-grid">
-        <div class="note"><strong>oben rechts</strong> â€“ Drive+People<br><span class="small">Schnell, initiativ, sichtbar</span></div>
-        <div class="note"><strong>oben links</strong> â€“ StabilitÃ¤t+People<br><span class="small">Verbindend, teamorientiert</span></div>
-        <div class="note"><strong>unten rechts</strong> â€“ Drive+Struktur<br><span class="small">Entschlossen, analytisch</span></div>
-        <div class="note"><strong>unten links</strong> â€“ StabilitÃ¤t+Struktur<br><span class="small">VerlÃ¤sslich, systematisch</span></div>
+        <div class="note"><strong>oben rechts</strong> – Drive+People<br><span class="small">Schnell, initiativ, sichtbar</span></div>
+        <div class="note"><strong>oben links</strong> – Stabilität+People<br><span class="small">Verbindend, teamorientiert</span></div>
+        <div class="note"><strong>unten rechts</strong> – Drive+Struktur<br><span class="small">Entschlossen, analytisch</span></div>
+        <div class="note"><strong>unten links</strong> – Stabilität+Struktur<br><span class="small">Verlässlich, systematisch</span></div>
       </div>
       <div class="coach" id="coachText"></div>
     </div>
@@ -302,7 +302,7 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
 
 </div><!-- /wrap -->
 <script>
-// â”€â”€â”€ CONFIG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
 const SUPABASE_URL='https://dnoecftuybkoqvrkfvei.supabase.co';
 const ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRub2VjZnR1eWJrb3F2cmtmdmVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzIzMjAsImV4cCI6MjA4ODMwODMyMH0.XzQJtx0bxO0sk1T68c_0MczeSOdblLxpJLGRbzDMiS4';
 const EDGE_BASE=SUPABASE_URL+'/functions/v1';
@@ -310,7 +310,7 @@ const SESSION_KEY='disc-online-session-v2';
 const STORAGE_KEY='disc-dashboard-v3';
 const PARTICIPANT_URL='https://brainfusion.app/pages/disc/teilnehmer.html';
 
-// â”€â”€â”€ STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── STATE ───────────────────────────────────────────────────────────────────
 let participants=[];       // offline DISC results (JSON import)
 let onlineSession=null;    // {workshopId, code, adminToken, title, currentModule}
 let sb=null;
@@ -321,227 +321,227 @@ let respondedSet=new Set(); // aliases who responded to current module
 let liveResponses=[];      // exercise_responses for current module
 const state={anonymous:false,showRole:true,showLines:true};
 
-// â”€â”€â”€ MODULE DEFINITIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── MODULE DEFINITIONS ───────────────────────────────────────────────────────
 const MODULE_PHASES=[
-  {label:'â–¸ Tag 1 â€“ Vorbereitung',modules:[
-    {id:'waiting',        icon:'â³',name:'Bereit',        sub:'Warten'},
-    {id:'disc_test',      icon:'ðŸ“Š',name:'DISC-Test',     sub:'28Ã—2 Fragen'},
-    {id:'disc_map',       icon:'ðŸ—º',name:'Live-Map',      sub:'Beamer'},
+  {label:'▸ Tag 1 – Vorbereitung',modules:[
+    {id:'waiting',        icon:'�?�',name:'Bereit',        sub:'Warten'},
+    {id:'disc_test',      icon:'📊',name:'DISC-Test',     sub:'28×2 Fragen'},
+    {id:'disc_map',       icon:'🗺',name:'Live-Map',      sub:'Beamer'},
   ]},
-  {label:'â–¸ Tag 1 â€“ Ãœbungen',modules:[
-    {id:'intro_question', icon:'ðŸ’¬',name:'Einstiegsfrage',sub:'Freetext'},
-    {id:'kernbotschaften_info',icon:'âš¡',name:'Kernbtsch.',sub:'Info/Beamer'},
-    {id:'kernbotschaften',icon:'âš¡',name:'Kernbotschaft', sub:'Freetext'},
-    {id:'johari_quiz',    icon:'ðŸªŸ',name:'Johari Quiz',   sub:'Multiple Choice'},
-    {id:'johari_reflexion',icon:'ðŸ”',name:'Johari Refl.', sub:'Freetext'},
+  {label:'▸ Tag 1 – Übungen',modules:[
+    {id:'intro_question', icon:'💬',name:'Einstiegsfrage',sub:'Freetext'},
+    {id:'kernbotschaften_info',icon:'⚡',name:'Kernbtsch.',sub:'Info/Beamer'},
+    {id:'kernbotschaften',icon:'⚡',name:'Kernbotschaft', sub:'Freetext'},
+    {id:'johari_quiz',    icon:'🪟',name:'Johari Quiz',   sub:'Multiple Choice'},
+    {id:'johari_reflexion',icon:'�?',name:'Johari Refl.', sub:'Freetext'},
   ]},
-  {label:'â–¸ Tag 2 â€“ Vertiefen',modules:[
-    {id:'morgen_reflexion',icon:'ðŸŒ…',name:'Morgen-Check', sub:'Freetext'},
-    {id:'raci_info',      icon:'ðŸ“‹',name:'RACI Info',     sub:'Beamer'},
-    {id:'raci',           icon:'ðŸ“‹',name:'RACI',          sub:'Auswahl'},
-    {id:'gfk',            icon:'ðŸ•Š',name:'GFK',           sub:'Freetext'},
+  {label:'▸ Tag 2 – Vertiefen',modules:[
+    {id:'morgen_reflexion',icon:'🌅',name:'Morgen-Check', sub:'Freetext'},
+    {id:'raci_info',      icon:'📋',name:'RACI Info',     sub:'Beamer'},
+    {id:'raci',           icon:'📋',name:'RACI',          sub:'Auswahl'},
+    {id:'gfk',            icon:'🕊',name:'GFK',           sub:'Freetext'},
   ]},
-  {label:'â–¸ Tag 2 â€“ Abschluss',modules:[
-    {id:'steckbrief_feiern', icon:'ðŸŽ‰',name:'Steckbrief',sub:'Feiern'},
-    {id:'steckbrief_grenzen',icon:'ðŸš«',name:'Steckbrief',sub:'Grenzen'},
-    {id:'steckbrief_zumuten',icon:'ðŸ’ª',name:'Steckbrief',sub:'Zumuten'},
-    {id:'ritual',         icon:'âœï¸',name:'Ritual',        sub:'Versprechen'},
-    {id:'closing',        icon:'ðŸ†',name:'Abschluss',     sub:'Ende'},
+  {label:'▸ Tag 2 – Abschluss',modules:[
+    {id:'steckbrief_feiern', icon:'🎉',name:'Steckbrief',sub:'Feiern'},
+    {id:'steckbrief_grenzen',icon:'🚫',name:'Steckbrief',sub:'Grenzen'},
+    {id:'steckbrief_zumuten',icon:'💪',name:'Steckbrief',sub:'Zumuten'},
+    {id:'ritual',         icon:'�?�?',name:'Ritual',        sub:'Versprechen'},
+    {id:'closing',        icon:'�?�',name:'Abschluss',     sub:'Ende'},
   ]}
 ];
 const MODULES=MODULE_PHASES.flatMap(p=>p.modules);
 
 const MODULE_DETAILS={
   waiting:{
-    desc:'Workshop aktiv â€” warte bis alle Teilnehmer beigetreten sind.',
-    hints:['Teile den Code und Link mit allen Teilnehmern (Slack, E-Mail, mÃ¼ndlich)',
-      'Lass den Beamer laufen â€” er zeigt Code + URL grossformatig',
+    desc:'Workshop aktiv — warte bis alle Teilnehmer beigetreten sind.',
+    hints:['Teile den Code und Link mit allen Teilnehmern (Slack, E-Mail, mündlich)',
+      'Lass den Beamer laufen — er zeigt Code + URL grossformatig',
       'Warte bis alle in der Teilnehmerliste rechts sichtbar sind',
-      'Dann â†’ DISC-Test aktivieren'],
+      'Dann → DISC-Test aktivieren'],
     beamer:'Beamer zeigt Workshop-Code und Teilnehmer-URL',
     dataType:'joined'
   },
   disc_test:{
-    desc:'Teilnehmer fÃ¼llen den DISC-Fragebogen aus (~10-15 Min).',
-    hints:['Sag: "Geht nach eurem ersten BauchgefÃ¼hl â€” kein Richtig oder Falsch"',
-      'Sag: "WÃ¤hlt wie ihr wirklich seid, nicht wie ihr sein mÃ¶chtet"',
-      'Halte Stille wÃ¤hrend des Tests â€” keine Musik, keine GesprÃ¤che',
-      'Wenn jemand frÃ¼h fertig: "Einfach kurz warten, wir schauen gleich gemeinsam"'],
+    desc:'Teilnehmer füllen den DISC-Fragebogen aus (~10-15 Min).',
+    hints:['Sag: "Geht nach eurem ersten Bauchgefühl — kein Richtig oder Falsch"',
+      'Sag: "Wählt wie ihr wirklich seid, nicht wie ihr sein möchtet"',
+      'Halte Stille während des Tests — keine Musik, keine Gespräche',
+      'Wenn jemand früh fertig: "Einfach kurz warten, wir schauen gleich gemeinsam"'],
     beamer:'Beamer zeigt Fortschrittsbalken (x von y fertig)',
     dataType:'disc_progress'
   },
   disc_map:{
-    desc:'Alle Ergebnisse sichtbar â€” fÃ¼hre durch die Team-Quadranten-Map.',
-    hints:['Starte bei der Gesamtverteilung: "Schaut â€” so verteilt sich unser Team"',
-      'ErklÃ¤re die Quadranten: Drive+People / StabilitÃ¤t+People / etc.',
-      'Cluster zeigen: "Hier sind viele â€” das bedeutet..."',
-      'Einzelne einladen: "Wer mag kurz beschreiben, was der Test ausgelÃ¶st hat?"',
-      'Betone: "Kein Profil ist besser â€” alle bringen etwas Wesentliches"'],
+    desc:'Alle Ergebnisse sichtbar — führe durch die Team-Quadranten-Map.',
+    hints:['Starte bei der Gesamtverteilung: "Schaut — so verteilt sich unser Team"',
+      'Erkläre die Quadranten: Drive+People / Stabilität+People / etc.',
+      'Cluster zeigen: "Hier sind viele — das bedeutet..."',
+      'Einzelne einladen: "Wer mag kurz beschreiben, was der Test ausgelöst hat?"',
+      'Betone: "Kein Profil ist besser — alle bringen etwas Wesentliches"'],
     beamer:'Beamer zeigt vollbild DISC-Quadranten-Map mit allen Profilen',
     dataType:'disc_map'
   },
   intro_question:{
-    desc:'Teilnehmer schreiben ihre spontane Antwort â€” anonym mÃ¶glich.',
+    desc:'Teilnehmer schreiben ihre spontane Antwort — anonym möglich.',
     hints:['Lies die Frage laut vor bevor du das Modul aktivierst',
-      'Gib 3-4 Minuten Zeit â€” keine Diskussion vorher',
+      'Gib 3-4 Minuten Zeit — keine Diskussion vorher',
       'Wenn Antworten reinkommen: ein paar laut vorlesen (ohne Namen)',
-      'Ãœberleitung: "Was fÃ¤llt euch an diesen Antworten auf?"'],
+      'Überleitung: "Was fällt euch an diesen Antworten auf?"'],
     beamer:'Beamer zeigt die Frage + Live-Feed der Antworten',
     dataType:'live_feed'
   },
   kernbotschaften_info:{
-    desc:'Du erklÃ¤rst die 4 Kernbotschaften. Kein Input von Teilnehmern.',
+    desc:'Du erklärst die 4 Kernbotschaften. Kein Input von Teilnehmern.',
     hints:['Lies jeden Satz langsam und kommentiere ihn kurz',
       'Frage nach jedem: "Wer kennt diese Situation?"',
-      'Pause lassen â€” diese SÃ¤tze berÃ¼hren manchmal tief',
-      'Ãœberleitung: "Welcher trifft dich am meisten? â†’ gleich aufschreiben"'],
-    beamer:'Beamer zeigt statische ErklÃ¤rungsfolie',
+      'Pause lassen — diese Sätze berühren manchmal tief',
+      'Überleitung: "Welcher trifft dich am meisten? → gleich aufschreiben"'],
+    beamer:'Beamer zeigt statische Erklärungsfolie',
     dataType:'static',
     staticContent:[
-      'ðŸ’¬ "Ich sage meiner FÃ¼hrungskraft nicht alles, was ich denke."',
-      'ðŸ’¬ "Im Meeting stimme ich manchmal zu, obwohl ich anderer Meinung bin."',
-      'ðŸ’¬ "Es gibt Themen, die ich lieber mit Kollegen bespreche als mit dem Chef."',
-      'ðŸ’¬ "Ich halte manchmal Informationen zurÃ¼ck, um Konflikte zu vermeiden."'
+      '💬 "Ich sage meiner Führungskraft nicht alles, was ich denke."',
+      '💬 "Im Meeting stimme ich manchmal zu, obwohl ich anderer Meinung bin."',
+      '💬 "Es gibt Themen, die ich lieber mit Kollegen bespreche als mit dem Chef."',
+      '💬 "Ich halte manchmal Informationen zurück, um Konflikte zu vermeiden."'
     ]
   },
   kernbotschaften:{
-    desc:'Welcher der 4 SÃ¤tze trifft dich am meisten â€” und warum?',
-    hints:['Sag: "Schreibt den Satz auf, der euch am meisten getroffen hat â€” kurz warum"',
-      'Anonym-Option ist aktiviert â€” respektiere das bewusst',
+    desc:'Welcher der 4 Sätze trifft dich am meisten — und warum?',
+    hints:['Sag: "Schreibt den Satz auf, der euch am meisten getroffen hat — kurz warum"',
+      'Anonym-Option ist aktiviert — respektiere das bewusst',
       'Wenn Antworten reinkommen: Muster erkennen ("mehrere nennen Satz 2...")',
       'Frage: "Was macht es so schwer, das direkt zu sagen?"'],
-    beamer:'Beamer zeigt Live-Feed der Antworten (anonym mÃ¶glich)',
+    beamer:'Beamer zeigt Live-Feed der Antworten (anonym möglich)',
     dataType:'live_feed'
   },
   johari_quiz:{
-    desc:'Teilnehmer wÃ¤hlen Adjektive â€” Basis fÃ¼r das Johari-Fenster.',
-    hints:['ErklÃ¤re Johari kurz: "Arena=bekannt/bekannt, Blinder Fleck=unbekannt/bekannt..."',
+    desc:'Teilnehmer wählen Adjektive — Basis für das Johari-Fenster.',
+    hints:['Erkläre Johari kurz: "Arena=bekannt/bekannt, Blinder Fleck=unbekannt/bekannt..."',
       'Die Abstimmung zeigt: Was sieht das Team von sich selbst?',
-      'Wenn fertig: Auswertung unten anschauen â€” welche kommen oft?',
-      'Frage: "Was Ã¼berrascht euch? Was fehlt eurer Meinung nach?"'],
+      'Wenn fertig: Auswertung unten anschauen — welche kommen oft?',
+      'Frage: "Was überrascht euch? Was fehlt eurer Meinung nach?"'],
     beamer:'Beamer zeigt Live-Auswertung der Adjektiv-Auswahl',
     dataType:'johari'
   },
   johari_reflexion:{
-    desc:'Was siehst du an dir, was andere mÃ¶glicherweise nicht sehen?',
-    hints:['Sag: "Jetzt kommt der schwierigere Teil â€” der blinde Fleck"',
-      'Anonym-Option ist besonders wichtig hier â€” ermutige aktiv dazu',
-      'Antworten vorlesen â€” erst ohne Kommentar, dann: "Was lÃ¶st das aus?"',
-      'Pause nach dem Vorlesen â€” diese Antworten sind oft tiefgrÃ¼ndig'],
+    desc:'Was siehst du an dir, was andere möglicherweise nicht sehen?',
+    hints:['Sag: "Jetzt kommt der schwierigere Teil — der blinde Fleck"',
+      'Anonym-Option ist besonders wichtig hier — ermutige aktiv dazu',
+      'Antworten vorlesen — erst ohne Kommentar, dann: "Was löst das aus?"',
+      'Pause nach dem Vorlesen — diese Antworten sind oft tiefgründig'],
     beamer:'Beamer zeigt Live-Feed der Reflexionen',
     dataType:'live_feed'
   },
   morgen_reflexion:{
     desc:'Was ist euch gestern noch nachgegangen? Einstieg in Tag 2.',
-    hints:['SchÃ¶ner Start in Tag 2: "Was hat euch die Nacht durch begleitet?"',
-      'Ein paar Antworten vorlesen â€” das verbindet die Gruppe',
-      'Kein Richtig/Falsch â€” alle Antworten willkommen',
+    hints:['Schöner Start in Tag 2: "Was hat euch die Nacht durch begleitet?"',
+      'Ein paar Antworten vorlesen — das verbindet die Gruppe',
+      'Kein Richtig/Falsch — alle Antworten willkommen',
       'Kurz halten: 5-8 Minuten, dann weiter'],
     beamer:'Beamer zeigt Live-Feed der Morgen-Reflexionen',
     dataType:'live_feed'
   },
   raci_info:{
-    desc:'Du erklÃ¤rst das RACI-Modell. Beamer zeigt die Matrix.',
+    desc:'Du erklärst das RACI-Modell. Beamer zeigt die Matrix.',
     hints:['R = Responsible: Wer macht es konkret?',
-      'A = Accountable: Wer trÃ¤gt die Gesamtverantwortung?',
+      'A = Accountable: Wer trägt die Gesamtverantwortung?',
       'C = Consulted: Wer wird vorher gefragt?',
       'I = Informed: Wer wird nachher informiert?',
       'Nimm ein konkretes aktuelles Projekt als Beispiel'],
-    beamer:'Beamer zeigt RACI-Matrix mit ErklÃ¤rung',
+    beamer:'Beamer zeigt RACI-Matrix mit Erklärung',
     dataType:'static',
     staticContent:[
-      '<strong>R â€” Responsible:</strong> Wer macht die Arbeit? (konkrete Person/en)',
-      '<strong>A â€” Accountable:</strong> Wer trÃ¤gt die Verantwortung? (immer nur einer)',
-      '<strong>C â€” Consulted:</strong> Wer wird vorher um Input gebeten?',
-      '<strong>I â€” Informed:</strong> Wer wird nachher Ã¼ber das Ergebnis informiert?'
+      '<strong>R — Responsible:</strong> Wer macht die Arbeit? (konkrete Person/en)',
+      '<strong>A — Accountable:</strong> Wer trägt die Verantwortung? (immer nur einer)',
+      '<strong>C — Consulted:</strong> Wer wird vorher um Input gebeten?',
+      '<strong>I — Informed:</strong> Wer wird nachher über das Ergebnis informiert?'
     ]
   },
   raci:{
-    desc:'Teilnehmer wÃ¤hlen ihre typischen RACI-Rollen im Team.',
+    desc:'Teilnehmer wählen ihre typischen RACI-Rollen im Team.',
     hints:['Frage: "In welchen Rollen seht ihr euch typischerweise im Team?"',
-      'Mehrfachauswahl ist mÃ¶glich â€” das ist normal',
+      'Mehrfachauswahl ist möglich — das ist normal',
       'Auswertung unten: Wo ist das Team gut besetzt? Wo fehlt jemand?',
-      'Diskussion: "Was fÃ¤llt euch an dieser Verteilung auf?"'],
+      'Diskussion: "Was fällt euch an dieser Verteilung auf?"'],
     beamer:'Beamer zeigt RACI-Auswertung als Balkendiagramm',
     dataType:'raci'
   },
   gfk:{
-    desc:'Teilnehmer formulieren eine GFK-Aussage (Beobachtung/GefÃ¼hl/BedÃ¼rfnis/Bitte).',
-    hints:['Struktur: Beobachtung â†’ GefÃ¼hl â†’ BedÃ¼rfnis â†’ Bitte',
-      'Ermutige: "Es darf unfertig sein â€” der Prozess des Formulierens zÃ¤hlt"',
+    desc:'Teilnehmer formulieren eine GFK-Aussage (Beobachtung/Gefühl/Bedürfnis/Bitte).',
+    hints:['Struktur: Beobachtung → Gefühl → Bedürfnis → Bitte',
+      'Ermutige: "Es darf unfertig sein — der Prozess des Formulierens zählt"',
       'Wenn Antworten da: gemeinsam durch die Struktur gehen',
       'Frage: "Was war am schwierigsten zu formulieren? Warum?"'],
     beamer:'Beamer zeigt GFK-Struktur + Live-Feed der Aussagen',
     dataType:'live_feed'
   },
   steckbrief_feiern:{
-    desc:'Was lÃ¤uft gut in diesem Team? Was verdient Anerkennung?',
-    hints:['Positive Energie â€” lass die Gruppe lÃ¤cheln und stolz sein',
+    desc:'Was läuft gut in diesem Team? Was verdient Anerkennung?',
+    hints:['Positive Energie — lass die Gruppe lächeln und stolz sein',
       'Frage nach Konkretem: "Was genau feiern wir hier? Nenn ein Beispiel."',
-      'Antworten laut vorlesen â€” gemeinsam anerkennend nicken',
+      'Antworten laut vorlesen — gemeinsam anerkennend nicken',
       'Zeit: 5-8 Minuten, dann weiter zu Grenzen'],
-    beamer:'Beamer zeigt Live-Feed der StÃ¤rken',
+    beamer:'Beamer zeigt Live-Feed der Stärken',
     dataType:'live_feed'
   },
   steckbrief_grenzen:{
     desc:'Was duldet dieses Team nicht? Klare Grenzen benennen.',
-    hints:['Mutige Runde â€” ermutigen klare Grenzen zu benennen',
-      'Kein WeichspÃ¼len: "Was wirklich nicht geht bei uns â€” konkret"',
-      'Antworten vorlesen â€” erst ohne Kommentar, dann gemeinsam besprechen',
-      'Frage: "KÃ¶nnen wir uns darauf committen? Alle?"'],
+    hints:['Mutige Runde — ermutigen klare Grenzen zu benennen',
+      'Kein Weichspülen: "Was wirklich nicht geht bei uns — konkret"',
+      'Antworten vorlesen — erst ohne Kommentar, dann gemeinsam besprechen',
+      'Frage: "Können wir uns darauf committen? Alle?"'],
     beamer:'Beamer zeigt Live-Feed der Grenzen',
     dataType:'live_feed'
   },
   steckbrief_zumuten:{
     desc:'Was traut sich dieses Team zu? Raus aus der Komfortzone.',
-    hints:['Letzter Steckbrief-Schritt â€” oft schon mehr Energie in der Gruppe',
-      'Frage: "Was wÃ¼rdet ihr euch zumuten, wenn ihr noch mehr Vertrauen hÃ¤ttet?"',
-      'Antworten vorlesen: "Ja â€” das traut ihr euch zu!"',
-      'Ãœberleitung zum Ritual: "Wie machen wir das jetzt verbindlich?"'],
+    hints:['Letzter Steckbrief-Schritt — oft schon mehr Energie in der Gruppe',
+      'Frage: "Was würdet ihr euch zumuten, wenn ihr noch mehr Vertrauen hättet?"',
+      'Antworten vorlesen: "Ja — das traut ihr euch zu!"',
+      'Überleitung zum Ritual: "Wie machen wir das jetzt verbindlich?"'],
     beamer:'Beamer zeigt Live-Feed',
     dataType:'live_feed'
   },
   ritual:{
-    desc:'Jeder schreibt und unterzeichnet ein persÃ¶nliches Commitment.',
+    desc:'Jeder schreibt und unterzeichnet ein persönliches Commitment.',
     hints:['Stimmung setzen: "Das ist ein Moment der Stille und Ernsthaftigkeit"',
-      'Kein Zeitdruck â€” lass TN Zeit zum wirklichen Nachdenken',
+      'Kein Zeitdruck — lass TN Zeit zum wirklichen Nachdenken',
       'Wenn fertig: Optional vorlesen lassen (nur freiwillig)',
       '"Was ihr gerade geschrieben habt, ist ein Geschenk an euer Team"'],
     beamer:'Beamer zeigt Versprechen nach und nach',
     dataType:'live_feed'
   },
   closing:{
-    desc:'Der Workshop geht zu Ende. DankeschÃ¶n und Ausblick.',
-    hints:['Danke allen fÃ¼r Mut und Offenheit â€” das war nicht selbstverstÃ¤ndlich',
+    desc:'Der Workshop geht zu Ende. Dankeschön und Ausblick.',
+    hints:['Danke allen für Mut und Offenheit — das war nicht selbstverständlich',
       'Kurze Zusammenfassung: "Was nehmt ihr mit?"',
       'Hinweis: Team bekommt einen KI-aufbereiteten Workshop-Report',
-      'Optional: Rundrunde â€” "Ein Wort fÃ¼r heute"'],
+      'Optional: Rundrunde — "Ein Wort für heute"'],
     beamer:'Beamer zeigt goldenen Abschluss-Screen',
     dataType:'static',
-    staticContent:['ðŸ† Workshop abgeschlossen â€” DankeschÃ¶n fÃ¼r eure Offenheit und euren Mut.','âœ¨ Der Workshop-Report mit KI-Aufbereitung folgt in KÃ¼rze.']
+    staticContent:['�?� Workshop abgeschlossen — Dankeschön für eure Offenheit und euren Mut.','✨ Der Workshop-Report mit KI-Aufbereitung folgt in Kürze.']
   }
 };
 
-// â”€â”€â”€ HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
 function getMapPoint(p){return{x:(p.D||0)-(p.S||0),y:(p.I||0)-(p.C||0)}}
-function dominantType(s){return Object.entries(s).sort((a,b)=>b[1]-a[1])[0]?.[0]||'â€“'}
+function dominantType(s){return Object.entries(s).sort((a,b)=>b[1]-a[1])[0]?.[0]||'–'}
 function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0}
 function std(arr){if(!arr.length)return 0;const m=avg(arr);return Math.sqrt(avg(arr.map(v=>(v-m)**2)))}
 function axisWord(v,n,p){return v>8?p:v<-8?n:'balanciert'}
 function quadrantName(pt){
   if(pt.x>=0&&pt.y>=0)return'Drive+People';
-  if(pt.x<0&&pt.y>=0)return'StabilitÃ¤t+People';
+  if(pt.x<0&&pt.y>=0)return'Stabilität+People';
   if(pt.x>=0&&pt.y<0)return'Drive+Struktur';
-  return'StabilitÃ¤t+Struktur';
+  return'Stabilität+Struktur';
 }
 function rolePathLength(p){const n=p.map?.natural||getMapPoint(p.natural),r=p.map?.role||getMapPoint(p.role);return Math.hypot(r.x-n.x,r.y-n.y)}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function anonymize(a){if(!a)return'X';const c=a.trim();if(c.length<=2)return c[0]+'â€¢';return c[0]+'â€¢'.repeat(Math.min(c.length-1,3))}
+function anonymize(a){if(!a)return'X';const c=a.trim();if(c.length<=2)return c[0]+'•';return c[0]+'•'.repeat(Math.min(c.length-1,3))}
 function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
 function initSupabase(){if(!sb)sb=window.supabase.createClient(SUPABASE_URL,ANON_KEY);}
 function fmtTime(iso){return new Date(iso).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})}
 
-// â”€â”€â”€ STORAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
 function loadStored(){
   try{participants=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch{participants=[]}
   try{onlineSession=JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch{onlineSession=null}
@@ -549,7 +549,7 @@ function loadStored(){
 function saveStored(){localStorage.setItem(STORAGE_KEY,JSON.stringify(participants))}
 function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify(onlineSession))}
 
-// â”€â”€â”€ MODULE NAV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── MODULE NAV ───────────────────────────────────────────────────────────────
 function buildModuleGrid(){
   const grid=document.getElementById('moduleGrid');
   const activeId=onlineSession?.currentModule||'waiting';
@@ -588,7 +588,7 @@ async function activateModule(moduleId){
   }catch(e){alert('Fehler: '+e.message)}
 }
 
-// â”€â”€â”€ PARTICIPANT PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── PARTICIPANT PANEL ────────────────────────────────────────────────────────
 function renderParticipantPanel(){
   const list=document.getElementById('participantList');
   const countEl=document.getElementById('pCount');
@@ -597,29 +597,38 @@ function renderParticipantPanel(){
     countEl.textContent='0';
     return;
   }
-  countEl.textContent=allJoined.length;
-  list.innerHTML=allJoined.map(p=>{
+  // Nur Teilnehmer der letzten 8h anzeigen (verhindert alte Test-Teilnehmer)
+  const cutoff=new Date(Date.now()-8*60*60*1000);
+  const recent=allJoined.filter(p=>!p.joined_at||new Date(p.joined_at)>cutoff);
+  const totalOld=allJoined.length-recent.length;
+  countEl.textContent=String(recent.length)+(totalOld>0?' (+'+totalOld+' alt)':'');
+  if(recent.length===0){
+    list.innerHTML='<div class="feed-empty" style="padding:14px">Noch niemand heute beigetreten.<br><small>'+totalOld+' Teilnehmer aus alten Sessions gefiltert.</small></div>';
+    return;
+  }
+  list.innerHTML=recent.map(function(p){
     const alias=p.alias||'?';
     const discDone=discDoneSet.has(alias.toLowerCase());
     const responded=respondedSet.has(alias.toLowerCase());
     const dotCls=responded?'green':discDone?'blue':'gray';
     const chipCls=responded?'p-responded':discDone?'p-disc':'';
-    return`<div class="p-chip ${chipCls}">
-      <span class="p-dot ${dotCls}"></span>
-      <span class="p-name">${escapeHtml(alias)}</span>
-      <span class="p-badges">
-        ${discDone?'<span class="p-badge badge-disc">DISCâœ“</span>':''}
-        ${responded?'<span class="p-badge badge-ans">Antwortâœ“</span>':''}
-      </span>
-    </div>`;
+    const jt=p.joined_at?new Date(p.joined_at).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'}):'';
+    const badges=(discDone?'<span class="p-badge badge-disc">DISC&#10003;</span>':'')
+                +(responded?'<span class="p-badge badge-ans">&#10003;</span>':'');
+    const timeSpan=jt?'<span style="display:block;font-size:10px;color:var(--muted)">'+jt+'</span>':'';
+    return'<div class="p-chip '+chipCls+'">'
+      +'<span class="p-dot '+dotCls+'"></span>'
+      +'<div style="flex:1;min-width:0"><span class="p-name">'+alias+'</span>'+timeSpan+'</div>'
+      +'<span class="p-badges">'+badges+'</span>'
+      +'</div>';
   }).join('');
 }
 
-// â”€â”€â”€ MODULE CONTENT RENDERING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
 function renderModuleContent(moduleId){
   const area=document.getElementById('moduleContentArea');
   const detail=MODULE_DETAILS[moduleId]||MODULE_DETAILS.waiting;
-  const mod=MODULES.find(m=>m.id===moduleId)||{icon:'â“',name:moduleId};
+  const mod=MODULES.find(m=>m.id===moduleId)||{icon:'�?�',name:moduleId};
 
   let dataHTML='';
   switch(detail.dataType){
@@ -634,7 +643,7 @@ function renderModuleContent(moduleId){
 
   const hintsHTML=detail.hints?`
     <div class="mod-hints">
-      <h4>ðŸ’¡ Moderationshinweise</h4>
+      <h4>💡 Moderationshinweise</h4>
       <ul>${detail.hints.map(h=>`<li>${h}</li>`).join('')}</ul>
     </div>`:'';
 
@@ -646,12 +655,12 @@ function renderModuleContent(moduleId){
         <div class="mod-desc">${detail.desc||''}</div>
       </div>
     </div>
-    ${detail.beamer?`<div class="mod-beamer-info">ðŸ“½ ${detail.beamer}</div>`:''}
+    ${detail.beamer?`<div class="mod-beamer-info">📽 ${detail.beamer}</div>`:''}
     ${hintsHTML}
     ${dataHTML}
   </div>`;
 
-  // Canvas fÃ¼r DISC-Map zeichnen (nach DOM-Insert)
+  // Canvas für DISC-Map zeichnen (nach DOM-Insert)
   if(detail.dataType==='disc_map'){
     setTimeout(()=>{
       const c=document.getElementById('wsMapCanvas');
@@ -680,7 +689,7 @@ function renderDiscProgress(){
     <div class="progress-chips">
       ${allJoined.map(p=>{
         const ok=discDoneSet.has((p.alias||'').toLowerCase());
-        return`<div class="progress-chip ${ok?'done':'waiting'}">${escapeHtml(p.alias||'?')} ${ok?'âœ“':'â³'}</div>`;
+        return`<div class="progress-chip ${ok?'done':'waiting'}">${escapeHtml(p.alias||'?')} ${ok?'✓':'�?�'}</div>`;
       }).join('')}
     </div>`;
 }
@@ -689,7 +698,7 @@ function renderDiscMapSection(){
   return`<div class="section-title">DISC Quadranten-Map (${participants.length} Profile)</div>
     <div class="ws-map-wrap"><canvas id="wsMapCanvas" class="ws-map-canvas"></canvas></div>
     <div class="legend" style="margin-top:8px">
-      <span><span class="dot" style="background:#fff"></span>natÃ¼rlich</span>
+      <span><span class="dot" style="background:#fff"></span>natürlich</span>
       <span><span class="dot" style="background:#7cc4ff"></span>Rolle</span>
       <span><span class="dot" style="background:var(--bad)"></span>hoher Weg</span>
     </div>`;
@@ -727,7 +736,7 @@ function renderJohariSection(){
         <div class="bar-row">
           <span>${adj}</span>
           <div class="bar-bg"><div class="bar-fill bar-S" style="width:${Math.round(count/max*100)}%"></div></div>
-          <span style="color:var(--muted);text-align:right">${count}Ã—</span>
+          <span style="color:var(--muted);text-align:right">${count}×</span>
         </div>`).join('')}
     </div>${feedHtml}`;
 }
@@ -746,7 +755,7 @@ function renderRaciSection(){
         <div class="bar-row">
           <span>${labels[role]}</span>
           <div class="bar-bg"><div class="bar-fill ${colors[role]}" style="width:${Math.round(count/total*100)}%"></div></div>
-          <span style="color:var(--muted)">${count}Ã—</span>
+          <span style="color:var(--muted)">${count}×</span>
         </div>`).join('')}
     </div>`;
 }
@@ -758,9 +767,9 @@ function renderStaticSection(detail){
   </div>`;
 }
 
-// â”€â”€â”€ ONLINE WORKSHOP CORE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ONLINE WORKSHOP CORE ─────────────────────────────────────────────────────
 async function createOnlineWorkshop(){
-  const title=prompt('Workshop-Titel:','WahrheitsfÃ¤higkeit im Team Â· '+new Date().toLocaleDateString('de-CH'));
+  const title=prompt('Workshop-Titel:','Wahrheitsfähigkeit im Team · '+new Date().toLocaleDateString('de-CH'));
   if(!title)return;
   try{
     const res=await fetch(EDGE_BASE+'/create-workshop',{
@@ -854,11 +863,11 @@ async function refreshOnlineWorkshop(){
 
     // 4. Status-Bar aktualisieren
     const doneLabel=online.length===1?'1 Ergebnis':`${online.length} Ergebnisse`;
-    const joinExtra=joinedCount>online.length?` Â· ${joinedCount} beigetreten`:'';
+    const joinExtra=joinedCount>online.length?` · ${joinedCount} beigetreten`:'';
     document.getElementById('onlineStatus').textContent=
-      `${doneLabel} eingegangen${joinExtra} Â· ${new Date().toLocaleTimeString('de-CH')}`;
+      `${doneLabel} eingegangen${joinExtra} · ${new Date().toLocaleTimeString('de-CH')}`;
 
-    // 5. Aktives Modul aus DB holen (fÃ¼r Sync)
+    // 5. Aktives Modul aus DB holen (für Sync)
     if(onlineSession?.workshopId){
       const{data:ws}=await sb.from('workshops')
         .select('current_module').eq('id',onlineSession.workshopId).single();
@@ -924,7 +933,7 @@ function hideOnlineUI(){
   document.getElementById('refreshWorkshopBtn').style.display='none';
 }
 
-// â”€â”€â”€ OFFLINE: DISC-MAP CANVAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── OFFLINE: DISC-MAP CANVAS ─────────────────────────────────────────────────
 function drawMap(canvas,data,small=false){
   const ctx=canvas.getContext('2d');
   const w=canvas.width,h=canvas.height,pad=small?40:60;
@@ -985,7 +994,7 @@ function renderCanvas(){
   if(c)drawMap(c,participants);
 }
 
-// â”€â”€â”€ OFFLINE: STATS, TABLE, COACH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── OFFLINE: STATS, TABLE, COACH ────────────────────────────────────────────
 function teamSummary(){
   if(!participants.length)return null;
   const dims=['D','I','S','C'];
@@ -1014,9 +1023,9 @@ function renderStats(){
   const s=teamSummary();
   document.getElementById('statCount').textContent=participants.length;
   document.getElementById('statStress').textContent=s?Math.round(avg(participants.map(p=>p.stress))):'0';
-  document.getElementById('statDominant').innerHTML=s?`<span class="pill p${s.dom}">${s.dom}</span>`:'â€“';
-  document.getElementById('statAxisX').textContent=s?axisWord(s.axisX,'ruhiger','schneller'):'â€“';
-  document.getElementById('statAxisY').textContent=s?axisWord(s.axisY,'strukturiert','people'):'â€“';
+  document.getElementById('statDominant').innerHTML=s?`<span class="pill p${s.dom}">${s.dom}</span>`:'–';
+  document.getElementById('statAxisX').textContent=s?axisWord(s.axisX,'ruhiger','schneller'):'–';
+  document.getElementById('statAxisY').textContent=s?axisWord(s.axisY,'strukturiert','people'):'–';
 }
 
 function renderRows(){
@@ -1044,33 +1053,33 @@ function renderCoach(){
   const s=teamSummary();
   const notes=[];
   notes.push(`Das Team wirkt <strong>${axisWord(s.axisX,'eher stabilisierend','eher tempobetont')}</strong> und <strong>${axisWord(s.axisY,'eher faktenorientiert','eher people-orientiert')}</strong>.`);
-  notes.push(`Dominanter Stil: <strong>${s.counts[0][0]}</strong> (${s.counts[0][1]}Ã—). UnterreprÃ¤sentiert: <strong>${s.under}</strong>.`);
-  if(s.highStress>=4)notes.push(`<span class="danger-text">${s.highStress} Personen mit hohem Rollenstress</span> â€” Follow-up empfohlen.`);
-  else if(s.highStress>0)notes.push(`<span class="warn-text">${s.highStress} Person(en) mit erhÃ¶htem Rollenstress</span>.`);
-  else notes.push(`<span class="ok-text">Kein auffÃ¤lliger Rollenstress</span> â€” Profile passen gut zu den Rollen.`);
+  notes.push(`Dominanter Stil: <strong>${s.counts[0][0]}</strong> (${s.counts[0][1]}×). Unterrepräsentiert: <strong>${s.under}</strong>.`);
+  if(s.highStress>=4)notes.push(`<span class="danger-text">${s.highStress} Personen mit hohem Rollenstress</span> — Follow-up empfohlen.`);
+  else if(s.highStress>0)notes.push(`<span class="warn-text">${s.highStress} Person(en) mit erhöhtem Rollenstress</span>.`);
+  else notes.push(`<span class="ok-text">Kein auffälliger Rollenstress</span> — Profile passen gut zu den Rollen.`);
   const rules=[];
-  if(s.axisX>8)rules.push('Entscheidungen bewusst verlangsamen â€” Gegenchecks einbauen.');
-  if(s.axisX<-8)rules.push('Klare Entscheidungsfenster setzen â€” nicht endlos vorprÃ¼fen.');
+  if(s.axisX>8)rules.push('Entscheidungen bewusst verlangsamen — Gegenchecks einbauen.');
+  if(s.axisX<-8)rules.push('Klare Entscheidungsfenster setzen — nicht endlos vorprüfen.');
   if(s.axisY>8)rules.push('Meetings mit klaren Next Steps abschliessen.');
   if(s.axisY<-8)rules.push('In Retros explizit Stimmung ansprechen.');
-  if(!rules.length)rules.push('Team gut balanciert â€” Spielregeln feinjustieren.');
-  rules.push('Pairing-Idee: "Drive+Struktur" mit "StabilitÃ¤t+People" zusammenbringen.');
+  if(!rules.length)rules.push('Team gut balanciert — Spielregeln feinjustieren.');
+  rules.push('Pairing-Idee: "Drive+Struktur" mit "Stabilität+People" zusammenbringen.');
   const topC=Object.entries(s.clusters).sort((a,b)=>b[1]-a[1])[0];
-  const cLabel={q1:'Drive+People',q2:'StabilitÃ¤t+People',q3:'Drive+Struktur',q4:'StabilitÃ¤t+Struktur'}[topC[0]];
-  dna.innerHTML=`<strong>Team-DNA</strong><br><span class="small">Hauptcluster: <strong>${cLabel}</strong> (${topC[1]}Ã—)<br>Ã˜ Rollenweg: <strong>${Math.round(s.pathAvg)}</strong></span>`;
+  const cLabel={q1:'Drive+People',q2:'Stabilität+People',q3:'Drive+Struktur',q4:'Stabilität+Struktur'}[topC[0]];
+  dna.innerHTML=`<strong>Team-DNA</strong><br><span class="small">Hauptcluster: <strong>${cLabel}</strong> (${topC[1]}×)<br>Ø Rollenweg: <strong>${Math.round(s.pathAvg)}</strong></span>`;
   follow.innerHTML=`<strong>Follow-up</strong><br><span class="small">1. ${rules[0]}<br>2. ${rules[1]||'Tempo vs Sorgfalt besprechen.'}</span>`;
   el.innerHTML=`<h3 style="margin:14px 0 8px;font-size:14px">Team-Hinweise</h3>${notes.map(t=>`<p>${t}</p>`).join('')}`;
 }
 
 function renderOffline(){renderStats();renderRows();renderCoach();renderCanvas()}
 
-// â”€â”€â”€ FILE IMPORT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── FILE IMPORT ──────────────────────────────────────────────────────────────
 async function importFiles(files){
   for(const file of files){
     const text=await file.text();
     try{
       const obj=JSON.parse(text);
-      if(!obj||obj.schema!=='disc-workshop-export-v1')throw new Error('Kein gÃ¼ltiger Export');
+      if(!obj||obj.schema!=='disc-workshop-export-v1')throw new Error('Kein gültiger Export');
       const p={
         alias:(obj.participant?.alias||'unbekannt').trim(),
         naturalType:obj.naturalType||dominantType(obj.natural||{}),
@@ -1114,7 +1123,7 @@ function exportCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='disc_team.csv';a.click();
 }
 
-// â”€â”€â”€ EVENTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── EVENTS ───────────────────────────────────────────────────────────────────
 document.getElementById('createWorkshopBtn').addEventListener('click',createOnlineWorkshop);
 document.getElementById('connectWorkshopBtn').addEventListener('click',connectOnlineWorkshop);
 document.getElementById('refreshWorkshopBtn').addEventListener('click',refreshOnlineWorkshop);
@@ -1123,13 +1132,13 @@ document.getElementById('fileInput').addEventListener('change',e=>importFiles([.
 document.getElementById('demoBtn').addEventListener('click',loadDemo);
 document.getElementById('csvBtn').addEventListener('click',exportCSV);
 document.getElementById('clearBtn').addEventListener('click',()=>{
-  if(confirm('Alle lokalen Daten lÃ¶schen?')){participants=[];saveStored();renderOffline()}
+  if(confirm('Alle lokalen Daten löschen?')){participants=[];saveStored();renderOffline()}
 });
 document.getElementById('anonToggle').addEventListener('change',e=>{state.anonymous=e.target.checked;renderOffline()});
 document.getElementById('showRoleToggle').addEventListener('change',e=>{state.showRole=e.target.checked;renderCanvas()});
 document.getElementById('showLinesToggle').addEventListener('change',e=>{state.showLines=e.target.checked;renderCanvas()});
 
-// â”€â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 loadStored();
 renderOffline();
 if(onlineSession?.code&&onlineSession?.adminToken){
