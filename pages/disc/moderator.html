@@ -1,122 +1,257 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wahrheitsfähigkeit im Team – Dashboard</title>
-  <style>
-    :root {
-      --bg:#0b1020; --surface:#141b2d; --surface2:#1c2740; --surface3:#101726; --border:#2b3657;
-      --text:#ecf1ff; --muted:#9ca9cc;
-      --D:#e84a5f; --I:#f4a261; --S:#2a9d8f; --C:#4a90d9;
-      --good:#3ecf8e; --warn:#f7c46c; --bad:#ff8e8e;
-      --quad1:rgba(232,74,95,.08); --quad2:rgba(244,162,97,.08);
-      --quad3:rgba(74,144,217,.08); --quad4:rgba(42,157,143,.08);
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,#0a1020,#0d1428 30%,#0a1020);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
-    .wrap{max-width:1380px;margin:0 auto;padding:24px}
-    .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:20px}
-    h1{margin:0;font-size:32px;letter-spacing:.2px}
-    .sub{color:var(--muted);margin-top:6px;max-width:780px;line-height:1.45}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .btn{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:10px;cursor:pointer;font-size:14px;transition:background .15s}
-    .btn:hover{background:var(--surface2)}
-    .btn.primary{background:linear-gradient(135deg,var(--C),#6aa7e4);border:none;font-weight:600}
-    .btn.green{background:linear-gradient(135deg,#1a6b4a,#2a9d8f);border:none;font-weight:600}
-    .btn.danger{background:linear-gradient(135deg,#6b1a1a,var(--bad));border:none}
-    .toggle{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;user-select:none;font-size:14px}
-    .grid{display:grid;grid-template-columns:1.35fr .9fr;gap:18px}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid var(--border);border-radius:20px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.22)}
-    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
-    .stat{background:var(--surface2);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,.03)}
-    .stat .k{font-size:13px;color:var(--muted)} .stat .v{font-size:28px;font-weight:700;margin-top:6px}
-    .chart-wrap{position:relative;background:#0f1528;border:1px solid var(--border);border-radius:18px;padding:12px;overflow:hidden}
-    canvas{width:100%;height:600px;display:block}
-    .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:14px}
-    .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
-    .list{max-height:960px;overflow:auto}
-    table{width:100%;border-collapse:collapse;font-size:14px}
-    th,td{padding:10px 8px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
-    th{position:sticky;top:0;background:var(--surface);z-index:2;font-size:13px;color:var(--muted)}
-    .pill{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:999px;color:#fff;font-weight:700;font-size:13px}
-    .pD{background:var(--D)} .pI{background:var(--I)} .pS{background:var(--S)} .pC{background:var(--C)}
-    .coach p{margin:.5rem 0;color:#d7dff8;line-height:1.45;font-size:14px}
-    .small{font-size:13px;color:var(--muted)}
-    .empty{color:var(--muted);padding:26px 0;text-align:center}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .danger-text{color:var(--bad)} .ok-text{color:#a8f0c8} .warn-text{color:var(--warn)}
-    .split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-    .note{padding:12px 14px;border-radius:14px;background:var(--surface3);border:1px solid var(--border);line-height:1.5;font-size:14px}
-    .hint-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-    .online-bar{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-    .online-bar .code{font-family:monospace;font-size:24px;font-weight:700;letter-spacing:4px;color:#fff;background:#0b1020;padding:6px 16px;border-radius:8px;border:1px solid var(--border)}
-    .online-bar .status{font-size:13px;color:var(--muted)}
-    .pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--good);margin-right:6px;animation:pulse 1.5s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-    @media (max-width:1140px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}canvas{height:480px}}
-    @media (max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.split,.hint-grid{grid-template-columns:1fr}}
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Wahrheitsfähigkeit im Team — Dashboard</title>
+<style>
+:root{
+  --bg:#0b1020;--surf:#141b2d;--surf2:#1c2740;--surf3:#101726;--border:#2b3657;
+  --text:#ecf1ff;--muted:#9ca9cc;
+  --D:#e84a5f;--I:#f4a261;--S:#2a9d8f;--C:#4a90d9;
+  --good:#3ecf8e;--warn:#f7c46c;--bad:#ff8e8e;--gold:#c9a84c;
+  --quad1:rgba(232,74,95,.08);--quad2:rgba(244,162,97,.08);
+  --quad3:rgba(74,144,217,.08);--quad4:rgba(42,157,143,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(180deg,#0a1020,#0d1428 30%,#0a1020);color:var(--text);
+  font-family:Inter,system-ui,'Segoe UI',sans-serif;min-height:100vh}
+.wrap{max-width:1440px;margin:0 auto;padding:20px 24px}
 
-    /* ─── MODULE PANEL ─── */
-    .module-panel{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:none}
-    .module-panel-title{font-size:13px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
-    .module-phase-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin:12px 0 6px;border-bottom:1px solid var(--border);padding-bottom:4px}
-    .module-phase-label:first-child{margin-top:0}
-    .module-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-    @media(max-width:1100px){.module-grid{grid-template-columns:repeat(4,1fr)}}
-    @media(max-width:900px){.module-grid{grid-template-columns:repeat(3,1fr)}}
-    .module-btn{background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;transition:all .15s;position:relative}
-    .module-btn:hover{background:var(--surface2);border-color:#4a6080}
-    .module-btn.active{background:linear-gradient(135deg,rgba(42,157,143,.25),rgba(74,144,217,.15));border-color:var(--S);box-shadow:0 0 12px rgba(42,157,143,.2)}
-    .module-btn.done{opacity:.5}
-    .module-btn .m-icon{font-size:20px;margin-bottom:4px}
-    .module-btn .m-name{font-size:11px;color:var(--text);font-weight:600;line-height:1.3}
-    .module-btn .m-sub{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.2}
-    .module-btn .m-badge{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--S)}
-    .module-btn.active .m-name{color:#7ff0e0}
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+/* HEADER */
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:26px;letter-spacing:.2px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--surf);border:1px solid var(--border);color:var(--text);padding:8px 14px;
+  border-radius:10px;cursor:pointer;font-size:13px;transition:background .15s;white-space:nowrap}
+.btn:hover{background:var(--surf2)}.btn.primary{background:linear-gradient(135deg,var(--C),#6aa7e4);border:none;font-weight:600}
+.btn.green{background:linear-gradient(135deg,#1a6b4a,#2a9d8f);border:none;font-weight:600}
+.btn.danger{background:linear-gradient(135deg,#6b1a1a,var(--bad));border:none}
+.btn.gold{background:linear-gradient(135deg,#5a3e10,var(--gold));border:none;font-weight:600}
+
+/* ONLINE BAR */
+.online-bar{background:var(--surf2);border:1px solid var(--border);border-radius:14px;
+  padding:12px 18px;margin-bottom:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.online-bar .code{font-family:monospace;font-size:22px;font-weight:700;letter-spacing:4px;
+  color:#fff;background:#0b1020;padding:5px 14px;border-radius:8px;border:1px solid var(--border)}
+.pulse{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);
+  margin-right:6px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.small{font-size:12px;color:var(--muted)}
+
+/* MODULE PANEL */
+.module-panel{background:var(--surf2);border:1px solid var(--border);border-radius:14px;
+  padding:12px 18px;margin-bottom:14px}
+.module-panel-title{font-size:11px;color:var(--muted);margin-bottom:10px;
+  text-transform:uppercase;letter-spacing:1.2px}
+.module-phase-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;
+  margin:10px 0 5px;border-bottom:1px solid var(--border);padding-bottom:3px}
+.module-phase-label:first-child{margin-top:0}
+.module-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;margin-bottom:2px}
+@media(max-width:1200px){.module-grid{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:900px){.module-grid{grid-template-columns:repeat(4,1fr)}}
+.module-btn{background:var(--surf3);border:1px solid var(--border);border-radius:9px;
+  padding:7px 5px;cursor:pointer;text-align:center;transition:all .15s;position:relative}
+.module-btn:hover{background:var(--surf2);border-color:#4a6080}
+.module-btn.active{background:linear-gradient(135deg,rgba(42,157,143,.25),rgba(74,144,217,.15));
+  border-color:var(--S);box-shadow:0 0 10px rgba(42,157,143,.2)}
+.module-btn .m-badge{position:absolute;top:4px;right:4px;width:7px;height:7px;
+  border-radius:50%;background:var(--S)}
+.module-btn .m-icon{font-size:16px;margin-bottom:2px}
+.module-btn .m-name{font-size:9.5px;color:var(--text);font-weight:600;line-height:1.2}
+.module-btn .m-sub{font-size:9px;color:var(--muted);margin-top:1px}
+.module-btn.active .m-name{color:#7ff0e0}
+
+/* WORKSHOP GRID */
+.ws-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+@media(max-width:1100px){.ws-grid{grid-template-columns:1fr}}
+
+/* MODULE CONTENT CARD */
+.module-card{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.01));
+  border:1px solid var(--border);border-radius:18px;padding:20px}
+.module-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;
+  padding-bottom:14px;border-bottom:1px solid var(--border)}
+.mod-icon-big{font-size:36px;line-height:1}
+.mod-header-text h2{font-size:20px;margin:0 0 3px}
+.mod-desc{font-size:13px;color:var(--muted)}
+.mod-beamer-info{font-size:12px;color:var(--C);background:rgba(74,144,217,.08);
+  border:1px solid rgba(74,144,217,.18);border-radius:8px;padding:5px 12px;
+  margin-bottom:12px;display:inline-block}
+.mod-hints{background:var(--surf3);border:1px solid var(--border);border-radius:12px;
+  padding:13px 16px;margin-bottom:14px}
+.mod-hints h4{font-size:11px;color:var(--gold);text-transform:uppercase;
+  letter-spacing:1.2px;margin-bottom:8px}
+.mod-hints ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.mod-hints li{font-size:13px;color:var(--muted);padding-left:18px;position:relative;line-height:1.4}
+.mod-hints li::before{content:'→';position:absolute;left:0;color:var(--gold)}
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
+  margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* LIVE FEED */
+.live-feed-wrap{max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.feed-card{background:var(--surf2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 14px;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.feed-alias{font-weight:700;color:var(--S);font-size:12px;margin-bottom:4px;
+  display:flex;justify-content:space-between}
+.feed-anon{color:var(--muted)}
+.feed-time{font-size:11px;color:var(--muted);font-weight:400}
+.feed-content{color:var(--text);line-height:1.5;font-size:13px}
+.feed-empty{color:var(--muted);font-size:13px;padding:20px;text-align:center;
+  background:var(--surf3);border-radius:10px;line-height:1.5}
+
+/* DISC PROGRESS */
+.progress-bar-outer{background:var(--surf3);border-radius:10px;height:14px;overflow:hidden;margin-bottom:6px}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--S),var(--C));
+  transition:width .6s ease;border-radius:10px}
+.progress-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.progress-chip{background:var(--surf3);border:1px solid var(--border);border-radius:8px;
+  padding:4px 10px;font-size:12px;transition:all .3s}
+.progress-chip.done{border-color:var(--good);color:var(--good)}
+.progress-chip.waiting{color:var(--muted)}
+
+/* BARS (johari, raci) */
+.bar-rows{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:grid;grid-template-columns:130px 1fr 28px;gap:8px;align-items:center;font-size:13px}
+.bar-bg{background:var(--surf3);border-radius:6px;height:11px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;transition:width .5s}
+.bar-S{background:var(--S)}.bar-D{background:var(--D)}.bar-I{background:var(--I)}.bar-C{background:var(--C)}
+
+/* STATIC INFO CARDS */
+.info-cards{display:flex;flex-direction:column;gap:7px}
+.info-card{background:var(--surf3);border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;font-size:13px;line-height:1.5}
+.info-card strong{color:var(--I)}
+
+/* CANVAS IN WORKSHOP */
+.ws-map-wrap{background:#0f1528;border:1px solid var(--border);border-radius:12px;
+  padding:8px;overflow:hidden}
+.ws-map-canvas{width:100%;height:420px;display:block}
+
+/* PARTICIPANT PANEL */
+.participant-panel{background:var(--surf);border:1px solid var(--border);border-radius:18px;
+  padding:16px;position:sticky;top:20px}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.panel-header h3{font-size:14px;margin:0;font-weight:700}
+.p-count-badge{background:var(--surf2);border:1px solid var(--border);border-radius:20px;
+  padding:2px 8px;font-size:12px;color:var(--muted)}
+.participant-list{display:flex;flex-direction:column;gap:5px;max-height:560px;overflow-y:auto}
+.p-chip{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:center;
+  background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;
+  font-size:12px;transition:border-color .3s}
+.p-chip.p-responded{border-color:rgba(62,207,142,.35)}
+.p-chip.p-disc{border-color:rgba(74,144,217,.25)}
+.p-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.p-dot.green{background:var(--good)}.p-dot.blue{background:var(--C)}.p-dot.gray{background:#3a3a5a}
+.p-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.p-badges{display:flex;gap:3px;justify-content:flex-end}
+.p-badge{font-size:9px;padding:1px 5px;border-radius:20px}
+.badge-disc{background:rgba(74,144,217,.15);color:var(--C)}
+.badge-ans{background:rgba(62,207,142,.15);color:var(--good)}
+.panel-legend{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:4px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted)}
+
+/* OFFLINE ANALYSIS VIEW */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--surf2);border-radius:14px;padding:13px;border:1px solid rgba(255,255,255,.03)}
+.stat .k{font-size:12px;color:var(--muted)}.stat .v{font-size:26px;font-weight:700;margin-top:5px}
+.offline-grid{display:grid;grid-template-columns:1.35fr .9fr;gap:16px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));
+  border:1px solid var(--border);border-radius:18px;padding:18px}
+.chart-wrap{background:#0f1528;border:1px solid var(--border);border-radius:14px;padding:10px;overflow:hidden}
+canvas{width:100%;height:540px;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:12px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.list{max-height:860px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 7px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;
+  border-radius:999px;color:#fff;font-weight:700;font-size:11px}
+.pD{background:var(--D)}.pI{background:var(--I)}.pS{background:var(--S)}.pC{background:var(--C)}
+.note{padding:11px 13px;border-radius:12px;background:var(--surf3);border:1px solid var(--border);
+  line-height:1.5;font-size:12px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.hint-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.toggle{background:var(--surf);border:1px solid var(--border);color:var(--text);padding:7px 12px;
+  border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-size:12px}
+.empty{color:var(--muted);padding:22px 0;text-align:center}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.danger-text{color:var(--bad)}.ok-text{color:#a8f0c8}.warn-text{color:var(--warn)}
+.coach p{margin:.35rem 0;color:#d7dff8;line-height:1.45;font-size:13px}
+@media(max-width:1140px){.offline-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.split,.hint-grid{grid-template-columns:1fr}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="top">
-    <div>
-      <h1>Wahrheitsfähigkeit im Team</h1>
-      <div class="sub">Moderator-Ansicht. Erstelle einen Workshop und sieh zu, wie alle Ergebnisse live eingehen.</div>
+<!-- ─── HEADER ─── -->
+<div class="top">
+  <div>
+    <h1>Wahrheitsfähigkeit im Team</h1>
+    <div class="sub">Moderator-Dashboard · Steuere Module, sieh Antworten live, behalte den Überblick</div>
+  </div>
+  <div class="actions">
+    <button class="btn green" id="createWorkshopBtn">+ Workshop erstellen</button>
+    <button class="btn primary" id="connectWorkshopBtn">Workshop verbinden</button>
+    <button class="btn" id="refreshWorkshopBtn" style="display:none">🔄</button>
+    <label class="btn">JSON <input id="fileInput" type="file" accept=".json" multiple hidden></label>
+    <button class="btn" id="demoBtn">Demo</button>
+    <button class="btn" id="csvBtn">CSV</button>
+    <button class="btn danger" id="clearBtn">Löschen</button>
+  </div>
+</div>
+
+<!-- ─── STATUS BAR ─── -->
+<div class="online-bar" id="onlineBar" style="display:none">
+  <div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:3px"><span class="pulse"></span>Live-Workshop aktiv</div>
+    <div class="code" id="onlineCode">–</div>
+  </div>
+  <div class="small" id="onlineStatus">Warte auf Teilnehmer...</div>
+  <div style="margin-left:auto;display:flex;flex-direction:column;gap:3px">
+    <div class="small">Teilnehmer-Link (mit Code):</div>
+    <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:12px">–</a>
+  </div>
+  <button class="btn gold" onclick="window.open('beamer.html','beamer','width=1920,height=1080')">📽 Beamer</button>
+  <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
+</div>
+
+<!-- ─── MODULE NAV ─── -->
+<div class="module-panel" id="modulePanel" style="display:none">
+  <div class="module-panel-title">🎯 Modul aktivieren — Teilnehmer sehen dies sofort auf ihrem Notebook</div>
+  <div id="moduleGrid"></div>
+</div>
+
+<!-- ─── WORKSHOP VIEW (dynamisch) ─── -->
+<div id="workshopView" style="display:none">
+  <div class="ws-grid">
+    <div id="moduleContentArea">
+      <div class="module-card"><div class="feed-empty">Wähle ein Modul oben...</div></div>
     </div>
-    <div class="actions">
-      <button class="btn green" id="createWorkshopBtn">+ Online-Workshop erstellen</button>
-      <button class="btn primary" id="connectWorkshopBtn">Workshop verbinden</button>
-      <button class="btn" id="refreshWorkshopBtn" style="display:none">🔄 Aktualisieren</button>
-      <label class="btn">JSON importieren <input id="fileInput" type="file" accept=".json" multiple hidden></label>
-      <button class="btn" id="demoBtn">Demo-Daten</button>
-      <button class="btn" id="csvBtn">CSV</button>
-      <button class="btn danger" id="clearBtn">Alles löschen</button>
+    <div class="participant-panel">
+      <div class="panel-header">
+        <h3>Teilnehmer</h3>
+        <span class="p-count-badge" id="pCount">0</span>
+      </div>
+      <div class="participant-list" id="participantList">
+        <div class="feed-empty" style="padding:14px">Warte auf Teilnehmer...</div>
+      </div>
+      <div class="panel-legend">
+        <div class="legend-item"><span class="p-dot green" style="display:inline-block;flex-shrink:0"></span>Hat aktuelle Aufgabe beantwortet</div>
+        <div class="legend-item"><span class="p-dot blue" style="display:inline-block;flex-shrink:0"></span>DISC fertig, wartet</div>
+        <div class="legend-item"><span class="p-dot gray" style="display:inline-block;flex-shrink:0"></span>Beigetreten</div>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- Module Navigation Panel (hidden by default) -->
-  <div class="module-panel" id="modulePanel">
-    <div class="module-panel-title">🎯 Workshop-Modul aktivieren — Teilnehmer sehen dies sofort auf ihrem Notebook</div>
-    <div id="moduleGrid"></div>
-  </div>
-
-  <!-- Online Workshop Status Bar (hidden by default) -->
-  <div class="online-bar" id="onlineBar" style="display:none">
-    <div>
-      <div class="status"><span class="pulse"></span>Live-Workshop aktiv</div>
-      <div class="code" id="onlineCode">–</div>
-    </div>
-    <div class="small" id="onlineStatus">Warte auf Teilnehmer...</div>
-    <div style="margin-left:auto">
-      <div class="small">Teilnehmer-Link:</div>
-      <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:13px">brainfusion.app/pages/disc/teilnehmer.html</a>
-    </div>
-    <button class="btn" id="openBeamerBtn" onclick="window.open('beamer.html','beamer','width=1920,height=1080')" style="background:var(--C);color:#fff;margin-right:8px">Beamer öffnen</button>
-    <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
-  </div>
-
+<!-- ─── OFFLINE VIEW (JSON-Import / Demo) ─── -->
+<div id="offlineView">
   <div class="stats">
     <div class="stat"><div class="k">Teilnehmer</div><div class="v" id="statCount">0</div></div>
     <div class="stat"><div class="k">Ø Rollenstress</div><div class="v" id="statStress">0</div></div>
@@ -124,48 +259,39 @@
     <div class="stat"><div class="k">Teamtendenz X</div><div class="v" id="statAxisX">–</div></div>
     <div class="stat"><div class="k">Arbeitsmodus Y</div><div class="v" id="statAxisY">–</div></div>
   </div>
-
-  <div class="grid">
+  <div class="offline-grid">
     <div class="card">
       <div class="row" style="justify-content:space-between;margin-bottom:12px">
-        <div>
-          <h2 style="margin:0 0 4px 0">Quadranten-Map</h2>
-          <div class="small">X = D − S · Y = I − C · Weiss = natürlich · Blau = Rolle</div>
-        </div>
+        <div><h2 style="margin:0 0 4px;font-size:18px">Quadranten-Map</h2>
+          <div class="small">X=D−S · Y=I−C · Weiss=natürlich · Blau=Rolle</div></div>
         <div class="row">
-          <label class="toggle"><input type="checkbox" id="anonToggle"> Namen ausblenden</label>
-          <label class="toggle"><input type="checkbox" id="showRoleToggle" checked> Rolle zeigen</label>
-          <label class="toggle"><input type="checkbox" id="showLinesToggle" checked> Weg zeigen</label>
+          <label class="toggle"><input type="checkbox" id="anonToggle"> Anonym</label>
+          <label class="toggle"><input type="checkbox" id="showRoleToggle" checked> Rolle</label>
+          <label class="toggle"><input type="checkbox" id="showLinesToggle" checked> Weg</label>
         </div>
       </div>
-      <div class="chart-wrap"><canvas id="mapCanvas" width="920" height="600"></canvas></div>
+      <div class="chart-wrap"><canvas id="mapCanvas" width="900" height="540"></canvas></div>
       <div class="legend">
         <span><span class="dot" style="background:#fff"></span>natürlich</span>
         <span><span class="dot" style="background:#7cc4ff"></span>Rolle</span>
-        <span><span class="dot" style="background:var(--bad)"></span>hoher Rollenweg</span>
-        <span><span class="dot" style="background:var(--warn)"></span>mittlerer Rollenweg</span>
+        <span><span class="dot" style="background:var(--bad)"></span>hoher Weg</span>
+        <span><span class="dot" style="background:var(--warn)"></span>mittlerer Weg</span>
       </div>
       <div class="hint-grid">
-        <div class="note"><strong>oben rechts</strong> – Drive + People<br><span class="small">Schnell, initiativ, sichtbar</span></div>
-        <div class="note"><strong>oben links</strong> – Stabilität + People<br><span class="small">Verbindend, teamorientiert</span></div>
-        <div class="note"><strong>unten rechts</strong> – Drive + Struktur<br><span class="small">Entschlossen, analytisch</span></div>
-        <div class="note"><strong>unten links</strong> – Stabilität + Struktur<br><span class="small">Verlässlich, systematisch</span></div>
+        <div class="note"><strong>oben rechts</strong> – Drive+People<br><span class="small">Schnell, initiativ, sichtbar</span></div>
+        <div class="note"><strong>oben links</strong> – Stabilität+People<br><span class="small">Verbindend, teamorientiert</span></div>
+        <div class="note"><strong>unten rechts</strong> – Drive+Struktur<br><span class="small">Entschlossen, analytisch</span></div>
+        <div class="note"><strong>unten links</strong> – Stabilität+Struktur<br><span class="small">Verlässlich, systematisch</span></div>
       </div>
       <div class="coach" id="coachText"></div>
     </div>
-
     <div class="card list">
-      <h2 style="margin-top:0">Teilnehmerübersicht</h2>
-      <div id="waitingParticipantsBox" style="display:none;background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px"></div>
-      <div id="exerciseResponsesBox" style="display:none;background:var(--surface3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
-        <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--S)">💪 Übungs-Antworten <span id="exerciseResponseCount" style="font-weight:400;color:var(--text-muted)">(0)</span></div>
-        <div id="exerciseResponsesList" style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
-      </div>
+      <h2 style="margin-top:0;margin-bottom:12px;font-size:17px">Teilnehmer</h2>
       <table>
-        <thead><tr><th>Alias</th><th>N</th><th>R</th><th>Stress</th><th>Quadrant</th></tr></thead>
+        <thead><tr><th>Name</th><th>N</th><th>R</th><th>Stress</th><th>Quadrant</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
-      <div id="emptyState" class="empty">Noch keine Daten vorhanden.</div>
+      <div id="emptyState" class="empty">Noch keine Daten.</div>
       <div class="split">
         <div class="note" id="teamDnaBox"><strong>Team-DNA</strong><br><span class="small">Nach Import berechnet.</span></div>
         <div class="note" id="followUpBox"><strong>Follow-up</strong><br><span class="small">Nach Import berechnet.</span></div>
@@ -174,365 +300,716 @@
   </div>
 </div>
 
+</div><!-- /wrap -->
 <script>
-// ─── CONFIG ───────────────────────────────────────
-const SUPABASE_URL = 'https://dnoecftuybkoqvrkfvei.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRub2VjZnR1eWJrb3F2cmtmdmVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzIzMjAsImV4cCI6MjA4ODMwODMyMH0.XzQJtx0bxO0sk1T68c_0MczeSOdblLxpJLGRbzDMiS4';
-const EDGE_BASE = SUPABASE_URL + '/functions/v1';
-const STORAGE_KEY = 'disc-dashboard-v3';
-const SESSION_KEY = 'disc-online-session-v2';
-const PARTICIPANT_URL = 'https://brainfusion.app/pages/disc/teilnehmer.html';
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const SUPABASE_URL='https://dnoecftuybkoqvrkfvei.supabase.co';
+const ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRub2VjZnR1eWJrb3F2cmtmdmVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzIzMjAsImV4cCI6MjA4ODMwODMyMH0.XzQJtx0bxO0sk1T68c_0MczeSOdblLxpJLGRbzDMiS4';
+const EDGE_BASE=SUPABASE_URL+'/functions/v1';
+const SESSION_KEY='disc-online-session-v2';
+const STORAGE_KEY='disc-dashboard-v3';
+const PARTICIPANT_URL='https://brainfusion.app/pages/disc/teilnehmer.html';
 
-let participants = [];
-let onlineSession = null;
-let autoRefreshTimer = null;
-let supabaseClient = null;
-const state = { anonymous:false, showRole:true, showLines:true };
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let participants=[];       // offline DISC results (JSON import)
+let onlineSession=null;    // {workshopId, code, adminToken, title, currentModule}
+let supabase=null;
+let autoRefreshTimer=null;
+let allJoined=[];          // [{alias, joined_at}] from participants table
+let discDoneSet=new Set(); // aliases who finished DISC
+let respondedSet=new Set(); // aliases who responded to current module
+let liveResponses=[];      // exercise_responses for current module
+const state={anonymous:false,showRole:true,showLines:true};
 
-// ─── MODULE DEFINITIONS ───────────────────────────────
-const MODULE_PHASES = [
-  {
-    label: '▸ Tag 1 – Vorbereitung',
-    modules: [
-      { id:'waiting',           icon:'⏳', name:'Bereit',           sub:'Warten' },
-      { id:'disc_test',         icon:'📊', name:'DISC-Test',        sub:'28×2 Fragen' },
-      { id:'disc_map',          icon:'🗺', name:'Live-Map',         sub:'Beamer' },
-    ]
-  },
-  {
-    label: '▸ Tag 1 – Übungen',
-    modules: [
-      { id:'intro_question',    icon:'💬', name:'Einstiegsfrage',   sub:'Freetext' },
-      { id:'kernbotschaften_info', icon:'⚡', name:'Kernbtsch. Info', sub:'Beamer' },
-      { id:'kernbotschaften',   icon:'⚡', name:'Kernbotschaft',    sub:'Freetext' },
-      { id:'johari_quiz',       icon:'🪟', name:'Johari Quiz',      sub:'Multiple Choice' },
-      { id:'johari_reflexion',  icon:'🔍', name:'Johari Refl.',     sub:'Freetext' },
-    ]
-  },
-  {
-    label: '▸ Tag 2 – Vertiefen',
-    modules: [
-      { id:'morgen_reflexion',  icon:'🌅', name:'Morgen-Check',     sub:'Freetext' },
-      { id:'raci_info',         icon:'📋', name:'RACI Info',        sub:'Beamer' },
-      { id:'raci',              icon:'📋', name:'RACI',             sub:'Auswahl' },
-      { id:'gfk',               icon:'🕊', name:'GFK',              sub:'Freetext' },
-    ]
-  },
-  {
-    label: '▸ Tag 2 – Abschluss',
-    modules: [
-      { id:'steckbrief_feiern', icon:'🎉', name:'Steckbrief',       sub:'Feiern' },
-      { id:'steckbrief_grenzen',icon:'🚫', name:'Steckbrief',       sub:'Grenzen' },
-      { id:'steckbrief_zumuten',icon:'💪', name:'Steckbrief',       sub:'Zumuten' },
-      { id:'ritual',            icon:'✍️', name:'Ritual',           sub:'Versprechen' },
-      { id:'closing',           icon:'🏆', name:'Abschluss',        sub:'Ende' },
-    ]
-  }
+// ─── MODULE DEFINITIONS ───────────────────────────────────────────────────────
+const MODULE_PHASES=[
+  {label:'▸ Tag 1 – Vorbereitung',modules:[
+    {id:'waiting',        icon:'⏳',name:'Bereit',        sub:'Warten'},
+    {id:'disc_test',      icon:'📊',name:'DISC-Test',     sub:'28×2 Fragen'},
+    {id:'disc_map',       icon:'🗺',name:'Live-Map',      sub:'Beamer'},
+  ]},
+  {label:'▸ Tag 1 – Übungen',modules:[
+    {id:'intro_question', icon:'💬',name:'Einstiegsfrage',sub:'Freetext'},
+    {id:'kernbotschaften_info',icon:'⚡',name:'Kernbtsch.',sub:'Info/Beamer'},
+    {id:'kernbotschaften',icon:'⚡',name:'Kernbotschaft', sub:'Freetext'},
+    {id:'johari_quiz',    icon:'🪟',name:'Johari Quiz',   sub:'Multiple Choice'},
+    {id:'johari_reflexion',icon:'🔍',name:'Johari Refl.', sub:'Freetext'},
+  ]},
+  {label:'▸ Tag 2 – Vertiefen',modules:[
+    {id:'morgen_reflexion',icon:'🌅',name:'Morgen-Check', sub:'Freetext'},
+    {id:'raci_info',      icon:'📋',name:'RACI Info',     sub:'Beamer'},
+    {id:'raci',           icon:'📋',name:'RACI',          sub:'Auswahl'},
+    {id:'gfk',            icon:'🕊',name:'GFK',           sub:'Freetext'},
+  ]},
+  {label:'▸ Tag 2 – Abschluss',modules:[
+    {id:'steckbrief_feiern', icon:'🎉',name:'Steckbrief',sub:'Feiern'},
+    {id:'steckbrief_grenzen',icon:'🚫',name:'Steckbrief',sub:'Grenzen'},
+    {id:'steckbrief_zumuten',icon:'💪',name:'Steckbrief',sub:'Zumuten'},
+    {id:'ritual',         icon:'✍️',name:'Ritual',        sub:'Versprechen'},
+    {id:'closing',        icon:'🏆',name:'Abschluss',     sub:'Ende'},
+  ]}
 ];
-const MODULES = MODULE_PHASES.flatMap(p => p.modules);
+const MODULES=MODULE_PHASES.flatMap(p=>p.modules);
 
-// ─── MODULE ENGINE ─────────────────────────────────────────
+const MODULE_DETAILS={
+  waiting:{
+    desc:'Workshop aktiv — warte bis alle Teilnehmer beigetreten sind.',
+    hints:['Teile den Code und Link mit allen Teilnehmern (Slack, E-Mail, mündlich)',
+      'Lass den Beamer laufen — er zeigt Code + URL grossformatig',
+      'Warte bis alle in der Teilnehmerliste rechts sichtbar sind',
+      'Dann → DISC-Test aktivieren'],
+    beamer:'Beamer zeigt Workshop-Code und Teilnehmer-URL',
+    dataType:'joined'
+  },
+  disc_test:{
+    desc:'Teilnehmer füllen den DISC-Fragebogen aus (~10-15 Min).',
+    hints:['Sag: "Geht nach eurem ersten Bauchgefühl — kein Richtig oder Falsch"',
+      'Sag: "Wählt wie ihr wirklich seid, nicht wie ihr sein möchtet"',
+      'Halte Stille während des Tests — keine Musik, keine Gespräche',
+      'Wenn jemand früh fertig: "Einfach kurz warten, wir schauen gleich gemeinsam"'],
+    beamer:'Beamer zeigt Fortschrittsbalken (x von y fertig)',
+    dataType:'disc_progress'
+  },
+  disc_map:{
+    desc:'Alle Ergebnisse sichtbar — führe durch die Team-Quadranten-Map.',
+    hints:['Starte bei der Gesamtverteilung: "Schaut — so verteilt sich unser Team"',
+      'Erkläre die Quadranten: Drive+People / Stabilität+People / etc.',
+      'Cluster zeigen: "Hier sind viele — das bedeutet..."',
+      'Einzelne einladen: "Wer mag kurz beschreiben, was der Test ausgelöst hat?"',
+      'Betone: "Kein Profil ist besser — alle bringen etwas Wesentliches"'],
+    beamer:'Beamer zeigt vollbild DISC-Quadranten-Map mit allen Profilen',
+    dataType:'disc_map'
+  },
+  intro_question:{
+    desc:'Teilnehmer schreiben ihre spontane Antwort — anonym möglich.',
+    hints:['Lies die Frage laut vor bevor du das Modul aktivierst',
+      'Gib 3-4 Minuten Zeit — keine Diskussion vorher',
+      'Wenn Antworten reinkommen: ein paar laut vorlesen (ohne Namen)',
+      'Überleitung: "Was fällt euch an diesen Antworten auf?"'],
+    beamer:'Beamer zeigt die Frage + Live-Feed der Antworten',
+    dataType:'live_feed'
+  },
+  kernbotschaften_info:{
+    desc:'Du erklärst die 4 Kernbotschaften. Kein Input von Teilnehmern.',
+    hints:['Lies jeden Satz langsam und kommentiere ihn kurz',
+      'Frage nach jedem: "Wer kennt diese Situation?"',
+      'Pause lassen — diese Sätze berühren manchmal tief',
+      'Überleitung: "Welcher trifft dich am meisten? → gleich aufschreiben"'],
+    beamer:'Beamer zeigt statische Erklärungsfolie',
+    dataType:'static',
+    staticContent:[
+      '💬 "Ich sage meiner Führungskraft nicht alles, was ich denke."',
+      '💬 "Im Meeting stimme ich manchmal zu, obwohl ich anderer Meinung bin."',
+      '💬 "Es gibt Themen, die ich lieber mit Kollegen bespreche als mit dem Chef."',
+      '💬 "Ich halte manchmal Informationen zurück, um Konflikte zu vermeiden."'
+    ]
+  },
+  kernbotschaften:{
+    desc:'Welcher der 4 Sätze trifft dich am meisten — und warum?',
+    hints:['Sag: "Schreibt den Satz auf, der euch am meisten getroffen hat — kurz warum"',
+      'Anonym-Option ist aktiviert — respektiere das bewusst',
+      'Wenn Antworten reinkommen: Muster erkennen ("mehrere nennen Satz 2...")',
+      'Frage: "Was macht es so schwer, das direkt zu sagen?"'],
+    beamer:'Beamer zeigt Live-Feed der Antworten (anonym möglich)',
+    dataType:'live_feed'
+  },
+  johari_quiz:{
+    desc:'Teilnehmer wählen Adjektive — Basis für das Johari-Fenster.',
+    hints:['Erkläre Johari kurz: "Arena=bekannt/bekannt, Blinder Fleck=unbekannt/bekannt..."',
+      'Die Abstimmung zeigt: Was sieht das Team von sich selbst?',
+      'Wenn fertig: Auswertung unten anschauen — welche kommen oft?',
+      'Frage: "Was überrascht euch? Was fehlt eurer Meinung nach?"'],
+    beamer:'Beamer zeigt Live-Auswertung der Adjektiv-Auswahl',
+    dataType:'johari'
+  },
+  johari_reflexion:{
+    desc:'Was siehst du an dir, was andere möglicherweise nicht sehen?',
+    hints:['Sag: "Jetzt kommt der schwierigere Teil — der blinde Fleck"',
+      'Anonym-Option ist besonders wichtig hier — ermutige aktiv dazu',
+      'Antworten vorlesen — erst ohne Kommentar, dann: "Was löst das aus?"',
+      'Pause nach dem Vorlesen — diese Antworten sind oft tiefgründig'],
+    beamer:'Beamer zeigt Live-Feed der Reflexionen',
+    dataType:'live_feed'
+  },
+  morgen_reflexion:{
+    desc:'Was ist euch gestern noch nachgegangen? Einstieg in Tag 2.',
+    hints:['Schöner Start in Tag 2: "Was hat euch die Nacht durch begleitet?"',
+      'Ein paar Antworten vorlesen — das verbindet die Gruppe',
+      'Kein Richtig/Falsch — alle Antworten willkommen',
+      'Kurz halten: 5-8 Minuten, dann weiter'],
+    beamer:'Beamer zeigt Live-Feed der Morgen-Reflexionen',
+    dataType:'live_feed'
+  },
+  raci_info:{
+    desc:'Du erklärst das RACI-Modell. Beamer zeigt die Matrix.',
+    hints:['R = Responsible: Wer macht es konkret?',
+      'A = Accountable: Wer trägt die Gesamtverantwortung?',
+      'C = Consulted: Wer wird vorher gefragt?',
+      'I = Informed: Wer wird nachher informiert?',
+      'Nimm ein konkretes aktuelles Projekt als Beispiel'],
+    beamer:'Beamer zeigt RACI-Matrix mit Erklärung',
+    dataType:'static',
+    staticContent:[
+      '<strong>R — Responsible:</strong> Wer macht die Arbeit? (konkrete Person/en)',
+      '<strong>A — Accountable:</strong> Wer trägt die Verantwortung? (immer nur einer)',
+      '<strong>C — Consulted:</strong> Wer wird vorher um Input gebeten?',
+      '<strong>I — Informed:</strong> Wer wird nachher über das Ergebnis informiert?'
+    ]
+  },
+  raci:{
+    desc:'Teilnehmer wählen ihre typischen RACI-Rollen im Team.',
+    hints:['Frage: "In welchen Rollen seht ihr euch typischerweise im Team?"',
+      'Mehrfachauswahl ist möglich — das ist normal',
+      'Auswertung unten: Wo ist das Team gut besetzt? Wo fehlt jemand?',
+      'Diskussion: "Was fällt euch an dieser Verteilung auf?"'],
+    beamer:'Beamer zeigt RACI-Auswertung als Balkendiagramm',
+    dataType:'raci'
+  },
+  gfk:{
+    desc:'Teilnehmer formulieren eine GFK-Aussage (Beobachtung/Gefühl/Bedürfnis/Bitte).',
+    hints:['Struktur: Beobachtung → Gefühl → Bedürfnis → Bitte',
+      'Ermutige: "Es darf unfertig sein — der Prozess des Formulierens zählt"',
+      'Wenn Antworten da: gemeinsam durch die Struktur gehen',
+      'Frage: "Was war am schwierigsten zu formulieren? Warum?"'],
+    beamer:'Beamer zeigt GFK-Struktur + Live-Feed der Aussagen',
+    dataType:'live_feed'
+  },
+  steckbrief_feiern:{
+    desc:'Was läuft gut in diesem Team? Was verdient Anerkennung?',
+    hints:['Positive Energie — lass die Gruppe lächeln und stolz sein',
+      'Frage nach Konkretem: "Was genau feiern wir hier? Nenn ein Beispiel."',
+      'Antworten laut vorlesen — gemeinsam anerkennend nicken',
+      'Zeit: 5-8 Minuten, dann weiter zu Grenzen'],
+    beamer:'Beamer zeigt Live-Feed der Stärken',
+    dataType:'live_feed'
+  },
+  steckbrief_grenzen:{
+    desc:'Was duldet dieses Team nicht? Klare Grenzen benennen.',
+    hints:['Mutige Runde — ermutigen klare Grenzen zu benennen',
+      'Kein Weichspülen: "Was wirklich nicht geht bei uns — konkret"',
+      'Antworten vorlesen — erst ohne Kommentar, dann gemeinsam besprechen',
+      'Frage: "Können wir uns darauf committen? Alle?"],
+    beamer:'Beamer zeigt Live-Feed der Grenzen',
+    dataType:'live_feed'
+  },
+  steckbrief_zumuten:{
+    desc:'Was traut sich dieses Team zu? Raus aus der Komfortzone.',
+    hints:['Letzter Steckbrief-Schritt — oft schon mehr Energie in der Gruppe',
+      'Frage: "Was würdet ihr euch zumuten, wenn ihr noch mehr Vertrauen hättet?"',
+      'Antworten vorlesen: "Ja — das traut ihr euch zu!"',
+      'Überleitung zum Ritual: "Wie machen wir das jetzt verbindlich?"'],
+    beamer:'Beamer zeigt Live-Feed',
+    dataType:'live_feed'
+  },
+  ritual:{
+    desc:'Jeder schreibt und unterzeichnet ein persönliches Commitment.',
+    hints:['Stimmung setzen: "Das ist ein Moment der Stille und Ernsthaftigkeit"',
+      'Kein Zeitdruck — lass TN Zeit zum wirklichen Nachdenken',
+      'Wenn fertig: Optional vorlesen lassen (nur freiwillig)',
+      '"Was ihr gerade geschrieben habt, ist ein Geschenk an euer Team"'],
+    beamer:'Beamer zeigt Versprechen nach und nach',
+    dataType:'live_feed'
+  },
+  closing:{
+    desc:'Der Workshop geht zu Ende. Dankeschön und Ausblick.',
+    hints:['Danke allen für Mut und Offenheit — das war nicht selbstverständlich',
+      'Kurze Zusammenfassung: "Was nehmt ihr mit?"',
+      'Hinweis: Team bekommt einen KI-aufbereiteten Workshop-Report',
+      'Optional: Rundrunde — "Ein Wort für heute"'],
+    beamer:'Beamer zeigt goldenen Abschluss-Screen',
+    dataType:'static',
+    staticContent:['🏆 Workshop abgeschlossen — Dankeschön für eure Offenheit und euren Mut.','✨ Der Workshop-Report mit KI-Aufbereitung folgt in Kürze.']
+  }
+};
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function getMapPoint(p){return{x:(p.D||0)-(p.S||0),y:(p.I||0)-(p.C||0)}}
+function dominantType(s){return Object.entries(s).sort((a,b)=>b[1]-a[1])[0]?.[0]||'–'}
+function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0}
+function std(arr){if(!arr.length)return 0;const m=avg(arr);return Math.sqrt(avg(arr.map(v=>(v-m)**2)))}
+function axisWord(v,n,p){return v>8?p:v<-8?n:'balanciert'}
+function quadrantName(pt){
+  if(pt.x>=0&&pt.y>=0)return'Drive+People';
+  if(pt.x<0&&pt.y>=0)return'Stabilität+People';
+  if(pt.x>=0&&pt.y<0)return'Drive+Struktur';
+  return'Stabilität+Struktur';
+}
+function rolePathLength(p){const n=p.map?.natural||getMapPoint(p.natural),r=p.map?.role||getMapPoint(p.role);return Math.hypot(r.x-n.x,r.y-n.y)}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function anonymize(a){if(!a)return'X';const c=a.trim();if(c.length<=2)return c[0]+'•';return c[0]+'•'.repeat(Math.min(c.length-1,3))}
+function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function initSupabase(){if(!supabase)supabase=window.supabase.createClient(SUPABASE_URL,ANON_KEY);}
+function fmtTime(iso){return new Date(iso).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})}
+
+// ─── STORAGE ──────────────────────────────────────────────────────────────────
+function loadStored(){
+  try{participants=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch{participants=[]}
+  try{onlineSession=JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch{onlineSession=null}
+}
+function saveStored(){localStorage.setItem(STORAGE_KEY,JSON.stringify(participants))}
+function saveSession(){localStorage.setItem(SESSION_KEY,JSON.stringify(onlineSession))}
+
+// ─── MODULE NAV ───────────────────────────────────────────────────────────────
 function buildModuleGrid(){
-  const grid = document.getElementById('moduleGrid');
-  const activeId = onlineSession?.currentModule || 'waiting';
-  grid.innerHTML = MODULE_PHASES.map(phase => `
+  const grid=document.getElementById('moduleGrid');
+  const activeId=onlineSession?.currentModule||'waiting';
+  grid.innerHTML=MODULE_PHASES.map(phase=>`
     <div class="module-phase-label">${phase.label}</div>
-    <div class="module-grid">${phase.modules.map(m => `
-      <div class="module-btn${m.id===activeId?' active':''}" onclick="setModule('${m.id}')" title="Modul aktivieren: ${m.name}">
+    <div class="module-grid">${phase.modules.map(m=>`
+      <div class="module-btn${m.id===activeId?' active':''}" onclick="activateModule('${m.id}')">
         ${m.id===activeId?'<div class="m-badge"></div>':''}
         <div class="m-icon">${m.icon}</div>
         <div class="m-name">${m.name}</div>
         <div class="m-sub">${m.sub}</div>
-      </div>
-    `).join('')}</div>
-  `).join('');
+      </div>`).join('')}
+    </div>`).join('');
 }
 
-async function setModule(moduleId){
-  if(!onlineSession?.workshopId||!onlineSession?.adminToken){
-    alert('Kein aktiver Workshop.'); return;
-  }
-  if(!supabaseClient){
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-  }
-  const mod = MODULES.find(m=>m.id===moduleId);
-  const confirmMsg = `Modul "${mod?.name||moduleId}" aktivieren?\nAlle Teilnehmer sehen das sofort.`;
-  if(!confirm(confirmMsg)) return;
+async function activateModule(moduleId){
+  if(!onlineSession?.workshopId||!onlineSession?.adminToken){alert('Kein aktiver Workshop.');return}
+  const mod=MODULES.find(m=>m.id===moduleId);
+  if(!confirm(`Modul "${mod?.name||moduleId}" aktivieren?\nAlle Teilnehmer sehen das sofort.`))return;
+  initSupabase();
   try{
-    const { data, error } = await supabaseClient.rpc('set_workshop_module', {
-      p_workshop_id: onlineSession.workshopId,
-      p_admin_token: onlineSession.adminToken,
-      p_module: moduleId,
-      p_module_data: {}
+    const{data,error}=await supabase.rpc('set_workshop_module',{
+      p_workshop_id:onlineSession.workshopId,
+      p_admin_token:onlineSession.adminToken,
+      p_module:moduleId,
+      p_module_data:{}
     });
-    if(error) throw new Error(error.message);
-    if(data?.error) throw new Error(data.error);
-    onlineSession.currentModule = moduleId;
+    if(error)throw new Error(error.message);
+    if(data?.error)throw new Error(data.error);
+    onlineSession.currentModule=moduleId;
     saveSession();
     buildModuleGrid();
-  } catch(e){ alert('Fehler: '+e.message); }
+    respondedSet.clear();
+    liveResponses=[];
+    renderModuleContent(moduleId);
+  }catch(e){alert('Fehler: '+e.message)}
 }
 
-// ─── HELPERS ──────────────────────────────────────
-function getMapPoint(p){ return { x:(p.D||0)-(p.S||0), y:(p.I||0)-(p.C||0) }; }
-function dominantType(s){ return Object.entries(s).sort((a,b)=>b[1]-a[1])[0]?.[0]||'–'; }
-function avg(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
-function std(arr){ if(!arr.length)return 0; const m=avg(arr); return Math.sqrt(avg(arr.map(v=>(v-m)**2))); }
-function axisWord(v,n,p){ return v>8?p:v<-8?n:'balanciert'; }
-function quadrantName(pt){
-  if(pt.x>=0&&pt.y>=0) return 'Drive + People';
-  if(pt.x<0&&pt.y>=0)  return 'Stabilität + People';
-  if(pt.x>=0&&pt.y<0)  return 'Drive + Struktur';
-  return 'Stabilität + Struktur';
+// ─── PARTICIPANT PANEL ────────────────────────────────────────────────────────
+function renderParticipantPanel(){
+  const list=document.getElementById('participantList');
+  const countEl=document.getElementById('pCount');
+  if(allJoined.length===0){
+    list.innerHTML='<div class="feed-empty" style="padding:14px">Warte auf Teilnehmer...</div>';
+    countEl.textContent='0';
+    return;
+  }
+  countEl.textContent=allJoined.length;
+  list.innerHTML=allJoined.map(p=>{
+    const alias=p.alias||'?';
+    const discDone=discDoneSet.has(alias.toLowerCase());
+    const responded=respondedSet.has(alias.toLowerCase());
+    const dotCls=responded?'green':discDone?'blue':'gray';
+    const chipCls=responded?'p-responded':discDone?'p-disc':'';
+    return`<div class="p-chip ${chipCls}">
+      <span class="p-dot ${dotCls}"></span>
+      <span class="p-name">${escapeHtml(alias)}</span>
+      <span class="p-badges">
+        ${discDone?'<span class="p-badge badge-disc">DISC✓</span>':''}
+        ${responded?'<span class="p-badge badge-ans">Antwort✓</span>':''}
+      </span>
+    </div>`;
+  }).join('');
 }
-function rolePathLength(p){ const n=p.map?.natural||getMapPoint(p.natural),r=p.map?.role||getMapPoint(p.role); return Math.hypot(r.x-n.x,r.y-n.y); }
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
-function anonymize(a){ if(!a)return 'X'; const c=a.trim(); if(c.length<=2)return c[0]+'•'; return c[0]+'•'.repeat(Math.min(c.length-1,3)); }
-function getCSS(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
-// ─── STORAGE ──────────────────────────────────────
-function loadStored(){
-  try{ participants=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch{ participants=[]; }
-  try{ onlineSession=JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); }catch{ onlineSession=null; }
+// ─── MODULE CONTENT RENDERING ─────────────────────────────────────────────────
+function renderModuleContent(moduleId){
+  const area=document.getElementById('moduleContentArea');
+  const detail=MODULE_DETAILS[moduleId]||MODULE_DETAILS.waiting;
+  const mod=MODULES.find(m=>m.id===moduleId)||{icon:'❓',name:moduleId};
+
+  let dataHTML='';
+  switch(detail.dataType){
+    case'joined':    dataHTML=renderJoinedData();break;
+    case'disc_progress': dataHTML=renderDiscProgress();break;
+    case'disc_map':  dataHTML=renderDiscMapSection();break;
+    case'live_feed': dataHTML=renderLiveFeedSection();break;
+    case'johari':    dataHTML=renderJohariSection();break;
+    case'raci':      dataHTML=renderRaciSection();break;
+    case'static':    dataHTML=renderStaticSection(detail);break;
+  }
+
+  const hintsHTML=detail.hints?`
+    <div class="mod-hints">
+      <h4>💡 Moderationshinweise</h4>
+      <ul>${detail.hints.map(h=>`<li>${h}</li>`).join('')}</ul>
+    </div>`:'';
+
+  area.innerHTML=`<div class="module-card">
+    <div class="module-header">
+      <div class="mod-icon-big">${mod.icon}</div>
+      <div class="mod-header-text">
+        <h2>${mod.name}</h2>
+        <div class="mod-desc">${detail.desc||''}</div>
+      </div>
+    </div>
+    ${detail.beamer?`<div class="mod-beamer-info">📽 ${detail.beamer}</div>`:''}
+    ${hintsHTML}
+    ${dataHTML}
+  </div>`;
+
+  // Canvas für DISC-Map zeichnen (nach DOM-Insert)
+  if(detail.dataType==='disc_map'){
+    setTimeout(()=>{
+      const c=document.getElementById('wsMapCanvas');
+      if(c)drawMap(c,participants,false);
+    },60);
+  }
 }
-function saveStored(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(participants)); }
-function saveSession(){ localStorage.setItem(SESSION_KEY,JSON.stringify(onlineSession)); }
 
-// ─── ONLINE WORKSHOP ──────────────────────────────
+function renderJoinedData(){
+  if(allJoined.length===0)return'<div class="feed-empty">Noch niemand beigetreten...</div>';
+  return`<div class="section-title">Beigetretene (${allJoined.length})</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px">
+      ${allJoined.map(p=>`<span style="background:var(--surf2);border:1px solid var(--border);
+        border-radius:20px;padding:4px 12px;font-size:12px">${escapeHtml(p.alias||'?')}</span>`).join('')}
+    </div>`;
+}
+
+function renderDiscProgress(){
+  const total=Math.max(allJoined.length,1);
+  const done=discDoneSet.size;
+  const pct=Math.round((done/total)*100);
+  return`<div class="section-title">Fortschritt DISC-Test</div>
+    <div style="font-size:28px;font-weight:700;margin-bottom:8px">${done}<span style="font-size:15px;color:var(--muted);font-weight:400"> / ${total} fertig</span></div>
+    <div class="progress-bar-outer"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    <div style="font-size:11px;color:var(--muted);text-align:right;margin-bottom:12px">${pct}%</div>
+    <div class="progress-chips">
+      ${allJoined.map(p=>{
+        const ok=discDoneSet.has((p.alias||'').toLowerCase());
+        return`<div class="progress-chip ${ok?'done':'waiting'}">${escapeHtml(p.alias||'?')} ${ok?'✓':'⏳'}</div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderDiscMapSection(){
+  return`<div class="section-title">DISC Quadranten-Map (${participants.length} Profile)</div>
+    <div class="ws-map-wrap"><canvas id="wsMapCanvas" class="ws-map-canvas"></canvas></div>
+    <div class="legend" style="margin-top:8px">
+      <span><span class="dot" style="background:#fff"></span>natürlich</span>
+      <span><span class="dot" style="background:#7cc4ff"></span>Rolle</span>
+      <span><span class="dot" style="background:var(--bad)"></span>hoher Weg</span>
+    </div>`;
+}
+
+function renderLiveFeedSection(){
+  if(liveResponses.length===0)return'<div class="feed-empty">Noch keine Antworten eingegangen...<br><span style="font-size:11px;margin-top:4px;display:block">Wird alle 5 Sekunden aktualisiert</span></div>';
+  return`<div class="section-title">Live-Antworten (${liveResponses.length})</div>
+    <div class="live-feed-wrap">
+      ${liveResponses.map(r=>{
+        const alias=r.alias||null;
+        return`<div class="feed-card">
+          <div class="feed-alias">
+            ${alias?escapeHtml(alias):'<span class="feed-anon">Anonym</span>'}
+            <span class="feed-time">${fmtTime(r.created_at)}</span>
+          </div>
+          <div class="feed-content">${escapeHtml(r.content||'')}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderJohariSection(){
+  const counts={};
+  liveResponses.forEach(r=>{
+    try{const sel=JSON.parse(r.content||'[]');sel.forEach(a=>{counts[a]=(counts[a]||0)+1})}catch{}
+  });
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max=sorted[0]?.[1]||1;
+  const feedHtml=renderLiveFeedSection();
+  if(sorted.length===0)return'<div class="feed-empty">Warte auf Abstimmungen...</div>';
+  return`<div class="section-title">Adjektiv-Auswertung (${liveResponses.length} Stimmen)</div>
+    <div class="bar-rows" style="margin-bottom:16px">
+      ${sorted.slice(0,12).map(([adj,count])=>`
+        <div class="bar-row">
+          <span>${adj}</span>
+          <div class="bar-bg"><div class="bar-fill bar-S" style="width:${Math.round(count/max*100)}%"></div></div>
+          <span style="color:var(--muted);text-align:right">${count}×</span>
+        </div>`).join('')}
+    </div>${feedHtml}`;
+}
+
+function renderRaciSection(){
+  const counts={R:0,A:0,C:0,I:0};
+  liveResponses.forEach(r=>{
+    try{const sel=JSON.parse(r.content||'[]');sel.forEach(role=>{if(counts[role]!==undefined)counts[role]++})}catch{}
+  });
+  const total=Math.max(liveResponses.length,1);
+  const labels={R:'Responsible',A:'Accountable',C:'Consulted',I:'Informed'};
+  const colors={R:'bar-D',A:'bar-I',C:'bar-C',I:'bar-S'};
+  return`<div class="section-title">RACI-Auswertung (${liveResponses.length} Antworten)</div>
+    <div class="bar-rows">
+      ${Object.entries(counts).map(([role,count])=>`
+        <div class="bar-row">
+          <span>${labels[role]}</span>
+          <div class="bar-bg"><div class="bar-fill ${colors[role]}" style="width:${Math.round(count/total*100)}%"></div></div>
+          <span style="color:var(--muted)">${count}×</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderStaticSection(detail){
+  if(!detail.staticContent)return'';
+  return`<div class="info-cards">
+    ${detail.staticContent.map(s=>`<div class="info-card">${s}</div>`).join('')}
+  </div>`;
+}
+
+// ─── ONLINE WORKSHOP CORE ─────────────────────────────────────────────────────
 async function createOnlineWorkshop(){
-  const title = prompt('Workshop-Titel:', 'Wahrheitsfähigkeit im Team · '+new Date().toLocaleDateString('de-CH'));
-  if(!title) return;
+  const title=prompt('Workshop-Titel:','Wahrheitsfähigkeit im Team · '+new Date().toLocaleDateString('de-CH'));
+  if(!title)return;
   try{
-    const res = await fetch(EDGE_BASE+'/create-workshop',{
+    const res=await fetch(EDGE_BASE+'/create-workshop',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},
-      body: JSON.stringify({title, createdBy:'moderator'})
+      headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
+      body:JSON.stringify({title,createdBy:'moderator'})
     });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error||'Fehler beim Erstellen');
-    onlineSession = { workshopId:data.workshopId, code:data.code, adminToken:data.adminToken, title };
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Fehler');
+    onlineSession={workshopId:data.workshopId,code:data.code,adminToken:data.adminToken,title,currentModule:'waiting'};
     saveSession();
-    showOnlineBar();
+    showOnlineUI();
     startAutoRefresh();
     alert(`Workshop erstellt!\nCode: ${data.code}\nDen Code an Teilnehmer weitergeben!`);
-  } catch(e){ alert('Fehler: '+e.message); }
+  }catch(e){alert('Fehler: '+e.message)}
 }
 
 async function connectOnlineWorkshop(){
-  // Wenn Session im localStorage → einfach reconnecten ohne Token-Eingabe
-  if(onlineSession?.code && onlineSession?.adminToken){
-    if(!confirm(`Bestehenden Workshop "${onlineSession.code}" wieder verbinden?`)) return;
+  if(onlineSession?.code&&onlineSession?.adminToken){
+    if(!confirm(`Bestehenden Workshop "${onlineSession.code}" wieder verbinden?`))return;
+    showOnlineUI();
     await refreshOnlineWorkshop();
-    showOnlineBar();
     startAutoRefresh();
     return;
   }
-  const code = prompt('Workshop-Code eingeben:','');
-  if(!code) return;
-  const token = prompt('Admin-Token (aus Workshop-Erstellung):','');
-  if(!token) return;
-  onlineSession = { code:code.trim().toUpperCase(), adminToken:token.trim(), workshopId:null };
-  // workshopId via DB holen
+  const code=prompt('Workshop-Code:','');if(!code)return;
+  const token=prompt('Admin-Token:','');if(!token)return;
+  onlineSession={code:code.trim().toUpperCase(),adminToken:token.trim(),workshopId:null,currentModule:'waiting'};
+  initSupabase();
   try{
-    if(!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-    const { data:ws } = await supabaseClient.from('workshops').select('id,current_module').eq('code', code.trim().toUpperCase()).single();
-    if(ws){ onlineSession.workshopId = ws.id; onlineSession.currentModule = ws.current_module || 'waiting'; }
-  } catch(e){ console.warn('workshopId nicht gefunden:', e.message); }
+    const{data:ws}=await supabase.from('workshops').select('id,current_module').eq('code',code.trim().toUpperCase()).single();
+    if(ws){onlineSession.workshopId=ws.id;onlineSession.currentModule=ws.current_module||'waiting'}
+  }catch(e){console.warn('workshopId Lookup:',e.message)}
   saveSession();
+  showOnlineUI();
   await refreshOnlineWorkshop();
-  showOnlineBar();
   startAutoRefresh();
 }
 
 async function refreshOnlineWorkshop(){
-  if(!onlineSession?.code||!onlineSession?.adminToken) return;
+  if(!onlineSession?.code||!onlineSession?.adminToken)return;
+  initSupabase();
   try{
-    // Ergebnisse laden
-    const res = await fetch(EDGE_BASE+'/list-workshop-results',{
+    // 1. DISC-Ergebnisse laden
+    const res=await fetch(EDGE_BASE+'/list-workshop-results',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},
-      body: JSON.stringify({workshopCode:onlineSession.code, adminToken:onlineSession.adminToken})
+      headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
+      body:JSON.stringify({workshopCode:onlineSession.code,adminToken:onlineSession.adminToken})
     });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error||'Fehler');
-    const online = (data.results||[]).map(r => ({
-      alias: r.alias||'?',
-      naturalType: dominantType(r.natural||{}),
-      roleType: dominantType(r.role||{}),
-      natural: r.natural||{D:50,I:50,S:50,C:50},
-      role: r.role||{D:50,I:50,S:50,C:50},
-      stress: r.computed?.stress||0,
-      deltas: r.computed?.deltas||{},
-      map: r.computed?.map||null,
-      exportedAt: r.submittedAt||new Date().toISOString()
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Fehler');
+    const online=(data.results||[]).map(r=>({
+      alias:r.alias||'?',naturalType:dominantType(r.natural||{}),roleType:dominantType(r.role||{}),
+      natural:r.natural||{},role:r.role||{},stress:r.computed?.stress||0,
+      deltas:r.computed?.deltas||{},map:r.computed?.map||null,exportedAt:r.submittedAt||new Date().toISOString()
     }));
-    online.forEach(p => {
-      const i = participants.findIndex(x=>x.alias.toLowerCase()===p.alias.toLowerCase());
-      if(i>=0) participants[i]=p; else participants.push(p);
+    online.forEach(p=>{
+      const i=participants.findIndex(x=>x.alias.toLowerCase()===p.alias.toLowerCase());
+      if(i>=0)participants[i]=p;else participants.push(p);
     });
     saveStored();
+    discDoneSet=new Set(online.map(p=>p.alias.toLowerCase()));
 
-    // Auch beigetretene (noch nicht fertige) TN zählen und anzeigen
-    let joinedCount = online.length;
-    let waitingAliases = [];
-    if(!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    // 2. Beigetretene TN laden
+    let joinedCount=online.length;
     if(onlineSession?.workshopId){
-      const { data: joined, count } = await supabaseClient
-        .from('participants')
-        .select('alias,joined_at', { count: 'exact' })
-        .eq('workshop_id', onlineSession.workshopId);
-      if(count !== null) joinedCount = count;
-      if(joined) {
-        const finishedAliases = new Set(online.map(p => p.alias.toLowerCase()));
-        waitingAliases = joined
-          .filter(p => !finishedAliases.has((p.alias||'').toLowerCase()))
-          .map(p => p.alias || '?');
+      const{data:joined}=await supabase.from('participants')
+        .select('alias,joined_at').eq('workshop_id',onlineSession.workshopId)
+        .order('joined_at',{ascending:true});
+      if(joined){allJoined=joined;joinedCount=joined.length}
+    }
+
+    // 3. Aktuelle Modul-Antworten laden (alle interaktiven Module)
+    const INTERACTIVE=['intro_question','johari_quiz','johari_reflexion','kernbotschaften',
+      'morgen_reflexion','gfk','raci','steckbrief_feiern','steckbrief_grenzen',
+      'steckbrief_zumuten','ritual'];
+    const mod=onlineSession?.currentModule;
+    if(onlineSession?.workshopId&&mod&&INTERACTIVE.includes(mod)){
+      const{data:ex,error:exErr}=await supabase.from('exercise_responses')
+        .select('alias,content,created_at,module,response_type')
+        .eq('workshop_id',onlineSession.workshopId)
+        .eq('module',mod)
+        .order('created_at',{ascending:true});
+      if(!exErr&&ex){
+        liveResponses=ex;
+        respondedSet=new Set(ex.map(r=>(r.alias||'').toLowerCase()).filter(a=>a));
+      }
+    }else{
+      if(!mod||!INTERACTIVE.includes(mod)){liveResponses=[];respondedSet.clear()}
+    }
+
+    // 4. Status-Bar aktualisieren
+    const doneLabel=online.length===1?'1 Ergebnis':`${online.length} Ergebnisse`;
+    const joinExtra=joinedCount>online.length?` · ${joinedCount} beigetreten`:'';
+    document.getElementById('onlineStatus').textContent=
+      `${doneLabel} eingegangen${joinExtra} · ${new Date().toLocaleTimeString('de-CH')}`;
+
+    // 5. Aktives Modul aus DB holen (für Sync)
+    if(onlineSession?.workshopId){
+      const{data:ws}=await supabase.from('workshops')
+        .select('current_module').eq('id',onlineSession.workshopId).single();
+      if(ws?.current_module&&ws.current_module!==onlineSession.currentModule){
+        onlineSession.currentModule=ws.current_module;
+        saveSession();
+        buildModuleGrid();
       }
     }
 
-    // Wartende Teilnehmer-Box aktualisieren
-    const waitBox = document.getElementById('waitingParticipantsBox');
-    if(waitBox){
-      if(waitingAliases.length > 0){
-        waitBox.style.display='block';
-        waitBox.innerHTML = `<div style="font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">⏳ Beigetreten – wartet auf Test</div>`
-          + waitingAliases.map(a => `<span style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:13px;margin:3px">${escapeHtml(a)}</span>`).join('');
-      } else {
-        waitBox.style.display='none';
-      }
-    }
+    // 6. Render
+    renderModuleContent(onlineSession?.currentModule||'waiting');
+    renderParticipantPanel();
+    // Offline-Canvas auch aktuell halten
+    renderCanvas();
 
-    const submitLabel = online.length === 1 ? '1 Ergebnis' : `${online.length} Ergebnisse`;
-    const joinLabel   = joinedCount > online.length ? ` · ${joinedCount} beigetreten` : '';
-    document.getElementById('onlineStatus').textContent =
-      `${submitLabel} eingegangen${joinLabel} · zuletzt ${new Date().toLocaleTimeString('de-CH')}`;
-    renderAll();
-
-    // Exercise-Antworten laden wenn aktuelles Modul exercise_*
-    const exBox = document.getElementById('exerciseResponsesBox');
-    const INTERACTIVE_MODULES = ['intro_question','johari_quiz','johari_reflexion','kernbotschaften','morgen_reflexion','gfk','raci','steckbrief_feiern','steckbrief_grenzen','steckbrief_zumuten','ritual'];
-    if(exBox && onlineSession?.workshopId && INTERACTIVE_MODULES.includes(onlineSession?.currentModule)){
-      const { data: exResponses } = await supabaseClient
-        .from('exercise_responses')
-        .select('alias, content, created_at')
-        .eq('workshop_id', onlineSession.workshopId)
-        .eq('module', onlineSession.currentModule)
-        .order('created_at', { ascending: true });
-      if(exResponses && exResponses.length > 0){
-        exBox.style.display = 'block';
-        document.getElementById('exerciseResponseCount').textContent = `(${exResponses.length})`;
-        document.getElementById('exerciseResponsesList').innerHTML = exResponses.map(r =>
-          `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px">
-            <strong style="color:var(--S)">${escapeHtml(r.alias||'?')}</strong>
-            <span style="color:var(--text-muted);margin-left:8px;font-size:11px">${new Date(r.created_at).toLocaleTimeString('de-CH')}</span>
-            <div style="margin-top:4px;color:var(--text)">${escapeHtml(r.content||'')}</div>
-          </div>`
-        ).join('');
-      } else {
-        exBox.style.display = 'block';
-        document.getElementById('exerciseResponseCount').textContent = '(0)';
-        document.getElementById('exerciseResponsesList').innerHTML = '<div style="color:var(--text-muted);font-size:13px">Noch keine Antworten...</div>';
-      }
-    } else if(exBox){
-      exBox.style.display = 'none';
-    }
-  } catch(e){ document.getElementById('onlineStatus').textContent = 'Fehler: '+e.message; }
+  }catch(e){
+    document.getElementById('onlineStatus').textContent='Fehler: '+e.message;
+    console.error('refreshOnlineWorkshop:',e);
+  }
 }
 
 function startAutoRefresh(){
   clearInterval(autoRefreshTimer);
-  autoRefreshTimer = setInterval(refreshOnlineWorkshop, 5000);
+  autoRefreshTimer=setInterval(refreshOnlineWorkshop,5000);
   document.getElementById('refreshWorkshopBtn').style.display='';
 }
 
-function stopOnlineWorkshop(){
-  // Modul auf 'closed' setzen damit Teilnehmer es sehen
-  if(onlineSession?.workshopId && onlineSession?.adminToken){
-    if(!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-    supabaseClient.rpc('set_workshop_module', {
-      p_workshop_id: onlineSession.workshopId,
-      p_admin_token: onlineSession.adminToken,
-      p_module: 'closed',
-      p_module_data: {}
-    }).then(() => {
-      clearInterval(autoRefreshTimer);
-      autoRefreshTimer = null;
-      onlineSession = null;
-      saveSession();
-      hideOnlineBar();
+async function stopOnlineWorkshop(){
+  if(!confirm('Online-Workshop beenden?'))return;
+  if(onlineSession?.workshopId&&onlineSession?.adminToken){
+    initSupabase();
+    await supabase.rpc('set_workshop_module',{
+      p_workshop_id:onlineSession.workshopId,p_admin_token:onlineSession.adminToken,
+      p_module:'closed',p_module_data:{}
     });
-  } else {
-    clearInterval(autoRefreshTimer);
-    autoRefreshTimer = null;
-    onlineSession = null;
-    saveSession();
-    hideOnlineBar();
   }
+  clearInterval(autoRefreshTimer);autoRefreshTimer=null;
+  onlineSession=null;saveSession();
+  allJoined=[];discDoneSet.clear();respondedSet.clear();liveResponses=[];
+  hideOnlineUI();
 }
 
-function showOnlineBar(){
-  if(!onlineSession) return;
+function showOnlineUI(){
+  if(!onlineSession)return;
   document.getElementById('onlineBar').style.display='flex';
   document.getElementById('modulePanel').style.display='block';
+  document.getElementById('workshopView').style.display='block';
+  document.getElementById('offlineView').style.display='none';
+  const url=PARTICIPANT_URL+'?code='+(onlineSession.code||'');
+  document.getElementById('onlineCode').textContent=onlineSession.code||'?';
+  document.getElementById('participantLink').href=url;
+  document.getElementById('participantLink').textContent=url;
   buildModuleGrid();
-  document.getElementById('onlineCode').textContent = onlineSession.code||'?';
-  const url = PARTICIPANT_URL+'?code='+(onlineSession.code||'');
-  document.getElementById('participantLink').href = url;
-  document.getElementById('participantLink').textContent = url;
+  renderModuleContent(onlineSession.currentModule||'waiting');
 }
 
-function hideOnlineBar(){ document.getElementById('onlineBar').style.display='none'; document.getElementById('modulePanel').style.display='none'; }
+function hideOnlineUI(){
+  document.getElementById('onlineBar').style.display='none';
+  document.getElementById('modulePanel').style.display='none';
+  document.getElementById('workshopView').style.display='none';
+  document.getElementById('offlineView').style.display='block';
+  document.getElementById('refreshWorkshopBtn').style.display='none';
+}
 
-// ─── FILE IMPORT ──────────────────────────────────
-async function importFiles(files){
-  for(const file of files){
-    const text = await file.text();
-    try{
-      const obj = JSON.parse(text);
-      if(!obj||obj.schema!=='disc-workshop-export-v1') throw new Error('Kein gültiger Export');
-      const p = {
-        alias:(obj.participant?.alias||'unbekannt').trim(),
-        naturalType: obj.naturalType||dominantType(obj.natural||{}),
-        roleType: obj.roleType||dominantType(obj.role||{}),
-        natural: obj.natural||{}, role: obj.role||{},
-        stress: Number(obj.stress||0), deltas: obj.deltas||{},
-        map: obj.map||null, exportedAt: obj.exportedAt||new Date().toISOString()
-      };
-      const i = participants.findIndex(x=>x.alias.toLowerCase()===p.alias.toLowerCase());
-      if(i>=0) participants[i]=p; else participants.push(p);
-    } catch(e){ alert(`${file.name}: ${e.message}`); }
+// ─── OFFLINE: DISC-MAP CANVAS ─────────────────────────────────────────────────
+function drawMap(canvas,data,small=false){
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width,h=canvas.height,pad=small?40:60;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#0f1528';ctx.fillRect(0,0,w,h);
+  const cx=w/2,cy=h/2,iW=w-2*pad,iH=h-2*pad;
+  const fills=[getCSS('--quad1'),getCSS('--quad2'),getCSS('--quad3'),getCSS('--quad4')];
+  ctx.fillStyle=fills[0];ctx.fillRect(cx,pad,iW/2,iH/2);
+  ctx.fillStyle=fills[1];ctx.fillRect(pad,pad,iW/2,iH/2);
+  ctx.fillStyle=fills[2];ctx.fillRect(pad,cy,iW/2,iH/2);
+  ctx.fillStyle=fills[3];ctx.fillRect(cx,cy,iW/2,iH/2);
+  ctx.strokeStyle='#324162';ctx.lineWidth=1;
+  for(let i=1;i<=4;i++){
+    const x=pad+(w-2*pad)*(i/5),y=pad+(h-2*pad)*(i/5);
+    ctx.beginPath();ctx.moveTo(x,pad);ctx.lineTo(x,h-pad);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();
   }
-  participants.sort((a,b)=>a.alias.localeCompare(b.alias,'de'));
-  saveStored(); renderAll();
+  ctx.strokeStyle='#5f739f';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(cx,pad);ctx.lineTo(cx,h-pad);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad,cy);ctx.lineTo(w-pad,cy);ctx.stroke();
+  if(!small){
+    ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='600 12px sans-serif';
+    ctx.fillText('stabiler',pad+6,cy-6);ctx.fillText('schneller',w-pad-62,cy-6);
+    ctx.fillText('people',cx+6,pad+16);ctx.fillText('struktur',cx+6,h-pad+18);
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='700 13px sans-serif';
+    ctx.fillText('Verbindend',pad+10,pad+20);ctx.fillText('Initiativ',w-pad-66,pad+20);
+    ctx.fillText('Systematisch',pad+10,h-pad-8);ctx.fillText('Entschlossen',w-pad-96,h-pad-8);
+  }
+  const mX=x=>cx+(x/100)*((w/2)-pad-16);
+  const mY=y=>cy-(y/100)*((h/2)-pad-16);
+  data.forEach((p,idx)=>{
+    const n=p.map?.natural||getMapPoint(p.natural);
+    const r=p.map?.role||getMapPoint(p.role);
+    const nx=mX(n.x),ny=mY(n.y),rx=mX(r.x),ry=mY(r.y);
+    const path=Math.hypot(rx-nx,ry-ny);
+    const lc=path>80?getCSS('--bad'):path>45?getCSS('--warn'):'rgba(124,196,255,.65)';
+    if(state.showLines&&state.showRole){
+      ctx.strokeStyle=lc;ctx.lineWidth=2.5;
+      ctx.beginPath();ctx.moveTo(nx,ny);ctx.lineTo(rx,ry);ctx.stroke();
+    }
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(nx,ny,7,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#0b1020';ctx.lineWidth=2;ctx.stroke();
+    if(state.showRole){
+      ctx.fillStyle='#7cc4ff';ctx.beginPath();ctx.arc(rx,ry,6,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#0b1020';ctx.lineWidth=2;ctx.stroke();
+    }
+    if(!small){
+      ctx.fillStyle='#dbe6ff';ctx.font='12px sans-serif';
+      const label=state.anonymous?anonymize(p.alias):p.alias;
+      const lx=state.showRole?rx:nx,ly=state.showRole?ry:ny;
+      ctx.fillText(label,lx+9,ly-5+(idx%2?9:0));
+    }
+  });
 }
 
-// ─── STATS ────────────────────────────────────────
+function renderCanvas(){
+  const c=document.getElementById('mapCanvas');
+  if(c)drawMap(c,participants);
+}
+
+// ─── OFFLINE: STATS, TABLE, COACH ────────────────────────────────────────────
 function teamSummary(){
-  if(!participants.length) return null;
+  if(!participants.length)return null;
   const dims=['D','I','S','C'];
-  const mN=Object.fromEntries(dims.map(d=>[d,Math.round(avg(participants.map(p=>p.natural[d]||0)))]));
-  const mR=Object.fromEntries(dims.map(d=>[d,Math.round(avg(participants.map(p=>p.role[d]||0)))]));
   const dc={D:0,I:0,S:0,C:0};
   participants.forEach(p=>dc[p.naturalType]=(dc[p.naturalType]||0)+1);
   const dom=dominantType(dc);
   const axisX=avg(participants.map(p=>(p.natural.D||0)-(p.natural.S||0)));
   const axisY=avg(participants.map(p=>(p.natural.I||0)-(p.natural.C||0)));
+  const mN=Object.fromEntries(dims.map(d=>[d,Math.round(avg(participants.map(p=>p.natural[d]||0)))]));
+  const mR=Object.fromEntries(dims.map(d=>[d,Math.round(avg(participants.map(p=>p.role[d]||0)))]));
   const pathAvg=avg(participants.map(rolePathLength));
-  const pathSd=std(participants.map(rolePathLength));
   const highStress=participants.filter(p=>p.stress>=60).length;
   const meanGap=dims.map(d=>({d,delta:mR[d]-mN[d]})).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta))[0];
   const clusters={q1:0,q2:0,q3:0,q4:0};
   participants.forEach(p=>{
     const pt=p.map?.natural||getMapPoint(p.natural);
-    if(pt.x>=0&&pt.y>=0)clusters.q1++;
-    else if(pt.x<0&&pt.y>=0)clusters.q2++;
-    else if(pt.x>=0&&pt.y<0)clusters.q3++;
-    else clusters.q4++;
+    if(pt.x>=0&&pt.y>=0)clusters.q1++;else if(pt.x<0&&pt.y>=0)clusters.q2++;
+    else if(pt.x>=0&&pt.y<0)clusters.q3++;else clusters.q4++;
   });
-  return {mN,mR,dc,dom,axisX,axisY,pathAvg,pathSd,highStress,meanGap,clusters};
+  const counts=Object.entries(dc).sort((a,b)=>b[1]-a[1]);
+  const under=counts[counts.length-1][0];
+  return{mN,mR,dc,dom,axisX,axisY,pathAvg,highStress,meanGap,clusters,counts,under};
 }
 
-// ─── RENDER ───────────────────────────────────────
 function renderStats(){
   const s=teamSummary();
   document.getElementById('statCount').textContent=participants.length;
@@ -549,7 +1026,7 @@ function renderRows(){
     <td><span class="pill p${p.naturalType}">${p.naturalType}</span></td>
     <td><span class="pill p${p.roleType}">${p.roleType}</span></td>
     <td>${Math.round(p.stress)}</td>
-    <td style="font-size:12px;color:var(--muted)">${quadrantName(p.map?.natural||getMapPoint(p.natural))}</td>
+    <td style="font-size:11px;color:var(--muted)">${quadrantName(p.map?.natural||getMapPoint(p.natural))}</td>
   </tr>`).join('');
   document.getElementById('emptyState').style.display=participants.length?'none':'block';
 }
@@ -558,134 +1035,108 @@ function renderCoach(){
   const el=document.getElementById('coachText');
   const dna=document.getElementById('teamDnaBox');
   const follow=document.getElementById('followUpBox');
-  if(!participants.length){ el.innerHTML=''; dna.innerHTML='<strong>Team-DNA</strong><br><span class="small">Nach Import berechnet.</span>'; follow.innerHTML='<strong>Follow-up</strong><br><span class="small">Nach Import berechnet.</span>'; return; }
+  if(!participants.length){
+    el.innerHTML='';
+    dna.innerHTML='<strong>Team-DNA</strong><br><span class="small">Nach Import berechnet.</span>';
+    follow.innerHTML='<strong>Follow-up</strong><br><span class="small">Nach Import berechnet.</span>';
+    return;
+  }
   const s=teamSummary();
-  const counts=Object.entries(s.dc).sort((a,b)=>b[1]-a[1]);
-  const under=counts[counts.length-1][0];
   const notes=[];
   notes.push(`Das Team wirkt <strong>${axisWord(s.axisX,'eher stabilisierend','eher tempobetont')}</strong> und <strong>${axisWord(s.axisY,'eher faktenorientiert','eher people-orientiert')}</strong>.`);
-  notes.push(`Dominant: <strong>${counts[0][0]}</strong> (${counts[0][1]}×). Am wenigsten: <strong>${under}</strong> – dort fehlt die Gegenperspektive.`);
-  if(s.highStress>=4) notes.push(`<span class="danger-text">${s.highStress} Personen mit erhöhtem Rollenstress</span> – mehrere müssen sich täglich stark anpassen.`);
-  else if(s.highStress>0) notes.push(`<span class="warn-text">${s.highStress} Person(en) mit erhöhtem Rollenstress</span> – guter Follow-up-Indikator.`);
-  else notes.push(`<span class="ok-text">Kein auffälliger Rollenstress</span> – die Rollen passen gut zu den natürlichen Profilen.`);
-  notes.push(`Grösste Teamverschiebung: <strong>${s.meanGap.d}</strong> (${s.meanGap.delta>0?'+':''}${s.meanGap.delta})`);
+  notes.push(`Dominanter Stil: <strong>${s.counts[0][0]}</strong> (${s.counts[0][1]}×). Unterrepräsentiert: <strong>${s.under}</strong>.`);
+  if(s.highStress>=4)notes.push(`<span class="danger-text">${s.highStress} Personen mit hohem Rollenstress</span> — Follow-up empfohlen.`);
+  else if(s.highStress>0)notes.push(`<span class="warn-text">${s.highStress} Person(en) mit erhöhtem Rollenstress</span>.`);
+  else notes.push(`<span class="ok-text">Kein auffälliger Rollenstress</span> — Profile passen gut zu den Rollen.`);
   const rules=[];
-  if(s.axisX>8) rules.push('Entscheidungen bewusst verlangsamen – Gegenchecks einbauen.');
-  if(s.axisX<-8) rules.push('Klare Entscheidungszeitfenster setzen – nicht endlos vorprüfen.');
-  if(s.axisY>8) rules.push('Meetings mit klaren Next Steps abschliessen.');
-  if(s.axisY<-8) rules.push('In Retros explizit Stimmung und Zusammenarbeit ansprechen.');
-  if(!rules.length) rules.push('Team ist gut balanciert – Kommunikationsregeln feinjustieren statt Kulturprogramm.');
+  if(s.axisX>8)rules.push('Entscheidungen bewusst verlangsamen — Gegenchecks einbauen.');
+  if(s.axisX<-8)rules.push('Klare Entscheidungsfenster setzen — nicht endlos vorprüfen.');
+  if(s.axisY>8)rules.push('Meetings mit klaren Next Steps abschliessen.');
+  if(s.axisY<-8)rules.push('In Retros explizit Stimmung ansprechen.');
+  if(!rules.length)rules.push('Team gut balanciert — Spielregeln feinjustieren.');
   rules.push('Pairing-Idee: "Drive+Struktur" mit "Stabilität+People" zusammenbringen.');
   const topC=Object.entries(s.clusters).sort((a,b)=>b[1]-a[1])[0];
   const cLabel={q1:'Drive+People',q2:'Stabilität+People',q3:'Drive+Struktur',q4:'Stabilität+Struktur'}[topC[0]];
-  dna.innerHTML=`<strong>Team-DNA</strong><br><span class="small">Hauptcluster: <strong>${cLabel}</strong> (${topC[1]}×)<br>Ø Rollenweg: <strong>${Math.round(s.pathAvg)}</strong> · Streuung: <strong>${Math.round(s.pathSd)}</strong></span>`;
-  follow.innerHTML=`<strong>Follow-up Fokus</strong><br><span class="small">1. ${rules[0]}<br>2. ${rules[1]||'Tempo-vs-Sorgfalt besprechen.'}</span>`;
-  el.innerHTML=`<h3 style="margin:16px 0 8px;font-size:15px">Team-Hinweise</h3>${notes.map(t=>`<p>${t}</p>`).join('')}<h3 style="margin:14px 0 8px;font-size:15px">Moderationsregeln</h3>${rules.map(t=>`<p>• ${t}</p>`).join('')}`;
+  dna.innerHTML=`<strong>Team-DNA</strong><br><span class="small">Hauptcluster: <strong>${cLabel}</strong> (${topC[1]}×)<br>Ø Rollenweg: <strong>${Math.round(s.pathAvg)}</strong></span>`;
+  follow.innerHTML=`<strong>Follow-up</strong><br><span class="small">1. ${rules[0]}<br>2. ${rules[1]||'Tempo vs Sorgfalt besprechen.'}</span>`;
+  el.innerHTML=`<h3 style="margin:14px 0 8px;font-size:14px">Team-Hinweise</h3>${notes.map(t=>`<p>${t}</p>`).join('')}`;
 }
 
-function renderCanvas(){
-  const canvas=document.getElementById('mapCanvas');
-  const ctx=canvas.getContext('2d');
-  const w=canvas.width,h=canvas.height,pad=60;
-  ctx.clearRect(0,0,w,h);
-  ctx.fillStyle='#0f1528'; ctx.fillRect(0,0,w,h);
-  const cx=w/2,cy=h/2;
-  // quadrants
-  const iW=w-2*pad,iH=h-2*pad;
-  ctx.fillStyle=getCSS('--quad2');ctx.fillRect(cx,pad,iW/2,iH/2);
-  ctx.fillStyle=getCSS('--quad1');ctx.fillRect(pad,pad,iW/2,iH/2);
-  ctx.fillStyle=getCSS('--quad4');ctx.fillRect(pad,cy,iW/2,iH/2);
-  ctx.fillStyle=getCSS('--quad3');ctx.fillRect(cx,cy,iW/2,iH/2);
-  // grid
-  ctx.strokeStyle='#324162';ctx.lineWidth=1;
-  for(let i=1;i<=4;i++){
-    const x=pad+(w-2*pad)*(i/5),y=pad+(h-2*pad)*(i/5);
-    ctx.beginPath();ctx.moveTo(x,pad);ctx.lineTo(x,h-pad);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();
+function renderOffline(){renderStats();renderRows();renderCoach();renderCanvas()}
+
+// ─── FILE IMPORT ──────────────────────────────────────────────────────────────
+async function importFiles(files){
+  for(const file of files){
+    const text=await file.text();
+    try{
+      const obj=JSON.parse(text);
+      if(!obj||obj.schema!=='disc-workshop-export-v1')throw new Error('Kein gültiger Export');
+      const p={
+        alias:(obj.participant?.alias||'unbekannt').trim(),
+        naturalType:obj.naturalType||dominantType(obj.natural||{}),
+        roleType:obj.roleType||dominantType(obj.role||{}),
+        natural:obj.natural||{},role:obj.role||{},
+        stress:Number(obj.stress||0),deltas:obj.deltas||{},
+        map:obj.map||null,exportedAt:obj.exportedAt||new Date().toISOString()
+      };
+      const i=participants.findIndex(x=>x.alias.toLowerCase()===p.alias.toLowerCase());
+      if(i>=0)participants[i]=p;else participants.push(p);
+    }catch(e){alert(`${file.name}: ${e.message}`)}
   }
-  ctx.strokeStyle='#5f739f';ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(cx,pad);ctx.lineTo(cx,h-pad);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(pad,cy);ctx.lineTo(w-pad,cy);ctx.stroke();
-  // axis labels
-  ctx.fillStyle='#dfe8ff';ctx.font='600 13px sans-serif';
-  ctx.fillText('stabiler',pad+8,cy-8);
-  ctx.fillText('schneller',w-pad-70,cy-8);
-  ctx.fillText('people/spontan',cx+8,pad+18);
-  ctx.fillText('struktur/fakten',cx+8,h-pad+22);
-  // quadrant labels
-  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='700 14px sans-serif';
-  ctx.fillText('Verbindend',pad+14,pad+22);
-  ctx.fillText('Initiativ',w-pad-76,pad+22);
-  ctx.fillText('Systematisch',pad+14,h-pad-10);
-  ctx.fillText('Entschlossen',w-pad-104,h-pad-10);
-
-  const mX=x=>cx+(x/100)*((w/2)-pad-20);
-  const mY=y=>cy-(y/100)*((h/2)-pad-20);
-
-  participants.forEach((p,idx)=>{
-    const n=p.map?.natural||getMapPoint(p.natural);
-    const r=p.map?.role||getMapPoint(p.role);
-    const nx=mX(n.x),ny=mY(n.y),rx=mX(r.x),ry=mY(r.y);
-    const path=Math.hypot(rx-nx,ry-ny);
-    const lc=path>80?getCSS('--bad'):path>45?getCSS('--warn'):'rgba(124,196,255,.65)';
-    if(state.showLines&&state.showRole){ctx.strokeStyle=lc;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(nx,ny);ctx.lineTo(rx,ry);ctx.stroke();}
-    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(nx,ny,8,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='#0b1020';ctx.lineWidth=2;ctx.stroke();
-    if(state.showRole){ctx.fillStyle='#7cc4ff';ctx.beginPath();ctx.arc(rx,ry,7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#0b1020';ctx.lineWidth=2;ctx.stroke();}
-    const lx=state.showRole?rx:nx,ly=state.showRole?ry:ny;
-    ctx.fillStyle='#dbe6ff';ctx.font='13px sans-serif';
-    const label=state.anonymous?anonymize(p.alias):p.alias;
-    ctx.fillText(label,lx+10,ly-6+(idx%2?10:0));
-  });
+  participants.sort((a,b)=>a.alias.localeCompare(b.alias,'de'));
+  saveStored();renderOffline();
 }
 
-function renderAll(){ renderStats();renderRows();renderCoach();renderCanvas(); }
-
-// ─── DEMO ─────────────────────────────────────────
 function loadDemo(){
   participants=[
-    ['CB','D','D',{D:78,I:54,S:34,C:46},{D:70,I:58,S:42,C:52},48],
-    ['MB','I','I',{D:44,I:81,S:57,C:28},{D:50,I:72,S:60,C:35},36],
-    ['JS','C','C',{D:38,I:35,S:52,C:84},{D:42,I:40,S:48,C:79},22],
-    ['AL','S','S',{D:29,I:51,S:82,C:49},{D:41,I:48,S:70,C:55},52],
-    ['PN','D','C',{D:73,I:47,S:31,C:60},{D:55,I:40,S:39,C:78},72],
-    ['TR','I','S',{D:41,I:77,S:50,C:33},{D:32,I:61,S:72,C:41},68],
-    ['LK','C','D',{D:49,I:29,S:43,C:79},{D:68,I:33,S:35,C:70},57],
-    ['SN','S','I',{D:31,I:63,S:74,C:39},{D:36,I:72,S:61,C:41},44]
+    ['Thomas M.','D','D',{D:78,I:54,S:34,C:46},{D:70,I:58,S:42,C:52},48],
+    ['Sandra K.','I','I',{D:44,I:81,S:57,C:28},{D:50,I:72,S:60,C:35},36],
+    ['Marc B.','C','C',{D:38,I:35,S:52,C:84},{D:42,I:40,S:48,C:79},22],
+    ['Lisa H.','S','S',{D:29,I:51,S:82,C:49},{D:41,I:48,S:70,C:55},52],
+    ['Peter N.','D','C',{D:73,I:47,S:31,C:60},{D:55,I:40,S:39,C:78},72],
+    ['Anna R.','I','S',{D:41,I:77,S:50,C:33},{D:32,I:61,S:72,C:41},68],
+    ['Leo K.','C','D',{D:49,I:29,S:43,C:79},{D:68,I:33,S:35,C:70},57],
+    ['Nina S.','S','I',{D:31,I:63,S:74,C:39},{D:36,I:72,S:61,C:41},44]
   ].map(([alias,nType,rType,natural,role,stress])=>({
     alias,naturalType:nType,roleType:rType,natural,role,stress,
-    exportedAt:new Date().toISOString(),
-    map:{natural:getMapPoint(natural),role:getMapPoint(role)}
+    exportedAt:new Date().toISOString(),map:{natural:getMapPoint(natural),role:getMapPoint(role)}
   }));
-  saveStored();renderAll();
+  saveStored();renderOffline();
 }
 
-// ─── EXPORTS ──────────────────────────────────────
 function exportCSV(){
   if(!participants.length)return alert('Keine Daten.');
   const h=['alias','nType','rType','stress','quadrant','nD','nI','nS','nC','rD','rI','rS','rC'];
-  const rows=participants.map(p=>[p.alias,p.naturalType,p.roleType,p.stress,quadrantName(p.map?.natural||getMapPoint(p.natural)),p.natural.D,p.natural.I,p.natural.S,p.natural.C,p.role.D,p.role.I,p.role.S,p.role.C]);
+  const rows=participants.map(p=>[p.alias,p.naturalType,p.roleType,p.stress,
+    quadrantName(p.map?.natural||getMapPoint(p.natural)),
+    p.natural.D,p.natural.I,p.natural.S,p.natural.C,p.role.D,p.role.I,p.role.S,p.role.C]);
   const blob=new Blob([[h,...rows].map(r=>r.join(';')).join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='disc_team.csv';a.click();
 }
 
-// ─── EVENTS ───────────────────────────────────────
+// ─── EVENTS ───────────────────────────────────────────────────────────────────
 document.getElementById('createWorkshopBtn').addEventListener('click',createOnlineWorkshop);
 document.getElementById('connectWorkshopBtn').addEventListener('click',connectOnlineWorkshop);
 document.getElementById('refreshWorkshopBtn').addEventListener('click',refreshOnlineWorkshop);
-document.getElementById('stopWorkshopBtn').addEventListener('click',()=>{if(confirm('Online-Workshop beenden?')){stopOnlineWorkshop();}});
+document.getElementById('stopWorkshopBtn').addEventListener('click',stopOnlineWorkshop);
 document.getElementById('fileInput').addEventListener('change',e=>importFiles([...e.target.files]));
 document.getElementById('demoBtn').addEventListener('click',loadDemo);
 document.getElementById('csvBtn').addEventListener('click',exportCSV);
-document.getElementById('clearBtn').addEventListener('click',()=>{if(confirm('Alle Daten löschen?')){participants=[];saveStored();renderAll();}});
-document.getElementById('anonToggle').addEventListener('change',e=>{state.anonymous=e.target.checked;renderAll();});
-document.getElementById('showRoleToggle').addEventListener('change',e=>{state.showRole=e.target.checked;renderAll();});
-document.getElementById('showLinesToggle').addEventListener('change',e=>{state.showLines=e.target.checked;renderAll();});
+document.getElementById('clearBtn').addEventListener('click',()=>{
+  if(confirm('Alle lokalen Daten löschen?')){participants=[];saveStored();renderOffline()}
+});
+document.getElementById('anonToggle').addEventListener('change',e=>{state.anonymous=e.target.checked;renderOffline()});
+document.getElementById('showRoleToggle').addEventListener('change',e=>{state.showRole=e.target.checked;renderCanvas()});
+document.getElementById('showLinesToggle').addEventListener('change',e=>{state.showLines=e.target.checked;renderCanvas()});
 
-// ─── INIT ─────────────────────────────────────────
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 loadStored();
-renderAll();
-if(onlineSession?.code&&onlineSession?.adminToken){ showOnlineBar(); refreshOnlineWorkshop(); startAutoRefresh(); }
+renderOffline();
+if(onlineSession?.code&&onlineSession?.adminToken){
+  showOnlineUI();
+  refreshOnlineWorkshop();
+  startAutoRefresh();
+}
 </script>
 </body>
 </html>
