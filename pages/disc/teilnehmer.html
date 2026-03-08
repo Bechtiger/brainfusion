@@ -1,1292 +1,1435 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DISC Persönlichkeitsanalyse</title>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #090912;
-      --surface: #111120;
-      --surface2: #1a1a2e;
-      --border: #252538;
-      --border-light: #32324a;
-      --text: #e4e4f0;
-      --text-muted: #6a6a8a;
-      --text-dim: #3a3a5a;
-      --D: #e63946;
-      --I: #f4a261;
-      --S: #2a9d8f;
-      --C: #4a90d9;
-      --D-bg: rgba(230, 57, 70, 0.08);
-      --I-bg: rgba(244, 162, 97, 0.08);
-      --S-bg: rgba(42, 157, 143, 0.08);
-      --C-bg: rgba(74, 144, 217, 0.08);
-    }
-
-    body {
-      font-family: 'IBM Plex Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    /* ─── LAYOUT ─────────────────────────── */
-    .wrap {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    .header {
-      padding: 20px 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 4px;
-      color: var(--text);
-    }
-    .logo .dot { color: var(--D); }
-
-    #headerMeta {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-
-    /* ─── SCREENS ────────────────────────── */
-    .screen { display: none; animation: fadeUp 0.35s ease; }
-    .screen.active { display: block; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ─── INTRO ──────────────────────────── */
-    .intro-hero {
-      padding: 56px 0 40px;
-      text-align: center;
-    }
-
-    .disc-row {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 36px;
-    }
-
-    .disc-badge {
-      width: 54px; height: 54px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 22px; font-weight: 700;
-      color: #fff;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .disc-badge.d { background: var(--D); }
-    .disc-badge.i { background: var(--I); }
-    .disc-badge.s { background: var(--S); }
-    .disc-badge.c { background: var(--C); }
-
-    h1.hero-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 52px; font-weight: 700;
-      letter-spacing: 1px; line-height: 1.05;
-      margin-bottom: 14px;
-    }
-
-    .hero-sub {
-      font-size: 16px; color: var(--text-muted);
-      max-width: 480px; margin: 0 auto 44px;
-    }
-
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-
-    .meta-cell {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px 12px;
-      text-align: center;
-    }
-
-    .meta-cell .mc-val {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 18px; font-weight: 600;
-      margin-bottom: 3px;
-    }
-
-    .meta-cell .mc-lbl {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1px;
-    }
-
-    .info-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      text-align: left;
-      margin-bottom: 36px;
-      font-size: 15px;
-      color: var(--text-muted);
-      line-height: 1.8;
-    }
-
-    .info-box strong { color: var(--text); }
-    .info-box .tag-nat { color: var(--S); }
-    .info-box .tag-role { color: var(--C); }
-
-    /* ─── BUTTONS ────────────────────────── */
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 13px 28px;
-      border-radius: 8px; border: none; cursor: pointer;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px; font-weight: 600;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      transition: all 0.2s ease;
-    }
-
-    .btn-primary { background: var(--D); color: #fff; }
-    .btn-primary:hover { background: #c1121f; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(230,57,70,0.3); }
-
-    .btn-ghost {
-      background: var(--surface);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-    }
-    .btn-ghost:hover { background: var(--border); color: var(--text); }
-
-    /* ─── PROGRESS ───────────────────────── */
-    .progress-area { margin: 28px 0 24px; }
-
-    .progress-top {
-      display: flex; justify-content: space-between;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px; color: var(--text-muted);
-      letter-spacing: 1px; text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .progress-track {
-      height: 2px;
-      background: var(--surface2);
-      border-radius: 1px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      border-radius: 1px;
-      background: var(--D);
-      transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    /* ─── PHASE HEADER ───────────────────── */
-    .phase-head { margin-bottom: 28px; }
-
-    .phase-tag {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-    .phase-tag.nat { background: rgba(42,157,143,0.1); border: 1px solid rgba(42,157,143,0.35); color: var(--S); }
-    .phase-tag.role { background: rgba(74,144,217,0.1); border: 1px solid rgba(74,144,217,0.35); color: var(--C); }
-
-    .phase-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 30px; font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .phase-desc { font-size: 14px; color: var(--text-muted); max-width: 560px; }
-
-    /* ─── QUESTIONS ──────────────────────── */
-    .q-block {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 22px 24px;
-      margin-bottom: 14px;
-      transition: border-color 0.2s;
-    }
-
-    .q-block.answered { border-color: var(--border); }
-    .q-block.error { border-color: var(--D) !important; }
-
-    .q-num {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px; color: var(--text-dim);
-      letter-spacing: 1.5px; text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    .q-text {
-      font-size: 15px; line-height: 1.55;
-      margin-bottom: 18px;
-    }
-
-    .scale-row {
-      display: flex; align-items: center; gap: 10px;
-    }
-
-    .scale-end {
-      font-size: 12px; color: var(--text-muted);
-      flex-shrink: 0; width: 100px;
-    }
-    .scale-end:last-child { text-align: right; }
-
-    .scale-opts {
-      display: flex; gap: 8px;
-      flex: 1; justify-content: center;
-    }
-
-    .scale-opt { position: relative; }
-    .scale-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
-
-    .scale-opt label {
-      display: flex; align-items: center; justify-content: center;
-      width: 42px; height: 42px;
-      border-radius: 8px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 13px; font-weight: 500;
-      color: var(--text-muted);
-      transition: all 0.15s ease;
-      user-select: none;
-    }
-
-    .scale-opt label:hover {
-      background: var(--border-light);
-      color: var(--text);
-    }
-
-    .scale-opt input:checked + label {
-      background: var(--D);
-      border-color: var(--D);
-      color: #fff;
-      box-shadow: 0 2px 12px rgba(230,57,70,0.4);
-    }
-
-    /* ─── NAV ────────────────────────────── */
-    .nav-row {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-top: 28px; padding-top: 24px;
-      border-top: 1px solid var(--border);
-    }
-
-    .warn-msg {
-      font-size: 13px; color: var(--I);
-      display: none;
-    }
-
-    /* ─── TRANSITION ─────────────────────── */
-    .transition-wrap {
-      text-align: center;
-      padding: 72px 20px;
-    }
-
-    .checkmark-big {
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      background: rgba(42,157,143,0.15);
-      border: 2px solid var(--S);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 36px;
-      margin: 0 auto 28px;
-    }
-
-    .trans-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 34px; font-weight: 700;
-      margin-bottom: 12px;
-    }
-
-    .trans-sub {
-      color: var(--text-muted); font-size: 15px;
-      max-width: 440px; margin: 0 auto 32px;
-    }
-
-    .role-box {
-      background: rgba(74,144,217,0.06);
-      border: 1px solid rgba(74,144,217,0.25);
-      border-radius: 12px;
-      padding: 20px 24px;
-      max-width: 460px;
-      margin: 0 auto 32px;
-      text-align: left;
-      font-size: 14px; color: var(--text-muted);
-      line-height: 1.7;
-    }
-
-    /* ─── RESULTS ────────────────────────── */
-    .results-wrap { padding: 44px 0 64px; }
-
-    .results-eyebrow {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px; color: var(--text-muted);
-      letter-spacing: 2px; text-transform: uppercase;
-      margin-bottom: 28px;
-    }
-
-    .profiles-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 14px; margin-bottom: 24px;
-    }
-
-    .profile-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .pc-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
-      margin-bottom: 14px;
-    }
-
-    .pc-main {
-      display: flex; align-items: center; gap: 14px;
-    }
-
-    .pc-ball {
-      width: 56px; height: 56px;
-      border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 24px; font-weight: 700; color: #fff;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    }
-
-    .pc-name {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 22px; font-weight: 700; line-height: 1.1;
-    }
-
-    .pc-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-
-    .bar-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 22px 24px;
-      margin-bottom: 16px;
-    }
-
-    .bar-section-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 17px; font-weight: 600;
-      margin-bottom: 14px;
-    }
-
-    .bar-legend {
-      display: flex; gap: 20px;
-      margin-bottom: 16px;
-    }
-
-    .leg-item {
-      display: flex; align-items: center; gap: 7px;
-      font-size: 12px; color: var(--text-muted);
-    }
-
-    .leg-dot {
-      width: 14px; height: 5px;
-      border-radius: 3px;
-    }
-
-    .dim-row { margin-bottom: 14px; }
-    .dim-row:last-child { margin-bottom: 0; }
-
-    .dim-labels {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 5px;
-    }
-
-    .dim-letter {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px; font-weight: 700;
-      width: 18px;
-    }
-
-    .dim-name {
-      font-size: 12px; color: var(--text-muted);
-      flex: 1;
-    }
-
-    .dim-scores {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 11px; color: var(--text-muted);
-    }
-
-    .dual-track { display: flex; flex-direction: column; gap: 3px; padding-left: 28px; }
-
-    .bar-track {
-      height: 8px;
-      background: var(--surface2);
-      border-radius: 4px; overflow: hidden;
-    }
-
-    .bar-fill {
-      height: 100%; border-radius: 4px;
-      transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .tension-card {
-      background: rgba(244,162,97,0.06);
-      border: 1px solid rgba(244,162,97,0.25);
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin-bottom: 16px;
-    }
-
-    .tension-card h3 {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px; font-weight: 600;
-      color: var(--I); margin-bottom: 10px;
-    }
-
-    .tension-item {
-      font-size: 14px; color: var(--text-muted);
-      margin-bottom: 6px; line-height: 1.5;
-    }
-
-    .warning-card {
-      background: rgba(230,57,70,0.06);
-      border: 1px solid rgba(230,57,70,0.25);
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin-bottom: 16px;
-    }
-
-    .warning-card h3 {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 15px; font-weight: 600;
-      color: var(--D); margin-bottom: 10px;
-    }
-
-    .warning-item {
-      font-size: 13px; color: var(--text-muted);
-      margin-bottom: 5px;
-    }
-
-    .detail-section { margin-bottom: 28px; }
-
-    .detail-section h2 {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 20px; font-weight: 600;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 16px;
-    }
-
-    .trait-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 12px; margin-bottom: 12px;
-    }
-
-    .trait-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
-    }
-
-    .trait-lbl {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-
-    .trait-card ul { list-style: none; }
-    .trait-card ul li { font-size: 14px; padding: 3px 0; }
-    .trait-card ul li::before { content: "→ "; color: var(--text-dim); }
-    .trait-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
-
-    .info-row {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px 20px;
-      margin-bottom: 10px;
-    }
-
-    .info-row .ir-lbl {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1px;
-      margin-bottom: 5px;
-    }
-
-    .info-row p { font-size: 14px; color: var(--text-muted); }
-
-    .scores-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 10px; margin-top: 16px;
-    }
-
-    .score-cell {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px 12px;
-      text-align: center;
-    }
-
-    .score-val {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 30px; font-weight: 700;
-      line-height: 1;
-    }
-
-    .score-role-val {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 20px; font-weight: 600;
-      line-height: 1; opacity: 0.45;
-      margin-top: 3px;
-    }
-
-    .score-dim {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 1px;
-      margin-top: 4px;
-    }
-
-    .restart-row {
-      text-align: center;
-      margin-top: 40px;
-      padding-top: 32px;
-      border-top: 1px solid var(--border);
-    }
-
-    @media (max-width: 600px) {
-      h1.hero-title { font-size: 36px; }
-      .meta-grid { grid-template-columns: repeat(2, 1fr); }
-      .scale-end { display: none; }
-      .profiles-grid { grid-template-columns: 1fr; }
-      .trait-grid { grid-template-columns: 1fr; }
-      .scores-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-
-    .pdf-banner {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(9,9,18,0.93);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
-      padding: 11px 0;
-      display: flex; align-items: center; justify-content: space-between; gap: 14px;
-    }
-    .pdf-banner-text { font-size: 13px; color: var(--text-muted); }
-    .pdf-banner-text strong { color: var(--I); }
-
-    .btn-pdf {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 9px 20px;
-      border-radius: 7px; border: none; cursor: pointer;
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      background: var(--I); color: #000; flex-shrink: 0;
-      transition: all 0.2s ease;
-    }
-    .btn-pdf:hover { background: #e8934a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(244,162,97,0.35); }
-
-    @media print {
-      @page { margin: 16mm 14mm; size: A4; }
-      body { background: #fff !important; color: #111 !important; font-size: 10.5pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .header, .pdf-banner, .restart-row { display: none !important; }
-      #sIntro, #sQuestions, #sTransition { display: none !important; }
-      #sResults { display: block !important; }
-      .screen { display: none; }
-      .screen#sResults { display: block !important; }
-      .profile-card, .bar-section, .info-row, .trait-card, .score-cell { background: #f6f6f9 !important; border-color: #ddd !important; }
-      .tension-card { background: #fffaf4 !important; border-color: #f0d8b0 !important; }
-      .warning-card { background: #fff5f5 !important; border-color: #f0b0b0 !important; }
-      .results-eyebrow, .pc-sub, .dim-name, .score-dim, .trait-lbl, .ir-lbl, .pc-label, .leg-item { color: #666 !important; }
-      .pc-name, .bar-section-title, .phase-title { color: #111 !important; }
-      .detail-section h2 { color: #111 !important; }
-      .tension-item, .warning-item, .trait-card p, .trait-card ul li, .info-row p { color: #333 !important; }
-      .score-role-val { opacity: 0.5 !important; }
-      .bar-track { background: #e5e5ea !important; }
-      .pc-ball, .disc-badge, .bar-fill, .phase-tag { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      .detail-section { page-break-inside: avoid; }
-      .profiles-grid { page-break-inside: avoid; }
-      .bar-section { page-break-inside: avoid; }
-      .tension-card { page-break-inside: avoid; }
-      #sResults::before { content: "DISC · Persönlichkeitsanalyse · Vertraulich"; display: block; font-size: 8.5pt; letter-spacing: 2px; text-transform: uppercase; color: #aaa; border-bottom: 1px solid #ddd; padding-bottom: 7px; margin-bottom: 18px; }
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DISC Workshop</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN SYSTEM — NOTEBOOK OPTIMIZED
+═══════════════════════════════════════════════════════ */
+:root {
+  --bg:       #080810;
+  --surf:     #0f0f1e;
+  --surf2:    #161628;
+  --surf3:    #1c1c34;
+  --border:   #1e1e38;
+  --border2:  #2a2a48;
+  --text:     #e4e4f0;
+  --muted:    #6a6a8a;
+  --dim:      #3a3a5a;
+  --D:        #e63946;
+  --I:        #f4a261;
+  --S:        #2a9d8f;
+  --C:        #4a90d9;
+  --gold:     #c9a84c;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LAYOUT WRAPPER (Notebook: max 760px zentriert)
+═══════════════════════════════════════════════════════ */
+#app {
+  max-width: 760px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════ */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px;
+  background: rgba(8,8,16,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  max-width: 760px;
+  margin: 0 auto;
+}
+.header-logo {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 22px; font-weight: 700;
+  letter-spacing: 6px; color: var(--text);
+}
+.header-logo .dot { color: var(--D); }
+.header-live { display: flex; align-items: center; gap: 6px; }
+.pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--S);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+
+/* ═══════════════════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════════════════ */
+.screen {
+  display: none;
+  min-height: calc(100vh - 61px);
+  animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+.screen.active { display: flex; flex-direction: column; }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LAYOUT UTILITIES
+═══════════════════════════════════════════════════════ */
+.pad { padding: 32px 28px; }
+.center {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center; flex:1; padding: 48px 28px;
+}
+.content { flex: 1; padding: 28px 28px; }
+
+/* ═══════════════════════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════════════════════ */
+.display {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 48px; font-weight: 700;
+  line-height: 1.05; letter-spacing: .5px;
+}
+.display.sm { font-size: 32px; }
+.label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--muted);
+}
+.body-text { font-size: 16px; color: var(--muted); line-height: 1.7; }
+
+/* ═══════════════════════════════════════════════════════
+   CARD
+═══════════════════════════════════════════════════════ */
+.card {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 14px 28px;
+  border: none; border-radius: 12px; cursor: pointer;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #1a5c53, var(--S));
+  color: #fff;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(42,157,143,.3); }
+.btn-accent {
+  background: linear-gradient(135deg, #8a4a20, var(--I));
+  color: #fff;
+}
+.btn-accent:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(244,162,97,.25); }
+.btn-ghost {
+  background: var(--surf2); color: var(--muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--surf3); color: var(--text); }
+.btn:disabled { opacity: .45; pointer-events: none; }
+.btn.loading { pointer-events: none; }
+.btn.loading::after {
+  content: '';
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════════
+   FORM ELEMENTS
+═══════════════════════════════════════════════════════ */
+.input-group { margin-bottom: 18px; }
+.input-group label {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 8px;
+}
+input[type="text"], textarea {
+  width: 100%;
+  background: var(--surf2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 16px;
+  padding: 14px 18px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+input[type="text"]:focus, textarea:focus {
+  border-color: var(--S);
+  box-shadow: 0 0 0 3px rgba(42,157,143,.15);
+}
+input.code-input {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 32px; font-weight: 600;
+  letter-spacing: 10px; text-align: center;
+  text-transform: uppercase;
+}
+textarea { resize: none; line-height: 1.6; min-height: 130px; }
+
+/* ═══════════════════════════════════════════════════════
+   TOGGLE (Anonym)
+═══════════════════════════════════════════════════════ */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 18px; margin-bottom: 18px;
+  cursor: pointer; user-select: none;
+}
+.toggle-info { display: flex; flex-direction: column; gap: 2px; }
+.toggle-title { font-size: 15px; font-weight: 500; }
+.toggle-desc { font-size: 13px; color: var(--muted); }
+.toggle-switch {
+  position: relative; width: 46px; height: 26px;
+  background: var(--border2); border-radius: 13px;
+  transition: background .2s; flex-shrink: 0;
+}
+.toggle-switch::after {
+  content: ''; position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%; background: #fff;
+  transition: transform .2s; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.toggle-row.on .toggle-switch { background: var(--S); }
+.toggle-row.on .toggle-switch::after { transform: translateX(20px); }
+
+/* ═══════════════════════════════════════════════════════
+   CHAR COUNTER
+═══════════════════════════════════════════════════════ */
+.char-row {
+  display: flex; justify-content: flex-end;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; color: var(--dim);
+  margin-top: 6px; margin-bottom: 18px;
+}
+.char-row.warn { color: var(--I); }
+.char-row.danger { color: var(--D); }
+
+/* ═══════════════════════════════════════════════════════
+   MULTIPLE CHOICE
+═══════════════════════════════════════════════════════ */
+.mc-question { font-size: 18px; font-weight: 500; line-height: 1.5; margin-bottom: 22px; }
+.mc-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.mc-option {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 18px;
+  background: var(--surf2); border: 2px solid var(--border);
+  border-radius: 12px; cursor: pointer;
+  transition: all .15s ease; font-size: 15px;
+}
+.mc-option:hover { border-color: var(--border2); background: var(--surf3); }
+.mc-option.selected { border-color: var(--S); background: rgba(42,157,143,.1); }
+.mc-option.selected .mc-radio { background: var(--S); border-color: var(--S); }
+.mc-option.selected .mc-radio::after { opacity: 1; }
+.mc-radio {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--border2); background: var(--surf);
+  flex-shrink: 0; position: relative; transition: all .15s;
+}
+.mc-radio::after {
+  content: ''; position: absolute;
+  top: 4px; left: 4px;
+  width: 10px; height: 10px;
+  border-radius: 50%; background: #fff;
+  opacity: 0; transition: opacity .15s;
+}
+
+/* ═══════════════════════════════════════════════════════
+   STATUS CHIPS
+═══════════════════════════════════════════════════════ */
+.status-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 16px; border-radius: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+}
+.status-chip.live { background: rgba(42,157,143,.12); border: 1px solid rgba(42,157,143,.4); color: var(--S); }
+.status-chip.waiting { background: rgba(201,168,76,.1); border: 1px solid rgba(201,168,76,.3); color: var(--gold); }
+.status-chip.sent { background: rgba(42,157,143,.15); border: 1px solid rgba(42,157,143,.5); color: var(--S); }
+
+/* ═══════════════════════════════════════════════════════
+   SUCCESS STATE
+═══════════════════════════════════════════════════════ */
+.success-icon {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(42,157,143,.12); border: 2px solid var(--S);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; margin: 0 auto 24px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DISC BADGES
+═══════════════════════════════════════════════════════ */
+.disc-row { display: flex; justify-content: center; gap: 14px; margin-bottom: 32px; }
+.disc-badge {
+  width: 58px; height: 58px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 24px; font-weight: 700; color: #fff;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+}
+.disc-badge.d { background: var(--D); }
+.disc-badge.i { background: var(--I); }
+.disc-badge.s { background: var(--S); }
+.disc-badge.c { background: var(--C); }
+
+/* ═══════════════════════════════════════════════════════
+   PROGRESS BAR (DISC TEST)
+═══════════════════════════════════════════════════════ */
+.prog-area { padding: 16px 28px 8px; }
+.prog-top {
+  display: flex; justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; color: var(--muted);
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px;
+}
+.prog-track { height: 3px; background: var(--surf2); border-radius: 2px; overflow: hidden; }
+.prog-fill {
+  height: 100%; border-radius: 2px; background: var(--D);
+  transition: width 0.5s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ═══════════════════════════════════════════════════════
+   QUESTION BLOCK (DISC TEST)
+═══════════════════════════════════════════════════════ */
+.q-block {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px; margin-bottom: 12px;
+  transition: border-color .2s;
+}
+.q-block.error { border-color: var(--D) !important; }
+.q-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; color: var(--dim);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px;
+}
+.q-text { font-size: 15px; line-height: 1.6; margin-bottom: 18px; }
+.scale-row { display: flex; align-items: center; gap: 12px; }
+.scale-end { font-size: 12px; color: var(--muted); flex-shrink: 0; width: 90px; }
+.scale-end:last-child { text-align: right; }
+.scale-opts { display: flex; gap: 8px; flex: 1; justify-content: center; }
+.scale-opt { position: relative; }
+.scale-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+.scale-opt label {
+  display: flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px; border-radius: 10px;
+  background: var(--surf2); border: 1px solid var(--border);
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px; font-weight: 500; color: var(--muted);
+  transition: all .15s ease; user-select: none;
+}
+.scale-opt label:hover { background: var(--border2); color: var(--text); }
+.scale-opt input:checked + label {
+  background: var(--D); border-color: var(--D); color: #fff;
+  box-shadow: 0 2px 12px rgba(230,57,70,.4);
+}
+.q-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 28px;
+  border-top: 1px solid var(--border);
+  background: rgba(8,8,16,.9);
+  position: sticky; bottom: 0;
+  backdrop-filter: blur(10px);
+}
+.q-nav .btn { width: auto; padding: 12px 24px; }
+.warn-msg { font-size: 13px; color: var(--I); }
+
+/* ═══════════════════════════════════════════════════════
+   RESULTS
+═══════════════════════════════════════════════════════ */
+.profile-card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; margin-bottom: 12px;
+}
+.pc-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;
+}
+.pc-main { display: flex; align-items: center; gap: 16px; }
+.pc-ball {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 24px; font-weight: 700; color: #fff;
+  flex-shrink: 0; box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.pc-name { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; line-height: 1.1; }
+.pc-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.bar-card { background: var(--surf); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
+.bar-title { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 600; margin-bottom: 16px; }
+.dim-row { margin-bottom: 14px; }
+.dim-row:last-child { margin-bottom: 0; }
+.dim-labels { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+.dim-letter { font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; width: 18px; }
+.dim-name { font-size: 13px; color: var(--muted); flex: 1; }
+.dim-scores { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); }
+.dual-track { display: flex; flex-direction: column; gap: 4px; padding-left: 28px; }
+.bar-track { height: 10px; background: var(--surf2); border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 5px; transition: width 1s cubic-bezier(.34,1.56,.64,1); }
+.bar-legend { display: flex; gap: 20px; margin-bottom: 16px; }
+.leg-item { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); }
+.leg-dot { width: 16px; height: 5px; border-radius: 3px; }
+.tension-card { background: rgba(244,162,97,.06); border: 1px solid rgba(244,162,97,.25); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
+.tension-card h3 { font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 600; color: var(--I); margin-bottom: 12px; }
+.tension-item { font-size: 14px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+.detail-card { background: var(--surf); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
+.detail-card h2 { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 600; padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.trait-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.trait-card { background: var(--surf2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.trait-lbl { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.trait-card ul { list-style: none; }
+.trait-card ul li { font-size: 14px; padding: 3px 0; }
+.trait-card ul li::before { content: "→ "; color: var(--dim); }
+.info-row { background: var(--surf2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 10px; }
+.info-row .ir-lbl { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+.info-row p { font-size: 14px; color: var(--muted); }
+.scores-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.score-cell { background: var(--surf2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 10px; text-align: center; }
+.score-val { font-family: 'Rajdhani', sans-serif; font-size: 32px; font-weight: 700; line-height: 1; }
+.score-role-val { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 600; line-height: 1; opacity: .4; margin-top: 4px; }
+.score-dim { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
+
+/* ═══════════════════════════════════════════════════════
+   BEAMER MODE
+═══════════════════════════════════════════════════════ */
+.beamer-icon { font-size: 80px; margin-bottom: 24px; }
+.beamer-arrow {
+  width: 60px; height: 60px; background: var(--surf2);
+  border: 1px solid var(--border2); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; margin: 24px auto;
+  animation: bobUp 2s ease-in-out infinite;
+}
+@keyframes bobUp { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+/* ═══════════════════════════════════════════════════════
+   WAITING ANIMATION
+═══════════════════════════════════════════════════════ */
+.waiting-dots { display: flex; gap: 8px; justify-content: center; margin: 20px 0; }
+.waiting-dots span {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--S); animation: blink 1.4s ease-in-out infinite;
+}
+.waiting-dots span:nth-child(2) { animation-delay: .2s; }
+.waiting-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+/* ═══════════════════════════════════════════════════════
+   SIGNATURE PAD
+═══════════════════════════════════════════════════════ */
+.signature-wrap {
+  background: var(--surf2); border: 2px dashed var(--border2);
+  border-radius: 14px; overflow: hidden; position: relative; margin-bottom: 16px;
+}
+.signature-wrap canvas { display: block; width: 100%; cursor: crosshair; }
+.sig-hint {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 14px; color: var(--dim); pointer-events: none;
+  transition: opacity .3s;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE TAG
+═══════════════════════════════════════════════════════ */
+.phase-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 14px; border-radius: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 16px;
+}
+.phase-tag.nat { background: rgba(42,157,143,.1); border: 1px solid rgba(42,157,143,.35); color: var(--S); }
+.phase-tag.role { background: rgba(74,144,217,.1); border: 1px solid rgba(74,144,217,.35); color: var(--C); }
+
+/* ═══════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════ */
+#toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--surf3); border: 1px solid var(--border2);
+  border-radius: 12px; padding: 12px 22px; font-size: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4); z-index: 1000;
+  transition: transform .3s cubic-bezier(.16,1,.3,1); white-space: nowrap;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.success { border-color: rgba(42,157,143,.5); color: var(--S); }
+#toast.error { border-color: rgba(230,57,70,.5); color: var(--D); }
+
+/* ═══════════════════════════════════════════════════════
+   SELECTION (RACI etc.)
+═══════════════════════════════════════════════════════ */
+.sel-option {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 18px; margin-bottom: 10px;
+  background: var(--surf2); border: 2px solid var(--border);
+  border-radius: 12px; cursor: pointer; transition: all .15s;
+}
+.sel-option:hover { border-color: var(--border2); background: var(--surf3); }
+.sel-option.selected { border-color: var(--S); background: rgba(42,157,143,.08); }
+.sel-badge {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; color: #fff;
+  flex-shrink: 0; margin-top: 2px;
+}
+.sel-label { font-weight: 600; font-size: 15px; margin-bottom: 3px; }
+.sel-desc { font-size: 13px; color: var(--muted); }
+
+/* ═══════════════════════════════════════════════════════
+   PRINT
+═══════════════════════════════════════════════════════ */
+@media print {
+  @page { margin: 14mm 16mm; size: A4; }
+  body { background: #fff !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .app-header, #sJoin, #sWaiting, #sModule, #sDiscIntro, #sDiscQuestions, #sDiscTransition { display: none !important; }
+  #sDiscResults { display: flex !important; }
+  #app { max-width: 100%; }
+}
+</style>
 </head>
 <body>
 
-<div class="wrap">
-  <header class="header">
-    <div class="logo">D<span class="dot">I</span>SC</div>
-    <div id="headerMeta"></div>
-  </header>
+<!-- ─── Fixed header (outside max-width container so it spans full width) ─── -->
+<div style="position:sticky;top:0;z-index:100;background:rgba(8,8,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid #1e1e38;">
+  <div style="max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 28px;">
+    <div class="header-logo">D<span class="dot">I</span>SC</div>
+    <div id="headerStatus"></div>
+  </div>
+</div>
 
-  <div id="sIntro" class="screen">
-    <div class="intro-hero">
+<div id="app">
+
+  <!-- ══════════════════════════════════════════════
+       SCREEN: JOIN
+  ══════════════════════════════════════════════ -->
+  <div id="sJoin" class="screen active">
+    <div class="center">
       <div class="disc-row">
         <div class="disc-badge d">D</div>
         <div class="disc-badge i">I</div>
         <div class="disc-badge s">S</div>
         <div class="disc-badge c">C</div>
       </div>
-      <h1 class="hero-title">Dein<br>Persönlichkeits­profil</h1>
-      <p class="hero-sub">Entdecke deinen natürlichen Stil – und wie du dich in deiner beruflichen Rolle verhältst.</p>
+      <p class="label" style="margin-bottom:12px;">Workshop beitreten</p>
+      <div class="display" style="margin-bottom:10px;">Gib deinen Code ein</div>
+      <p class="body-text" style="margin-bottom:40px; max-width:340px;">
+        Den 6-stelligen Workshop-Code siehst du auf dem Beamer.
+      </p>
     </div>
-    <div class="meta-grid">
-      <div class="meta-cell"><div class="mc-val">~10 Min</div><div class="mc-lbl">Dauer</div></div>
-      <div class="meta-cell"><div class="mc-val">28 × 2</div><div class="mc-lbl">Fragen</div></div>
-      <div class="meta-cell"><div class="mc-val">2 Profile</div><div class="mc-lbl">Ergebnis</div></div>
-      <div class="meta-cell"><div class="mc-val">Online</div><div class="mc-lbl">Workshop</div></div>
-    </div>
-    <div class="info-box">
-      Du durchläufst den Test <strong>zweimal</strong>:<br><br>
-      <strong class="tag-nat">① Natürliches Profil</strong> – Wie bist du, wenn du ganz du selbst sein kannst?<br>
-      <strong class="tag-role">② Rollenprofil</strong> – Wie verhältst du dich typischerweise bei der Arbeit?<br><br>
-      Am Ende kannst du dein Ergebnis direkt in den Workshop senden – der Moderator sieht es live auf dem Bildschirm.
-    </div>
-    <div style="text-align:center; padding-bottom: 48px;">
-      <button class="btn btn-primary" onclick="startPhase('nat')">Test starten &rarr;</button>
+    <div style="padding:0 28px 40px; max-width:520px; margin:0 auto; width:100%;">
+      <div class="input-group">
+        <label>Workshop-Code</label>
+        <input type="text" id="joinCode" class="code-input" placeholder="A1B2C3" maxlength="6"
+               autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+      </div>
+      <div class="input-group">
+        <label>Dein Name</label>
+        <input type="text" id="joinAlias" placeholder="z.B. Christof Bechtiger" maxlength="40" autocomplete="off">
+      </div>
+      <div id="joinError" style="color:var(--D);font-size:14px;margin-bottom:14px;min-height:18px;"></div>
+      <button class="btn btn-primary" id="joinBtn" onclick="doJoin()">Workshop beitreten →</button>
     </div>
   </div>
 
-  <div id="sQuestions" class="screen">
-    <div id="phaseHead" class="phase-head" style="margin-top: 32px;"></div>
-    <div class="progress-area">
-      <div class="progress-top">
+  <!-- ══════════════════════════════════════════════
+       SCREEN: WAITING
+  ══════════════════════════════════════════════ -->
+  <div id="sWaiting" class="screen">
+    <div class="center">
+      <div style="font-size:72px;margin-bottom:28px;">⏳</div>
+      <p class="label" style="margin-bottom:12px;color:var(--gold);">Verbunden</p>
+      <div class="display sm" style="margin-bottom:16px;" id="waitingTitle">Warte auf den Moderator</div>
+      <p class="body-text" id="waitingDesc" style="max-width:380px;margin-bottom:32px;">
+        Der Workshop beginnt gleich. Bleib auf dieser Seite — es geht los, sobald der Moderator das nächste Modul startet.
+      </p>
+      <div class="waiting-dots"><span></span><span></span><span></span></div>
+      <div class="status-chip live" style="margin-top:28px;">
+        <div class="pulse-dot"></div>
+        <span id="waitingCode">—</span>
+      </div>
+    </div>
+    <div style="padding:0 28px 40px;max-width:400px;margin:0 auto;width:100%;">
+      <button class="btn btn-ghost" onclick="leaveWorkshop()" style="font-size:12px;padding:10px;">
+        Anderen Workshop beitreten
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SCREEN: MODULE CONTAINER
+  ══════════════════════════════════════════════ -->
+  <div id="sModule" class="screen">
+    <div id="moduleContent" class="content"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SCREEN: DISC INTRO
+  ══════════════════════════════════════════════ -->
+  <div id="sDiscIntro" class="screen">
+    <div class="center">
+      <div class="disc-row">
+        <div class="disc-badge d">D</div>
+        <div class="disc-badge i">I</div>
+        <div class="disc-badge s">S</div>
+        <div class="disc-badge c">C</div>
+      </div>
+      <p class="label" style="margin-bottom:12px;">Persönlichkeitsanalyse</p>
+      <div class="display" style="margin-bottom:16px;">Dein DISC-Profil</div>
+      <p class="body-text" style="max-width:420px;margin-bottom:36px;">
+        Du durchläufst den Test <strong style="color:var(--text)">zweimal</strong>: zuerst dein
+        <strong style="color:var(--S)">natürliches Profil</strong>, dann dein
+        <strong style="color:var(--C)">Rollenprofil</strong> bei der Arbeit.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:360px;margin-bottom:40px;">
+        <div class="card" style="text-align:center;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;margin-bottom:6px;">~10 Min</div>
+          <div class="label">Dauer</div>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;margin-bottom:6px;">28 × 2</div>
+          <div class="label">Aussagen</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 28px 40px;max-width:480px;margin:0 auto;width:100%;">
+      <button class="btn btn-primary" onclick="startDiscPhase('nat')">Test starten →</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SCREEN: DISC QUESTIONS
+  ══════════════════════════════════════════════ -->
+  <div id="sDiscQuestions" class="screen">
+    <div class="prog-area">
+      <div class="prog-top">
         <span id="pgLabel">SEITE 1 VON 4</span>
         <span id="pgCount">0 / 28</span>
       </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="pgBar" style="width:0%"></div>
-      </div>
+      <div class="prog-track"><div class="prog-fill" id="pgBar" style="width:0%"></div></div>
     </div>
-    <div id="qContainer"></div>
-    <div class="nav-row">
-      <button class="btn btn-ghost" id="btnBack" onclick="prevPage()" style="display:none;">&larr; Zurück</button>
-      <div class="warn-msg" id="warnMsg">⚠ Bitte alle Fragen beantworten</div>
-      <button class="btn btn-primary" id="btnNext" onclick="nextPage()">Weiter &rarr;</button>
-    </div>
-  </div>
-
-  <div id="sTransition" class="screen">
-    <div class="transition-wrap">
-      <div class="checkmark-big">✓</div>
-      <div class="trans-title">Natürliches Profil &nbsp;abgeschlossen</div>
-      <p class="trans-sub">Gut gemacht. Jetzt der zweite Durchgang – dieselben Fragen, aber aus deiner <strong style="color:var(--C)">beruflichen Rolle</strong> heraus.</p>
-      <div class="role-box">
-        Stell dir einen typischen Arbeitstag vor. Du bist in deiner Rolle als Fachperson / Mitarbeiter. Meetings, Deadlines, Teamgespräche. Wie reagierst du <em>dort</em> – ehrlich?
-      </div>
-      <button class="btn btn-primary" onclick="startPhase('role')">Rollenprofil starten &rarr;</button>
+    <div id="phaseHead" style="padding:16px 28px 4px;"></div>
+    <div id="qContainer" style="flex:1;padding:8px 28px 16px;overflow-y:auto;"></div>
+    <div class="q-nav">
+      <button class="btn btn-ghost" id="btnBack" onclick="discPrevPage()" style="display:none;">← Zurück</button>
+      <div class="warn-msg" id="warnMsg" style="display:none;">⚠ Bitte alle Aussagen bewerten</div>
+      <button class="btn btn-primary" id="btnNext" onclick="discNextPage()" style="margin-left:auto;">Weiter →</button>
     </div>
   </div>
 
-  <div id="sResults" class="screen">
-    <div class="pdf-banner">
-      <div class="pdf-banner-text">
-        <strong>Auswertung abgeschlossen</strong> – Sende dein Ergebnis in den Workshop oder speichere es als PDF!
+  <!-- ══════════════════════════════════════════════
+       SCREEN: DISC PHASE TRANSITION
+  ══════════════════════════════════════════════ -->
+  <div id="sDiscTransition" class="screen">
+    <div class="center">
+      <div class="success-icon">✓</div>
+      <div class="display sm" style="margin-bottom:16px;">Natürliches Profil<br>abgeschlossen</div>
+      <p class="body-text" style="max-width:400px;margin-bottom:28px;">
+        Gut gemacht. Jetzt der zweite Durchgang — dieselben Aussagen, aber aus deiner
+        <strong style="color:var(--C)">beruflichen Rolle</strong> heraus.
+      </p>
+      <div class="card" style="text-align:left;max-width:420px;margin-bottom:36px;">
+        <p style="font-size:15px;color:var(--muted);line-height:1.7;">
+          Stell dir einen typischen Arbeitstag vor: Meetings, Deadlines, Teamgespräche. Wie reagierst du
+          <em style="color:var(--text)">dort</em> — ehrlich?
+        </p>
       </div>
-      <button class="btn-pdf" onclick="exportPDF()">⬇ PDF sichern</button>
     </div>
-    <div class="results-wrap" id="resultsContent"></div>
+    <div style="padding:0 28px 40px;max-width:480px;margin:0 auto;width:100%;">
+      <button class="btn btn-accent" onclick="startDiscPhase('role')">Rollenprofil starten →</button>
+    </div>
   </div>
-</div>
+
+  <!-- ══════════════════════════════════════════════
+       SCREEN: DISC RESULTS
+  ══════════════════════════════════════════════ -->
+  <div id="sDiscResults" class="screen">
+    <div style="position:sticky;top:0;z-index:50;background:rgba(8,8,16,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+      <div>
+        <div style="font-size:14px;font-weight:600;">Auswertung fertig</div>
+        <div style="font-size:12px;color:var(--muted);">Sende dein Profil in den Workshop</div>
+      </div>
+      <button class="btn btn-primary" onclick="sendDiscResult()" style="width:auto;padding:11px 22px;font-size:13px;" id="sendBtn">Profil senden</button>
+    </div>
+    <div id="resultsContent" style="flex:1;padding:24px 28px 40px;overflow-y:auto;"></div>
+  </div>
+
+</div><!-- #app -->
+
+<div id="toast"></div>
 
 <script>
-const QUESTIONS = [
-  { id:'D1', d:'D', t:'Ich übernehme gerne die Kontrolle über Situationen und Aufgaben.' },
-  { id:'D2', d:'D', t:'Ich treffe Entscheidungen schnell, auch wenn nicht alle Informationen vorliegen.' },
-  { id:'D3', d:'D', t:'Ich spreche Probleme direkt an und gehe Konflikten eher nicht aus dem Weg.' },
-  { id:'D4', d:'D', t:'Ich setze mir ehrgeizige Ziele und fordere auch andere dazu heraus.' },
-  { id:'D5', d:'D', t:'Ich kann mich gut durchsetzen, auch wenn andere anderer Meinung sind.' },
-  { id:'D6', d:'D', t:'Ich mag Wettbewerb und messe mich gerne mit anderen.' },
-  { id:'D7', d:'D', t:'Ich übernehme Verantwortung, auch wenn es riskant ist.' },
-  { id:'D8', d:'D', reverse:true, t:'Ich lasse lieber andere entscheiden, um Konflikte zu vermeiden.' },
-  { id:'I1', d:'I', t:'Ich knüpfe leicht Kontakte und gehe offen auf Menschen zu.' },
-  { id:'I2', d:'I', t:'Ich motiviere andere gerne durch Begeisterung und positive Energie.' },
-  { id:'I3', d:'I', t:'Ich rede gerne und erzähle Geschichten, um andere mitzunehmen.' },
-  { id:'I4', d:'I', t:'Ich suche aktiv Anerkennung und Feedback von meinem Umfeld.' },
-  { id:'I5', d:'I', t:'Ich fühle mich in Gruppen wohl und bringe mich gerne ein.' },
-  { id:'I6', d:'I', t:'Ich überzeuge andere oft durch Charme und Optimismus.' },
-  { id:'I7', d:'I', t:'Ich handle manchmal spontan, wenn mich etwas begeistert.' },
-  { id:'I8', d:'I', reverse:true, t:'In Gruppen halte ich mich meistens im Hintergrund und bleibe lieber still.' },
-  { id:'S1', d:'S', t:'Ich bin geduldig und bleibe auch in stressigen Situationen ruhig.' },
-  { id:'S2', d:'S', t:'Ich arbeite gerne in einem stabilen, harmonischen Umfeld.' },
-  { id:'S3', d:'S', t:'Ich bin zuverlässig und halte meine Zusagen ein.' },
-  { id:'S4', d:'S', t:'Ich unterstütze andere gerne und helfe, wo ich kann.' },
-  { id:'S5', d:'S', t:'Ich bevorzuge klare Abläufe und Routinen.' },
-  { id:'S6', d:'S', t:'Ich bin ein guter Zuhörer und nehme mir Zeit für andere.' },
-  { id:'S7', d:'S', t:'Ich vermeide plötzliche Veränderungen, wenn es nicht nötig ist.' },
-  { id:'S8', d:'S', reverse:true, t:'Ich werde schnell ungeduldig, wenn Dinge langsam oder gleichförmig laufen.' },
-  { id:'C1', d:'C', t:'Ich achte auf Details und arbeite sehr genau.' },
-  { id:'C2', d:'C', t:'Ich plane gründlich, bevor ich eine Aufgabe beginne.' },
-  { id:'C3', d:'C', t:'Ich halte mich gerne an Regeln und Standards.' },
-  { id:'C4', d:'C', t:'Ich überprüfe meine Arbeit lieber zweimal, um Fehler zu vermeiden.' },
-  { id:'C5', d:'C', t:'Ich analysiere Probleme systematisch und methodisch, bevor ich handle.' },
-  { id:'C6', d:'C', t:'Ich fühle mich unwohl, wenn ich ohne ausreichende Vorbereitung improvisieren muss.' },
-  { id:'C7', d:'C', t:'Ich dokumentiere meine Arbeit sorgfältig und detailliert.' },
-  { id:'C8', d:'C', reverse:true, t:'Details sind mir oft egal – Hauptsache, es geht schnell vorwärts.' },
-];
+/* ═══════════════════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════════════════ */
+const SB_URL = 'https://dnoecftuybkoqvrkfvei.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRub2VjZnR1eWJrb3F2cmtmdmVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzIzMjAsImV4cCI6MjA4ODMwODMyMH0.XzQJtx0bxO0sk1T68c_0MczeSOdblLxpJLGRbzDMiS4';
+const EDGE   = SB_URL + '/functions/v1';
+const HDR    = { 'Content-Type':'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
-const TYPE_INFO = {
-  D: { name:'Der Macher', sub:'Dominant · Ergebnisorientiert · Direkt', hex:'#e63946', strengths:['Entscheidungsfreudig','Zielorientiert','Direkt und klar','Treibt Veränderung an'], challenges:['Wirkt ungeduldig','Wenig Fokus auf Details','Überhört manchmal andere','Eingegangene Risiken'], motivation:'Resultate, Kontrolle, Einfluss, Herausforderungen', fear:'Kontrollverlust, Scheitern, Ineffizienz', teamrole:'Antreiber – setzt Impulse und bricht Stagnation auf', communication:'Direkt, knapp, resultatorientiert – keine langen Erklärungen' },
-  I: { name:'Der Inspirator', sub:'Einflussreich · Enthusiastisch · Sozial', hex:'#f4a261', strengths:['Begeisterungsfähig','Motiviert andere','Kreativ und offen','Starker Netzwerker'], challenges:['Wenig strukturiert','Schnell abgelenkt','Vermeidet manchmal Konflikte','Überschätzt gelegentlich'], motivation:'Anerkennung, soziale Verbindung, Kreativität, Spass', fear:'Ablehnung, Isolation, Langeweile', teamrole:'Energiegeber – sorgt für Begeisterung und sozialen Zusammenhalt', communication:'Offen, persönlich, emotional – braucht Wertschätzung' },
-  S: { name:'Der Stabilisierer', sub:'Stetig · Zuverlässig · Harmonisch', hex:'#2a9d8f', strengths:['Verlässlich und beständig','Aufmerksamer Zuhörer','Loyal gegenüber Team','Hält Team zusammen'], challenges:['Vermeidet Konflikte aktiv','Schwer bei Veränderung','Sagt selten Nein','Braucht lange für Entscheide'], motivation:'Stabilität, Harmonie, Sicherheit, Beständigkeit', fear:'Konflikte, plötzliche Veränderungen, Instabilität', teamrole:'Anker – sorgt für Verlässlichkeit und sozialen Kitt', communication:'Geduldig, freundlich, indirekt – braucht Zeit und Sicherheit' },
-  C: { name:'Der Analytiker', sub:'Gewissenhaft · Präzise · Systematisch', hex:'#4a90d9', strengths:['Hohe Qualitätsstandards','Analytisch und gründlich','Strukturiert','Präzise in Details'], challenges:['Kann überanalysieren','Perfektionistisch','Vorsichtig bei Entscheiden','Wenig spontan'], motivation:'Qualität, Genauigkeit, Wissen, Korrektheit', fear:'Fehler, Kritik, Unordnung, Improvisation', teamrole:'Qualitätshüter – hält Standards und erkennt Risiken früh', communication:'Faktenbasiert, präzise, schriftlich bevorzugt – braucht Belege' },
-};
+let sb = null, rtChannel = null;
+let session = { code:'', alias:'', participantId:'', joinToken:'', workshopId:'' };
 
-const DIM_NAMES = { D:'Dominanz', I:'Initiative', S:'Stetigkeit', C:'Gewissenhaftigkeit' };
-
-function rand01() {
-  if (window.crypto && crypto.getRandomValues) { const u = new Uint32Array(1); crypto.getRandomValues(u); return u[0] / 4294967296; }
-  return Math.random();
-}
-function shuffleInPlace(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rand01() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
-
-const SHUFFLED = shuffleInPlace([...QUESTIONS]);
-const PAGE_SIZE = 8;
-const PAGES = Array.from({ length: Math.ceil(SHUFFLED.length / PAGE_SIZE) }, (_, i) => SHUFFLED.slice(i*PAGE_SIZE, (i+1)*PAGE_SIZE));
-
-let phase = 'nat';
-let curPage = 0;
-const answers = { nat:{}, role:{} };
-
-function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo({ top:0, behavior:'smooth' }); }
-
-function calcScores(ph) {
-  const s={D:0,I:0,S:0,C:0}, n={D:0,I:0,S:0,C:0}, raw={D:0,I:0,S:0,C:0};
-  QUESTIONS.forEach(q => { let v = answers[ph][q.id]; if (v) { if (q.reverse) v = 6 - v; s[q.d]+=v; raw[q.d]+=v; n[q.d]++; } });
-  const out={ percent:{}, mean:{}, n, raw };
-  ['D','I','S','C'].forEach(d => { out.mean[d] = n[d] ? (raw[d]/n[d]) : 0; out.percent[d] = n[d] ? Math.round((raw[d]/(n[d]*5))*100) : 0; });
-  return out;
+/* ═══════════════════════════════════════════════════════
+   SCREEN ROUTER
+═══════════════════════════════════════════════════════ */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('active'); window.scrollTo({ top:0, behavior:'smooth' }); }
 }
 
-function dominantType(scores) { return Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0]; }
-
-function detectManipulation(ph) {
-  const warn=[], vals = Object.values(answers[ph]);
-  if (!vals.length) return warn;
-  const extremes = vals.filter(v => v===1||v===5).length;
-  if (extremes/vals.length > 0.72) warn.push('Hoher Anteil extremer Antworten – möglicherweise wurde wenig differenziert.');
-  if (vals.every(v=>v===vals[0])) warn.push('Alle Fragen identisch bewertet – Profil ist statistisch nicht auswertbar.');
-  const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
-  const variance = vals.reduce((s,v)=>s+Math.pow(v-avg,2),0)/vals.length;
-  if (variance < 0.35) warn.push('Sehr geringe Antwort-Varianz – mögliche Tendenz zur Mitte.');
-  return warn;
+/* ═══════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════ */
+let toastTimer = null;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3200);
 }
 
-function renderPhaseHead() {
-  const el = document.getElementById('phaseHead');
-  const isNat = phase==='nat';
-  el.innerHTML = `<div class="phase-tag ${isNat?'nat':'role'}"><span>${isNat?'◉':'◎'}</span><span>${isNat?'Natürliches Profil':'Rollenprofil'}</span></div><div class="phase-title">${isNat?'Wie bist du wirklich?':'Wie bist du bei der Arbeit?'}</div><div class="phase-desc">${isNat?'Beantworte die Fragen so, wie du dich in deinem privaten Alltag verhältst.':'Dieselben Fragen – aber jetzt aus deiner beruflichen Rolle heraus.'}</div>`;
+/* ═══════════════════════════════════════════════════════
+   HEADER STATUS
+═══════════════════════════════════════════════════════ */
+function setHeader(mode) {
+  const el = document.getElementById('headerStatus');
+  if (mode === 'live') {
+    el.innerHTML = `<div class="header-live"><div class="pulse-dot"></div><span style="font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;color:var(--S);text-transform:uppercase;">${session.alias} · ${session.code}</span></div>`;
+  } else { el.innerHTML = ''; }
 }
 
-function renderPage() {
-  renderPhaseHead();
-  const pageQs = PAGES[curPage];
-  const answered = Object.keys(answers[phase]).length;
-  document.getElementById('pgLabel').textContent = `SEITE ${curPage+1} VON ${PAGES.length}`;
-  document.getElementById('pgCount').textContent = `${answered} / ${QUESTIONS.length}`;
-  document.getElementById('pgBar').style.width = `${(curPage+1)*25}%`;
-  document.getElementById('btnBack').style.display = curPage>0 ? 'inline-flex' : 'none';
-  document.getElementById('btnNext').textContent = curPage===PAGES.length-1 ? 'Auswertung →' : 'Weiter →';
-  document.getElementById('warnMsg').style.display = 'none';
-  document.getElementById('headerMeta').textContent = phase==='nat' ? 'NATÜRLICH' : 'ROLLE';
-  const base = curPage*PAGE_SIZE;
-  const html = pageQs.map((q,i) => {
-    const saved = answers[phase][q.id] || null;
-    return `<div class="q-block" id="qb-${q.id}"><div class="q-num">AUSSAGE ${base+i+1} / ${QUESTIONS.length}</div><div class="q-text">${q.t}</div><div class="scale-row"><div class="scale-end">Trifft nicht zu</div><div class="scale-opts">${[1,2,3,4,5].map(v=>`<div class="scale-opt"><input type="radio" name="${phase}_${q.id}" id="r_${phase}_${q.id}_${v}" value="${v}" ${saved===v?'checked':''}><label for="r_${phase}_${q.id}_${v}">${v}</label></div>`).join('')}</div><div class="scale-end" style="text-align:right">Trifft voll zu</div></div></div>`;
-  }).join('');
-  document.getElementById('qContainer').innerHTML = html;
-  pageQs.forEach(q => { for(let v=1;v<=5;v++){ const r=document.getElementById(`r_${phase}_${q.id}_${v}`); if(r) r.addEventListener('change',()=>{ answers[phase][q.id]=v; document.getElementById(`qb-${q.id}`).classList.remove('error'); document.getElementById('pgCount').textContent=`${Object.keys(answers[phase]).length} / 28`; }); } });
-}
+/* ═══════════════════════════════════════════════════════
+   JOIN
+═══════════════════════════════════════════════════════ */
+const joinBtn     = document.getElementById('joinBtn');
+const joinCodeEl  = document.getElementById('joinCode');
+const joinAliasEl = document.getElementById('joinAlias');
+const joinErrEl   = document.getElementById('joinError');
 
-function startPhase(ph) { phase=ph; curPage=0; renderPage(); show('sQuestions'); }
+joinCodeEl.addEventListener('input', () => { joinCodeEl.value = joinCodeEl.value.toUpperCase().replace(/[^A-Z0-9]/g,''); });
+joinCodeEl.addEventListener('keydown', e => { if(e.key==='Enter') joinAliasEl.focus(); });
+joinAliasEl.addEventListener('keydown', e => { if(e.key==='Enter') doJoin(); });
 
-function nextPage() {
-  const pageQs = PAGES[curPage];
-  const missing = pageQs.filter(q => !answers[phase][q.id]);
-  if (missing.length) { document.getElementById('warnMsg').style.display='block'; missing.forEach(q=>{document.getElementById(`qb-${q.id}`).classList.add('error');}); document.getElementById(`qb-${missing[0].id}`).scrollIntoView({behavior:'smooth',block:'center'}); return; }
-  if (curPage < PAGES.length-1) { curPage++; renderPage(); window.scrollTo({top:0,behavior:'smooth'}); }
-  else { if (phase==='nat') { show('sTransition'); } else { buildResults(); } }
-}
+async function doJoin() {
+  const code  = joinCodeEl.value.trim().toUpperCase();
+  const alias = joinAliasEl.value.trim();
+  joinErrEl.textContent = '';
+  if (!code || code.length < 4) { joinErrEl.textContent = 'Bitte gültigen Code eingeben.'; return; }
+  if (!alias) { joinErrEl.textContent = 'Bitte Namen eingeben.'; return; }
 
-function prevPage() { if (curPage > 0) { curPage--; renderPage(); window.scrollTo({top:0}); } }
-
-function responseStyle(ph) {
-  const vals = Object.values(answers[ph]).map(Number);
-  if (!vals.length) return null;
-  const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
-  const extremeRate = vals.filter(v=>v===1||v===5).length/vals.length;
-  const midRate = vals.filter(v=>v===3).length/vals.length;
-  const variance = vals.reduce((s,v)=>s+Math.pow(v-mean,2),0)/vals.length;
-  return { mean, extremeRate, midRate, variance };
-}
-
-function buildResults() {
-  const ns = calcScores('nat'), rs = calcScores('role');
-  const nsP = ns.percent, rsP = rs.percent;
-  const nType = dominantType(nsP), rType = dominantType(rsP);
-  const nInfo = TYPE_INFO[nType], rInfo = TYPE_INFO[rType];
-  const warnings = [...detectManipulation('nat').map(w=>`<em>Natürlich:</em> ${w}`), ...detectManipulation('role').map(w=>`<em>Rolle:</em> ${w}`)];
-  const tensions = ['D','I','S','C'].map(d=>({d, delta: rsP[d]-nsP[d]})).filter(t=>Math.abs(t.delta)>=15);
-  const sameType = nType===rType;
-
-  const barsHTML = ['D','I','S','C'].map(d=>`<div class="dim-row"><div class="dim-labels"><div class="dim-letter" style="color:${TYPE_INFO[d].hex}">${d}</div><div class="dim-name">${DIM_NAMES[d]}</div><div class="dim-scores">${nsP[d]}<span style="opacity:.4"> / ${rsP[d]}</span></div></div><div class="dual-track"><div class="bar-track"><div class="bar-fill" style="background:${TYPE_INFO[d].hex}; width:0%" data-w="${nsP[d]}"></div></div><div class="bar-track"><div class="bar-fill" style="background:${TYPE_INFO[d].hex}; opacity:.4; width:0%" data-w="${rsP[d]}"></div></div></div></div>`).join('');
-
-  const tensionHTML = tensions.length ? `<div class="tension-card"><h3>⚡ Spannungsfelder – Rollenaufwand</h3>${tensions.map(t=>`<div class="tension-item"><strong style="color:${TYPE_INFO[t.d].hex}">${t.d} – ${DIM_NAMES[t.d]}</strong>: ${t.delta>0?`In der Rolle <strong>+${t.delta}%</strong> höher – du passt dich an. Das kostet Energie.`:`In der Rolle <strong>${t.delta}%</strong> tiefer – du unterdrückst diesen Anteil bei der Arbeit.`}</div>`).join('')}</div>` : `<div class="info-row" style="margin-bottom:16px;"><p style="font-size:14px; color:var(--text-muted);">✓ Deine Profile sind konsistent – du kannst bei der Arbeit weitgehend du selbst sein.</p></div>`;
-
-  const warningHTML = warnings.length ? `<div class="warning-card"><h3>⚠ Qualitätshinweis</h3>${warnings.map(w=>`<div class="warning-item">• ${w}</div>`).join('')}</div>` : '';
-
-  const roleDetailHTML = !sameType ? `<div class="detail-section"><h2 style="color:${rInfo.hex}">Dein Rollenstil: ${rInfo.name}</h2><p style="font-size:14px; color:var(--text-muted); margin-bottom:16px;">Bei der Arbeit verhältst du dich anders als in deinem natürlichen Profil – das zeigt, welchen täglichen Anpassungsaufwand du betreibst.</p><div class="trait-grid"><div class="trait-card"><div class="trait-lbl">In der Rolle stark</div><ul>${rInfo.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div><div class="trait-card"><div class="trait-lbl">Potenzielle Reibungspunkte</div><ul>${rInfo.challenges.map(c=>`<li>${c}</li>`).join('')}</ul></div></div></div>` : '';
-
-  const html = `
-    <div class="results-eyebrow">AUSWERTUNG ABGESCHLOSSEN</div>
-    <div class="profiles-grid">
-      <div class="profile-card"><div class="pc-label" style="color:var(--S);">◉ Natürliches Profil</div><div class="pc-main"><div class="pc-ball" style="background:${nInfo.hex};">${nType}</div><div><div class="pc-name">${nInfo.name}</div><div class="pc-sub">${nInfo.sub}</div></div></div></div>
-      <div class="profile-card"><div class="pc-label" style="color:var(--C);">◎ Rollenprofil</div><div class="pc-main"><div class="pc-ball" style="background:${rInfo.hex}; opacity:.75;">${rType}</div><div><div class="pc-name">${rInfo.name}</div><div class="pc-sub">${rInfo.sub}</div></div></div></div>
-    </div>
-    <div class="bar-section"><div class="bar-section-title">Profil-Vergleich</div><div class="bar-legend"><div class="leg-item"><div class="leg-dot" style="background:var(--S);"></div>Natürlich</div><div class="leg-item"><div class="leg-dot" style="background:var(--text-muted); opacity:.5;"></div>Rolle</div></div>${barsHTML}</div>
-    ${tensionHTML}${warningHTML}
-    <div class="detail-section"><h2 style="color:${nInfo.hex}">Dein natürlicher Stil: ${nInfo.name}</h2><div class="trait-grid"><div class="trait-card"><div class="trait-lbl">Stärken</div><ul>${nInfo.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div><div class="trait-card"><div class="trait-lbl">Herausforderungen</div><ul>${nInfo.challenges.map(c=>`<li>${c}</li>`).join('')}</ul></div></div><div class="info-row"><div class="ir-lbl">Motivation</div><p>${nInfo.motivation}</p></div><div class="info-row"><div class="ir-lbl">Grundangst</div><p>${nInfo.fear}</p></div><div class="info-row"><div class="ir-lbl">Kommunikationsstil</div><p>${nInfo.communication}</p></div><div class="info-row"><div class="ir-lbl">Rolle im Team</div><p>${nInfo.teamrole}</p></div></div>
-    ${roleDetailHTML}
-    <div class="bar-section"><div class="bar-section-title">Rohwerte</div><div class="scores-grid">${['D','I','S','C'].map(d=>`<div class="score-cell"><div class="score-val" style="color:${TYPE_INFO[d].hex}">${nsP[d]}</div><div class="score-role-val" style="color:${TYPE_INFO[d].hex}">${rsP[d]}</div><div class="score-dim">${d} natürl / Rolle</div></div>`).join('')}</div></div>
-    <div class="restart-row" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-      <button class="btn btn-primary" onclick="sendToWorkshop()">In Online-Workshop senden</button>
-      <button class="btn btn-ghost" onclick="joinWorkshopPrompt()">Workshop-Code setzen</button>
-      <button class="btn btn-ghost" onclick="exportWorkshopJSON()">Export (.json)</button>
-      <button class="btn btn-ghost" onclick="restart()">Neu starten</button>
-    </div>
-  `;
-
-  document.getElementById('resultsContent').innerHTML = html;
-  document.getElementById('headerMeta').textContent = 'AUSWERTUNG';
-  show('sResults');
-  setTimeout(()=>{ document.querySelectorAll('.bar-fill[data-w]').forEach(el=>{ el.style.width = el.getAttribute('data-w')+'%'; }); }, 150);
-}
-
-function getWorkshopPayload() {
-  const ns = calcScores('nat'), rs = calcScores('role');
-  const natural = ns.percent, role = rs.percent;
-  const deltas = {}; ['D','I','S','C'].forEach(d => deltas[d] = role[d] - natural[d]);
-  const stress = ['D','I','S','C'].reduce((acc,d)=>acc + Math.abs(deltas[d]), 0);
-  const mapPoint = (s) => ({ x: s.D - s.S, y: s.I - s.C });
-  return { schema:'disc-workshop-export-v1', exportedAt:new Date().toISOString(), participant:{ alias:localStorage.getItem('disc_alias')||'', workshop:localStorage.getItem('disc_workshop')||'' }, natural, role, naturalType:dominantType(natural), roleType:dominantType(role), mean:{natural:ns.mean,role:rs.mean}, raw:{natural:ns.raw,role:rs.raw}, deltas, stress, responseStyle:{natural:responseStyle('nat'),role:responseStyle('role')}, map:{natural:mapPoint(natural),role:mapPoint(role)} };
-}
-
-function ensureParticipantMeta() {
-  const alias = prompt('Dein Kürzel oder Vorname:', localStorage.getItem('disc_alias')||'');
-  if (alias === null) return false;
-  localStorage.setItem('disc_alias', alias.trim());
-  return true;
-}
-
-function exportWorkshopJSON() {
-  if (!ensureParticipantMeta()) return;
-  const payload = getWorkshopPayload();
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `disc_export_${(payload.participant.alias||'teilnehmer').replace(/[^a-z0-9_-]+/gi,'_')}.json`;
-  a.click();
-  setTimeout(()=> URL.revokeObjectURL(a.href), 1000);
-}
-
-const SUPABASE_URL = 'https://dnoecftuybkoqvrkfvei.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRub2VjZnR1eWJrb3F2cmtmdmVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzIzMjAsImV4cCI6MjA4ODMwODMyMH0.XzQJtx0bxO0sk1T68c_0MczeSOdblLxpJLGRbzDMiS4';
-const EDGE_BASE = SUPABASE_URL + '/functions/v1';
-
-// ─── REALTIME LISTENER ────────────────────────────
-let realtimeChannel = null;
-
-function startRealtimeListener(workshopId) {
-  if (realtimeChannel) return; // schon aktiv
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-  realtimeChannel = sb
-    .channel('workshop-' + workshopId)
-    .on('postgres_changes', {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'workshops',
-      filter: `id=eq.${workshopId}`
-    }, (payload) => {
-      const { current_module, module_data } = payload.new;
-      handleModuleChange(current_module, module_data || {});
-    })
-    .subscribe();
-}
-
-function handleModuleChange(module, moduleData) {
-  showModuleOverlay(module, moduleData);
-}
-
-// ─── MODULE OVERLAY ───────────────────────────────
-const MODULE_LABELS = {
-  waiting:      { icon: '⏳', title: 'Warte auf den Moderator...', desc: 'Der Workshop beginnt gleich. Bitte warte.' },
-  intro:        { icon: '💬', title: 'Einstiegsfrage', desc: moduleData => moduleData?.question || 'Der Moderator stellt eine Frage. Bitte schau auf den Beamer.' },
-  disc_test:    { icon: '📊', title: 'DISC-Test', desc: 'Bitte fülle jetzt den Test aus.' },
-  live_map:     { icon: '🗺', title: 'Live-Map', desc: 'Schau auf den Beamer — dein Ergebnis ist jetzt sichtbar!' },
-  reflexion:    { icon: '🔍', title: 'Reflexion', desc: 'Was überrascht dich an deinem Ergebnis?' },
-  team_pattern: { icon: '🧩', title: 'Team-Muster', desc: 'Schau auf den Beamer und beobachte das Team-Profil.' },
-  exercise_1:   { icon: '💪', title: 'Übung 1 – Stärken', desc: 'exercise', prompt: 'Meine grösste Stärke im Team:', maxLength: 300 },
-  exercise_2:   { icon: '⚡', title: 'Übung 2 – Reibung', desc: 'Besprecht: Wo gibt es im Team Reibungspunkte?' },
-  exercise_3:   { icon: '📋', title: 'Übung 3 – Spielregeln', desc: 'Was sind eure Team-Spielregeln?' },
-  closing:      { icon: '🏆', title: 'Abschluss', desc: 'Vielen Dank für deine Teilnahme!' },
-  closed:       { icon: '🔒', title: 'Workshop beendet', desc: 'Der Moderator hat den Workshop geschlossen. Danke für deine Teilnahme!' },
-  idle:         { icon: '⏳', title: 'Warte auf den Moderator...', desc: 'Der Workshop beginnt gleich. Bitte warte.' },
-};
-
-function showModuleOverlay(module, moduleData) {
-  let overlay = document.getElementById('moduleOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'moduleOverlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(9,9,18,0.97);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;font-family:IBM Plex Sans,sans-serif;animation:fadeUp 0.35s ease';
-    document.body.appendChild(overlay);
-  }
-
-  const info = MODULE_LABELS[module] || { icon: '📡', title: module, desc: 'Bitte schau auf den Beamer.' };
-  const descText = typeof info.desc === 'function' ? info.desc(moduleData) : info.desc;
-
-  // Spezialfall: DISC-Test soll App bedienbar lassen
-  if (module === 'disc_test') {
-    if (overlay) overlay.remove();
-    // Wenn kein Screen aktiv → Test-Intro zeigen
-    if (!document.querySelector('.screen.active')) {
-      show('sIntro');
-    }
-    return;
-  }
-
-  const currentCode = localStorage.getItem('disc_workshop_code') || '?';
-  const isExercise = info.desc === 'exercise';
-
-  if (isExercise) {
-    // Exercise overlay with input field
-    const maxLen = info.maxLength || 300;
-    overlay.innerHTML = `
-      <div style="font-size:72px;margin-bottom:24px">${info.icon}</div>
-      <div style="font-family:Rajdhani,sans-serif;font-size:36px;font-weight:700;color:#fff;margin-bottom:12px">${info.title}</div>
-      <div style="font-size:16px;color:#9ca9cc;max-width:440px;line-height:1.6;margin-bottom:24px">${info.prompt}</div>
-      <textarea id="exerciseInput" maxlength="${maxLen}" rows="4"
-        style="width:90%;max-width:440px;padding:14px;border-radius:12px;border:2px solid #2b3657;background:#141b2d;color:#fff;font-size:16px;font-family:inherit;resize:none;outline:none"
-        placeholder="Tippe hier deine Antwort..."></textarea>
-      <div id="exerciseCharCount" style="font-size:12px;color:#6a6a8a;margin-top:6px">0 / ${maxLen}</div>
-      <button id="exerciseSubmitBtn" onclick="submitExerciseResponse('${module}')"
-        style="margin-top:16px;background:linear-gradient(135deg,#2a9d8f,#4a90d9);border:none;color:#fff;font-size:18px;font-weight:700;padding:14px 40px;border-radius:12px;cursor:pointer;width:90%;max-width:440px">
-        Absenden
-      </button>
-      <div id="exerciseFeedback" style="margin-top:12px;font-size:14px;min-height:20px"></div>
-      <div style="margin-top:24px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,0.15);border:1px solid rgba(42,157,143,0.4);color:#2a9d8f;font-size:12px;letter-spacing:2px;text-transform:uppercase">🔴 Live · Workshop: ${currentCode}</div>
-      <button onclick="leaveWorkshop()" style="margin-top:16px;background:transparent;border:1px solid #2b3657;color:#6a6a8a;font-size:12px;padding:8px 18px;border-radius:20px;cursor:pointer;letter-spacing:1px">
-        Anderen Workshop beitreten
-      </button>
-    `;
-    const textarea = document.getElementById('exerciseInput');
-    textarea.addEventListener('input', () => {
-      document.getElementById('exerciseCharCount').textContent = textarea.value.length + ' / ' + maxLen;
-    });
-    setTimeout(() => textarea.focus(), 200);
-  } else {
-    // Standard overlay (non-exercise modules)
-    overlay.innerHTML = `
-      <div style="font-size:72px;margin-bottom:24px">${info.icon}</div>
-      <div style="font-family:Rajdhani,sans-serif;font-size:36px;font-weight:700;color:#fff;margin-bottom:12px">${info.title}</div>
-      <div style="font-size:16px;color:#9ca9cc;max-width:440px;line-height:1.6">${descText}</div>
-      <div style="margin-top:32px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,0.15);border:1px solid rgba(42,157,143,0.4);color:#2a9d8f;font-size:12px;letter-spacing:2px;text-transform:uppercase">🔴 Live · Workshop: ${currentCode}</div>
-      <button onclick="leaveWorkshop()" style="margin-top:24px;background:transparent;border:1px solid #2b3657;color:#6a6a8a;font-size:12px;padding:8px 18px;border-radius:20px;cursor:pointer;letter-spacing:1px">
-        Anderen Workshop beitreten
-      </button>
-    `;
-  }
-}
-
-async function submitExerciseResponse(module) {
-  const textarea = document.getElementById('exerciseInput');
-  const btn = document.getElementById('exerciseSubmitBtn');
-  const feedback = document.getElementById('exerciseFeedback');
-  const content = (textarea?.value || '').trim();
-
-  if (!content) {
-    feedback.style.color = '#e63946';
-    feedback.textContent = 'Bitte gib eine Antwort ein.';
-    return;
-  }
-
-  const participantId = localStorage.getItem('disc_participant_id');
-  const joinToken = localStorage.getItem('disc_join_token');
-  if (!participantId || !joinToken) {
-    feedback.style.color = '#e63946';
-    feedback.textContent = 'Keine Session gefunden. Bitte tritt dem Workshop erneut bei.';
-    return;
-  }
-
-  // Disable UI
-  btn.disabled = true;
-  btn.style.opacity = '0.5';
-  btn.textContent = 'Wird gesendet...';
-  textarea.disabled = true;
+  joinBtn.disabled = true; joinBtn.classList.add('loading');
 
   try {
-    const res = await fetch(EDGE_BASE + '/submit-exercise', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_PUBLISHABLE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY
-      },
-      body: JSON.stringify({ participantId, joinToken, module, content, responseType: 'text' })
-    });
-
-    const data = await res.json();
-
-    if (res.status === 409 || data.alreadySubmitted) {
-      feedback.style.color = '#f4a261';
-      feedback.textContent = 'Du hast bereits geantwortet.';
-      btn.textContent = 'Bereits gesendet';
-      return;
-    }
-
-    if (!res.ok) throw new Error(data.error || 'Fehler beim Senden');
-
-    feedback.style.color = '#2a9d8f';
-    feedback.textContent = 'Antwort gesendet ✓';
-    btn.textContent = 'Gesendet ✓';
-    btn.style.background = '#2a9d8f';
-  } catch (err) {
-    feedback.style.color = '#e63946';
-    feedback.textContent = 'Fehler: ' + err.message;
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.textContent = 'Absenden';
-    textarea.disabled = false;
-  }
-}
-
-function leaveWorkshop() {
-  // Supabase Realtime Channel sauber trennen
-  if (realtimeChannel) {
-    try { realtimeChannel.unsubscribe(); } catch(e) {}
-    realtimeChannel = null;
-  }
-  // Alle Workshop-Daten löschen
-  ['disc_workshop_code','disc_alias','disc_participant_id','disc_join_token','disc_workshop_id'].forEach(k => localStorage.removeItem(k));
-  document.getElementById('moduleOverlay')?.remove();
-  showJoinOverlay('');
-}
-
-function getStoredWorkshopMeta() {
-  return { code:localStorage.getItem('disc_workshop_code')||'', alias:localStorage.getItem('disc_alias')||'', participantId:localStorage.getItem('disc_participant_id')||'', joinToken:localStorage.getItem('disc_join_token')||'' };
-}
-
-async function joinWorkshopPrompt() {
-  const current = getStoredWorkshopMeta();
-  const code = prompt('Workshop-Code eingeben:', current.code||'');
-  if (code === null) return;
-  const alias = prompt('Dein Kürzel oder Vorname:', current.alias||'');
-  if (alias === null) return;
-  localStorage.setItem('disc_workshop_code', code.trim().toUpperCase());
-  localStorage.setItem('disc_alias', alias.trim());
-  alert('Gespeichert!');
-}
-
-async function ensureWorkshopRegistration() {
-  const meta = getStoredWorkshopMeta();
-  if (!meta.code || !meta.alias) { await joinWorkshopPrompt(); }
-  const next = getStoredWorkshopMeta();
-  if (!next.code || !next.alias) return null;
-  if (next.participantId && next.joinToken) return next;
-  const res = await fetch(EDGE_BASE + '/join-workshop', { method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY}, body:JSON.stringify({workshopCode:next.code, alias:next.alias, shareWithTeam:true, consentExport:true, clientFingerprint:navigator.userAgent}) });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Beitritt fehlgeschlagen');
-  localStorage.setItem('disc_participant_id', data.participantId);
-  localStorage.setItem('disc_join_token', data.joinToken);
-  if (data.workshopId) localStorage.setItem('disc_workshop_id', data.workshopId);
-  startRealtimeListener(data.workshopId);
-  return getStoredWorkshopMeta();
-}
-
-async function sendToWorkshop() {
-  try {
-    const meta = await ensureWorkshopRegistration();
-    if (!meta) return;
-    const payload = getWorkshopPayload();
-    const body = { participantId:localStorage.getItem('disc_participant_id'), joinToken:localStorage.getItem('disc_join_token'), alias:localStorage.getItem('disc_alias'), natural:payload.natural, role:payload.role, raw:payload.raw, responseStyle:payload.responseStyle, computed:{ deltas:payload.deltas, stress:payload.stress, map:payload.map, naturalType:payload.naturalType, roleType:payload.roleType, mean:payload.mean } };
-    const res = await fetch(EDGE_BASE + '/submit-result', { method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY}, body:JSON.stringify(body) });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Senden fehlgeschlagen');
-    alert('✓ Dein Ergebnis wurde erfolgreich in den Workshop gesendet!');
-  } catch (err) {
-    console.error(err);
-    alert('Fehler: ' + err.message);
-  }
-}
-
-function exportPDF() {
-  const nType = dominantType(calcScores('nat').percent);
-  const rType = dominantType(calcScores('role').percent);
-  document.title = `DISC-Profil_${nType}_${rType}`;
-  window.print();
-  setTimeout(()=>{ document.title = 'DISC Persönlichkeitsanalyse'; }, 2000);
-}
-
-function restart() { answers.nat={}; answers.role={}; document.getElementById('headerMeta').textContent=''; show('sIntro'); }
-
-// ─── JOIN OVERLAY ─────────────────────────────────────────────────────────────
-function showJoinOverlay(prefillCode) {
-  let overlay = document.getElementById('joinOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'joinOverlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(9,9,18,0.98);z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;font-family:IBM Plex Sans,sans-serif;animation:fadeUp 0.3s ease';
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML = `
-    <div style="font-size:56px;margin-bottom:20px">🎯</div>
-    <div style="font-family:Rajdhani,sans-serif;font-size:32px;font-weight:700;color:#fff;margin-bottom:8px">DISC Workshop beitreten</div>
-    <div style="font-size:15px;color:#9ca9cc;margin-bottom:32px">Gib den Code vom Moderator ein</div>
-    <input id="joinCodeInput" type="text" maxlength="6" placeholder="Workshop-Code (z.B. A1B2C3)"
-      style="font-size:28px;font-weight:700;letter-spacing:6px;text-transform:uppercase;text-align:center;width:280px;padding:14px 20px;border-radius:12px;border:2px solid #2b3657;background:#141b2d;color:#fff;margin-bottom:16px;outline:none"
-      value="${prefillCode||''}">
-    <input id="joinAliasInput" type="text" maxlength="30" placeholder="Dein Name oder Kürzel"
-      style="font-size:18px;text-align:center;width:280px;padding:12px 20px;border-radius:12px;border:2px solid #2b3657;background:#141b2d;color:#fff;margin-bottom:24px;outline:none"
-      value="${localStorage.getItem('disc_alias')||''}">
-    <button id="joinSubmitBtn"
-      style="background:linear-gradient(135deg,#2a9d8f,#4a90d9);border:none;color:#fff;font-size:18px;font-weight:700;padding:14px 40px;border-radius:12px;cursor:pointer;width:280px">
-      Beitreten →
-    </button>
-    <div id="joinError" style="color:#e84a5f;margin-top:16px;font-size:14px;min-height:20px"></div>
-  `;
-  const codeIn = document.getElementById('joinCodeInput');
-  const aliasIn = document.getElementById('joinAliasInput');
-  codeIn.addEventListener('input', () => { codeIn.value = codeIn.value.toUpperCase(); });
-  document.getElementById('joinSubmitBtn').addEventListener('click', async () => {
-    const code = codeIn.value.trim().toUpperCase();
-    const alias = aliasIn.value.trim();
-    if (!code || code.length < 4) { document.getElementById('joinError').textContent = 'Bitte gültigen Code eingeben.'; return; }
-    if (!alias) { document.getElementById('joinError').textContent = 'Bitte Namen eingeben.'; return; }
-    document.getElementById('joinSubmitBtn').textContent = 'Verbinde...';
-    document.getElementById('joinSubmitBtn').disabled = true;
-    await doJoin(code, alias);
-  });
-  // Fokus auf Code-Feld (oder Alias wenn Code schon da)
-  setTimeout(() => { prefillCode ? aliasIn.focus() : codeIn.focus(); }, 100);
-}
-
-async function doJoin(code, alias) {
-  try {
-    localStorage.setItem('disc_workshop_code', code);
-    localStorage.setItem('disc_alias', alias);
-    // Alte Registration löschen damit frischer Join stattfindet
-    localStorage.removeItem('disc_participant_id');
-    localStorage.removeItem('disc_join_token');
-    localStorage.removeItem('disc_workshop_id');
-
-    const res = await fetch(EDGE_BASE + '/join-workshop', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_PUBLISHABLE_KEY, 'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY },
-      body: JSON.stringify({ workshopCode: code, alias, shareWithTeam: true, consentExport: true })
-    });
+    const res  = await fetch(EDGE + '/join-workshop', { method:'POST', headers:HDR, body: JSON.stringify({ workshopCode:code, alias, shareWithTeam:true, consentExport:true }) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Beitritt fehlgeschlagen');
 
-    localStorage.setItem('disc_participant_id', data.participantId);
-    localStorage.setItem('disc_join_token', data.joinToken);
-    localStorage.setItem('disc_workshop_id', data.workshopId);
+    session = { code, alias, participantId: data.participantId, joinToken: data.joinToken, workshopId: data.workshopId };
+    localStorage.setItem('disc_session', JSON.stringify(session));
+    setHeader('live');
+    initRealtime();
 
-    // Join-Overlay entfernen
-    document.getElementById('joinOverlay')?.remove();
-
-    // Realtime starten
-    startRealtimeListener(data.workshopId);
-
-    // Aktuellen Modul-Status holen
-    const wsRes = await fetch(
-      SUPABASE_URL + '/rest/v1/workshops?id=eq.' + data.workshopId + '&select=current_module,module_data',
-      { headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY } }
-    );
+    const wsRes = await fetch(SB_URL + '/rest/v1/workshops?id=eq.' + data.workshopId + '&select=current_module,module_data', { headers: { 'apikey': SB_KEY } });
     const ws = await wsRes.json();
-    handleModuleChange(ws?.[0]?.current_module || 'waiting', ws?.[0]?.module_data || {});
+    handleModule(ws?.[0]?.current_module || 'waiting', ws?.[0]?.module_data || {});
   } catch(e) {
-    const errEl = document.getElementById('joinError');
-    if (errEl) { errEl.textContent = 'Fehler: ' + e.message; }
-    const btn = document.getElementById('joinSubmitBtn');
-    if (btn) { btn.textContent = 'Beitreten →'; btn.disabled = false; }
+    joinErrEl.textContent = 'Fehler: ' + e.message;
+  } finally {
+    joinBtn.disabled = false; joinBtn.classList.remove('loading');
   }
 }
 
-// ─── INIT: URL-Code lesen + aktuellen Modul-Status holen ─────────────────────
-(async function initWorkshopSession() {
+/* ═══════════════════════════════════════════════════════
+   REALTIME
+═══════════════════════════════════════════════════════ */
+function initRealtime() {
+  if (!sb) sb = window.supabase.createClient(SB_URL, SB_KEY);
+  if (rtChannel) rtChannel.unsubscribe();
+  rtChannel = sb.channel('ws-' + session.workshopId)
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'workshops', filter:'id=eq.'+session.workshopId },
+      p => handleModule(p.new.current_module, p.new.module_data || {}))
+    .subscribe();
+}
+
+function leaveWorkshop() {
+  if (rtChannel) { rtChannel.unsubscribe(); rtChannel = null; }
+  session = { code:'', alias:'', participantId:'', joinToken:'', workshopId:'' };
+  localStorage.removeItem('disc_session');
+  setHeader('none');
+  joinCodeEl.value = ''; joinAliasEl.value = '';
+  show('sJoin');
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODULE ROUTER
+═══════════════════════════════════════════════════════ */
+function handleModule(mod, data) {
+  switch(mod) {
+    case 'waiting':               showWaiting(data); break;
+    case 'disc_test':             showDiscTest(); break;
+    case 'disc_results':          /* stay on results screen */ break;
+    case 'disc_map':
+    case 'kernbotschaften_info':
+    case 'raci_info':
+      showBeamerMode(mod, data); break;
+    default:
+      if (MODULE_DEFS[mod]) showModule(mod, data);
+      else showWaiting(data);
+  }
+}
+
+function showWaiting(data) {
+  document.getElementById('waitingCode').textContent = '🔴 LIVE · ' + session.code;
+  document.getElementById('waitingTitle').textContent = (data?.title) || 'Warte auf den Moderator';
+  document.getElementById('waitingDesc').textContent  = (data?.desc)  || 'Der Workshop beginnt gleich. Bleib auf dieser Seite.';
+  show('sWaiting');
+}
+
+/* ═══════════════════════════════════════════════════════
+   BEAMER MODE
+═══════════════════════════════════════════════════════ */
+const BEAMER_META = {
+  disc_map:             { icon:'🗺',  title:'Schau auf den Beamer!', desc:'Dein Profil ist jetzt auf der Live-Map sichtbar.' },
+  kernbotschaften_info: { icon:'⚡',  title:'Schau auf den Beamer!', desc:'Der Moderator zeigt vier wichtige Sätze.' },
+  raci_info:            { icon:'📋', title:'Schau auf den Beamer!', desc:'RACI-Einführung. Bitte aufmerksam folgen.' },
+};
+function showBeamerMode(mod, data) {
+  const meta = BEAMER_META[mod] || { icon:'📽', title:'Schau auf den Beamer!', desc:'Folge dem Moderator.' };
+  document.getElementById('moduleContent').innerHTML = `
+    <div class="center" style="min-height:calc(100vh - 120px);">
+      <div class="beamer-icon">${meta.icon}</div>
+      <div class="beamer-arrow">↑</div>
+      <div class="display sm" style="margin-bottom:16px;">${meta.title}</div>
+      <p class="body-text" style="max-width:380px;margin-bottom:32px;">${meta.desc}</p>
+      <div class="status-chip live"><div class="pulse-dot"></div>Live · ${session.code}</div>
+    </div>`;
+  show('sModule');
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODULE DEFINITIONS
+═══════════════════════════════════════════════════════ */
+const MODULE_DEFS = {
+  intro_question:      { type:'freetext',  icon:'💬', title:'Einstiegsfrage',           allowAnon:true,  maxLen:300, placeholder:'Deine ehrliche Antwort…' },
+  johari_quiz:         { type:'multiple_choice', icon:'🪟', title:'Johari-Fenster' },
+  johari_reflexion:    { type:'freetext',  icon:'🔍', title:'Johari-Reflexion',         allowAnon:true,  maxLen:300, question:'Was denkst du: Wo liegt dein grösster blinder Fleck?', placeholder:'Sei ehrlich mit dir selbst…' },
+  kernbotschaften:     { type:'freetext',  icon:'⚡', title:'Kernbotschaft',             allowAnon:true,  maxLen:400, question:'Welcher der vier Sätze trifft dich am meisten — und warum?', placeholder:'Deine Gedanken dazu…' },
+  morgen_reflexion:    { type:'freetext',  icon:'🌅', title:'Was die Nacht gebracht hat', allowAnon:false, maxLen:200, question:'Ein Satz. Was hat die Nacht dir gebracht?', placeholder:'Mein Satz für heute Morgen…' },
+  gfk:                 { type:'freetext',  icon:'🕊', title:'Gewaltfreie Kommunikation', allowAnon:false, maxLen:400, placeholder:'Deine GFK-Formulierung…' },
+  raci:                { type:'selection', icon:'📋', title:'RACI — Deine Rolle',
+    intro:'Wähle die Rollen, die am besten zu dir passen (mehrere möglich):',
+    options:[
+      { id:'R', label:'Responsible', desc:'Ich setze die Aufgabe um',         color:'var(--D)' },
+      { id:'A', label:'Accountable', desc:'Ich trage die Verantwortung',       color:'var(--I)' },
+      { id:'C', label:'Consulted',   desc:'Ich werde um Rat gefragt',          color:'var(--S)' },
+      { id:'I', label:'Informed',    desc:'Ich werde informiert',              color:'var(--C)' },
+    ], multi:true },
+  steckbrief_feiern:   { type:'freetext',  icon:'🎉', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was feiern wir als Team? Was läuft richtig gut?',                       placeholder:'Unsere Stärke, die wir feiern…' },
+  steckbrief_grenzen:  { type:'freetext',  icon:'🚫', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was akzeptieren wir nicht? Welches Verhalten geht gar nicht?',            placeholder:'Das akzeptieren wir als Team nicht…' },
+  steckbrief_zumuten:  { type:'freetext',  icon:'💪', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was dürfen wir uns zumuten? Wo können wir unbequem ehrlich sein?',        placeholder:'Das können wir uns gegenseitig zumuten…' },
+  ritual:              { type:'ritual',    icon:'✍️', title:'Dein Versprechen', maxLen:250, question:'Was trägst du zum Team bei? Schreib deinen persönlichen Satz und unterschreibe.', placeholder:'Ich verpflichte mich, in diesem Team…' },
+  closing:             { type:'beamer_static', icon:'🏆', title:'Abschluss',         desc:'Der Workshop nähert sich dem Ende. Schau auf den Beamer.' },
+  closed:              { type:'beamer_static', icon:'🔒', title:'Workshop beendet',   desc:'Herzlichen Dank für deine Teilnahme!' },
+};
+
+/* ═══════════════════════════════════════════════════════
+   MODULE RENDERER
+═══════════════════════════════════════════════════════ */
+function showModule(mod, data) {
+  const def = MODULE_DEFS[mod]; if (!def) { showWaiting(data); return; }
+  const cfg = Object.assign({}, def, data);
+  const el  = document.getElementById('moduleContent');
+  switch(cfg.type) {
+    case 'freetext':      renderFreetext(el, mod, cfg);      break;
+    case 'multiple_choice': renderMC(el, mod, cfg);          break;
+    case 'selection':     renderSelection(el, mod, cfg);     break;
+    case 'ritual':        renderRitual(el, mod, cfg);        break;
+    case 'beamer_static': renderBeamerStatic(el, cfg);       break;
+    default:              renderBeamerStatic(el, cfg);
+  }
+  show('sModule');
+}
+
+/* ─── FREETEXT ─────────────────────────────────────── */
+let anonState = false;
+function renderFreetext(el, mod, cfg) {
+  anonState = false;
+  const toggleHTML = cfg.allowAnon ? `
+    <div class="toggle-row" id="anonToggle" onclick="toggleAnon()">
+      <div class="toggle-info">
+        <div class="toggle-title">Anonym antworten</div>
+        <div class="toggle-desc">Dein Name erscheint nicht auf dem Beamer</div>
+      </div>
+      <div class="toggle-switch"></div>
+    </div>` : '';
+
+  el.innerHTML = `
+    <div style="max-width:640px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <div style="font-size:44px;">${cfg.icon}</div>
+        <div>
+          <div class="label" style="margin-bottom:5px;">${cfg.title}</div>
+          <div style="font-size:13px;color:var(--muted);">Modul · Live</div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:24px;border-left:3px solid var(--S);">
+        <p style="font-size:18px;font-weight:500;line-height:1.55;color:var(--text);">${cfg.question || cfg.prompt || 'Deine Antwort:'}</p>
+      </div>
+      ${toggleHTML}
+      <div class="input-group">
+        <label>Deine Antwort</label>
+        <textarea id="ftInput" maxlength="${cfg.maxLen||300}" placeholder="${cfg.placeholder||'Schreib hier…'}" oninput="updateCharCount(this,${cfg.maxLen||300})" rows="5"></textarea>
+      </div>
+      <div class="char-row" id="charCount">0 / ${cfg.maxLen||300}</div>
+      <div id="modErr" style="color:var(--D);font-size:14px;margin-bottom:14px;min-height:18px;"></div>
+      <button class="btn btn-primary" id="submitBtn" onclick="submitFreetext('${mod}',${cfg.maxLen||300})">Antwort senden →</button>
+      <div id="submitOK" style="display:none;text-align:center;padding:32px 0;">
+        <div class="success-icon">✓</div>
+        <div class="display sm" style="margin-bottom:14px;">Gesendet!</div>
+        <p class="body-text">Deine Antwort ist eingegangen.</p>
+        <div class="status-chip sent" style="margin-top:20px;display:inline-flex;">✓ Gesendet · ${session.alias}</div>
+      </div>
+    </div>`;
+}
+
+function toggleAnon() {
+  anonState = !anonState;
+  document.getElementById('anonToggle')?.classList.toggle('on', anonState);
+}
+
+function updateCharCount(el, max) {
+  const row = document.getElementById('charCount'); if (!row) return;
+  const len = el.value.length;
+  row.textContent = len + ' / ' + max;
+  row.className = 'char-row' + (len > max*.85 ? ' warn' : '') + (len >= max*.95 ? ' danger' : '');
+}
+
+async function submitFreetext(mod, maxLen) {
+  const input = document.getElementById('ftInput');
+  const errEl = document.getElementById('modErr');
+  const btn   = document.getElementById('submitBtn');
+  const txt   = (input?.value||'').trim();
+  errEl.textContent = '';
+  if (!txt) { errEl.textContent = 'Bitte gib eine Antwort ein.'; return; }
+  if (txt.length > maxLen) { errEl.textContent = 'Antwort zu lang.'; return; }
+  btn.disabled = true; btn.classList.add('loading'); btn.textContent = '';
+  try {
+    const res = await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({ participantId:session.participantId, joinToken:session.joinToken, module:mod, content:txt, responseType:'text', anonymous:anonState, alias:anonState?null:session.alias }) });
+    const data = await res.json();
+    if (!res.ok && res.status !== 409) throw new Error(data.error||'Fehler');
+    document.getElementById('ftInput').style.display='none';
+    document.getElementById('charCount').style.display='none';
+    document.getElementById('anonToggle')?.remove();
+    btn.style.display='none';
+    document.getElementById('submitOK').style.display='block';
+    toast('Antwort gesendet ✓','success');
+  } catch(e) {
+    errEl.textContent='Fehler: '+e.message;
+    btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Antwort senden →';
+  }
+}
+
+/* ─── MULTIPLE CHOICE ──────────────────────────────── */
+let selectedMC = -1;
+function renderMC(el, mod, cfg) {
+  selectedMC = -1;
+  const qs = cfg.questions||[]; const qi = cfg.currentQ||0; const q = qs[qi];
+  if (!q) { renderBeamerStatic(el, cfg); return; }
+  const tot = qs.length; const pct = tot>1 ? (qi/tot*100) : 0;
+  el.innerHTML = `
+    <div style="max-width:640px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:40px;">${cfg.icon}</div>
+        <div>
+          <div class="label" style="margin-bottom:5px;">${cfg.title}</div>
+          <div style="font-size:13px;color:var(--muted);">Frage ${qi+1} von ${tot}</div>
+        </div>
+      </div>
+      ${tot>1 ? `<div style="height:4px;background:linear-gradient(90deg,var(--S),var(--C));border-radius:2px;width:${pct}%;transition:width .5s;margin-bottom:20px;"></div>` : ''}
+      <p class="mc-question">${q.text}</p>
+      <div class="mc-options">
+        ${q.options.map((opt,i)=>`<div class="mc-option" id="mc_${i}" onclick="selectMC(${i})"><div class="mc-radio" id="mr_${i}"></div><span>${opt}</span></div>`).join('')}
+      </div>
+      <div id="modErr" style="color:var(--D);font-size:14px;margin-bottom:14px;min-height:18px;"></div>
+      <button class="btn btn-primary" id="submitBtn" onclick="submitMC('${mod}',${qi},'${encodeURIComponent(JSON.stringify(q))}')">
+        ${qi<tot-1?'Weiter →':'Absenden →'}
+      </button>
+    </div>`;
+}
+
+function selectMC(i) {
+  selectedMC = i;
+  document.querySelectorAll('.mc-option').forEach((o,j) => o.classList.toggle('selected', j===i));
+}
+
+async function submitMC(mod, qi, qEnc) {
+  if (selectedMC<0) { document.getElementById('modErr').textContent='Bitte eine Antwort wählen.'; return; }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
+  try {
+    const q = JSON.parse(decodeURIComponent(qEnc));
+    const answer = q.options[selectedMC];
+    await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({ participantId:session.participantId, joinToken:session.joinToken, module:mod+'_q'+qi, content:answer, responseType:'mc', alias:session.alias }) });
+    toast('Antwort gespeichert ✓','success');
+    btn.classList.remove('loading'); btn.textContent='Gespeichert ✓';
+    btn.style.background='linear-gradient(135deg,#1a5c53,var(--S))';
+    setTimeout(()=>{ btn.textContent='Weiter →'; btn.style.background=''; btn.disabled=false; selectedMC=-1; },1500);
+  } catch(e) { document.getElementById('modErr').textContent='Fehler: '+e.message; btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Absenden →'; }
+}
+
+/* ─── SELECTION (RACI) ─────────────────────────────── */
+let selectedItems = new Set();
+function renderSelection(el, mod, cfg) {
+  selectedItems.clear();
+  el.innerHTML = `
+    <div style="max-width:640px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:44px;">${cfg.icon}</div>
+        <div><div class="label" style="margin-bottom:5px;">${cfg.title}</div></div>
+      </div>
+      <p style="font-size:16px;color:var(--muted);margin-bottom:22px;line-height:1.6;">${cfg.intro}</p>
+      <div id="selOpts">
+        ${cfg.options.map(o=>`
+          <div class="sel-option" id="sel_${o.id}" onclick="toggleSel('${o.id}')">
+            <div class="sel-badge" style="background:${o.color};">${o.id}</div>
+            <div><div class="sel-label">${o.label}</div><div class="sel-desc">${o.desc}</div></div>
+          </div>`).join('')}
+      </div>
+      <div id="modErr" style="color:var(--D);font-size:14px;margin-bottom:14px;min-height:18px;"></div>
+      <button class="btn btn-primary" id="submitBtn" onclick="submitSelection('${mod}')">Bestätigen →</button>
+      <div id="submitOK" style="display:none;text-align:center;padding:28px 0;">
+        <div class="success-icon">✓</div>
+        <div class="display sm" style="margin-bottom:14px;">Gespeichert!</div>
+        <p class="body-text">Deine Rollen-Auswahl wurde übertragen.</p>
+      </div>
+    </div>`;
+}
+
+function toggleSel(id) {
+  selectedItems.has(id) ? selectedItems.delete(id) : selectedItems.add(id);
+  document.querySelectorAll('[id^="sel_"]').forEach(el => {
+    el.classList.toggle('selected', selectedItems.has(el.id.replace('sel_','')));
+  });
+}
+
+async function submitSelection(mod) {
+  if (!selectedItems.size) { document.getElementById('modErr').textContent='Bitte mindestens eine Rolle wählen.'; return; }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
+  try {
+    await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({ participantId:session.participantId, joinToken:session.joinToken, module:mod, content:Array.from(selectedItems).join(','), responseType:'selection', alias:session.alias }) });
+    btn.style.display='none'; document.getElementById('submitOK').style.display='block';
+    toast('Auswahl gespeichert ✓','success');
+  } catch(e) { document.getElementById('modErr').textContent='Fehler: '+e.message; btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Bestätigen →'; }
+}
+
+/* ─── RITUAL ───────────────────────────────────────── */
+let sigCanvas=null, sigCtx=null, isDrawing=false, sigHasSig=false;
+function renderRitual(el, mod, cfg) {
+  el.innerHTML = `
+    <div style="max-width:640px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <div style="font-size:44px;">${cfg.icon}</div>
+        <div>
+          <div class="label" style="margin-bottom:5px;">${cfg.title}</div>
+          <div style="font-size:13px;color:var(--S);">Das Finale</div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:24px;border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.04);">
+        <p style="font-size:16px;line-height:1.6;color:var(--text);">${cfg.question}</p>
+      </div>
+      <div class="input-group">
+        <label>Dein persönlicher Satz</label>
+        <textarea id="ritualText" maxlength="${cfg.maxLen||250}" placeholder="${cfg.placeholder}" oninput="updateCharCount(this,${cfg.maxLen||250})" rows="4"></textarea>
+      </div>
+      <div class="char-row" id="charCount">0 / ${cfg.maxLen||250}</div>
+      <div class="label" style="margin-bottom:10px;margin-top:4px;">Unterschrift</div>
+      <div class="signature-wrap" id="sigWrap">
+        <canvas id="sigCanvas" height="140"></canvas>
+        <div class="sig-hint" id="sigHint">✦ Hier unterschreiben ✦</div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <button class="btn btn-ghost" onclick="clearSig()" style="width:auto;padding:9px 18px;font-size:12px;">Löschen</button>
+      </div>
+      <div id="modErr" style="color:var(--D);font-size:14px;margin-bottom:14px;min-height:18px;"></div>
+      <button class="btn btn-primary" id="submitBtn" onclick="submitRitual('${mod}')">Versprechen abgeben ✦</button>
+      <div id="submitOK" style="display:none;text-align:center;padding:40px 0;">
+        <div style="font-size:72px;margin-bottom:24px;">🏆</div>
+        <div class="display sm" style="margin-bottom:14px;color:var(--gold);">Danke, ${session.alias}!</div>
+        <p class="body-text">Dein Versprechen ist Teil des Team-Vertrags.</p>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    sigCanvas = document.getElementById('sigCanvas');
+    sigCtx = sigCanvas.getContext('2d');
+    sigCanvas.width = sigCanvas.offsetWidth;
+    sigCtx.strokeStyle = '#e4e4f0'; sigCtx.lineWidth = 2.5; sigCtx.lineCap = 'round'; sigCtx.lineJoin = 'round';
+    const getPos = e => {
+      const r = sigCanvas.getBoundingClientRect(), s = e.touches ? e.touches[0] : e;
+      return { x:(s.clientX-r.left)*(sigCanvas.width/r.width), y:(s.clientY-r.top)*(sigCanvas.height/r.height) };
+    };
+    sigCanvas.addEventListener('mousedown', e => { isDrawing=true; const p=getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); document.getElementById('sigHint').style.opacity='0'; sigHasSig=true; });
+    sigCanvas.addEventListener('mousemove', e => { if(!isDrawing) return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); });
+    sigCanvas.addEventListener('mouseup',   () => isDrawing=false);
+    sigCanvas.addEventListener('mouseleave',() => isDrawing=false);
+    sigCanvas.addEventListener('touchstart',e => { e.preventDefault(); isDrawing=true; const p=getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); document.getElementById('sigHint').style.opacity='0'; sigHasSig=true; },{passive:false});
+    sigCanvas.addEventListener('touchmove', e => { e.preventDefault(); if(!isDrawing) return; const p=getPos(e); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); },{passive:false});
+    sigCanvas.addEventListener('touchend',  () => isDrawing=false);
+  },100);
+}
+
+function clearSig() {
+  if(sigCtx){ sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); sigHasSig=false; document.getElementById('sigHint').style.opacity='1'; }
+}
+
+async function submitRitual(mod) {
+  const textEl=document.getElementById('ritualText'), errEl=document.getElementById('modErr'), btn=document.getElementById('submitBtn');
+  const text=(textEl?.value||'').trim(); errEl.textContent='';
+  if(!text){ errEl.textContent='Bitte schreib deinen persönlichen Satz.'; return; }
+  if(!sigHasSig){ errEl.textContent='Bitte unterschreibe im Unterschriftsfeld.'; return; }
+  btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
+  try {
+    await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({ participantId:session.participantId, joinToken:session.joinToken, module:mod, content:JSON.stringify({ text, signature:sigCanvas.toDataURL('image/png') }), responseType:'ritual', alias:session.alias }) });
+    textEl.style.display='none'; document.getElementById('charCount').style.display='none'; document.getElementById('sigWrap').style.display='none';
+    btn.style.display='none'; document.getElementById('submitOK').style.display='block';
+    toast('Versprechen abgegeben ✓','success');
+  } catch(e) { errEl.textContent='Fehler: '+e.message; btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Versprechen abgeben ✦'; }
+}
+
+/* ─── BEAMER STATIC ────────────────────────────────── */
+function renderBeamerStatic(el, cfg) {
+  el.innerHTML = `
+    <div class="center" style="min-height:calc(100vh - 120px);">
+      <div class="beamer-icon">${cfg.icon}</div>
+      <div class="display sm" style="margin-bottom:16px;">${cfg.title}</div>
+      <p class="body-text" style="max-width:380px;margin-bottom:32px;">${cfg.desc}</p>
+      <div class="status-chip live"><div class="pulse-dot"></div>Live · ${session.code}</div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DISC TEST
+═══════════════════════════════════════════════════════ */
+const QUESTIONS = [
+  {id:'D1',d:'D',t:'Ich übernehme gerne die Kontrolle über Situationen und Aufgaben.'},
+  {id:'D2',d:'D',t:'Ich treffe Entscheidungen schnell, auch wenn nicht alle Informationen vorliegen.'},
+  {id:'D3',d:'D',t:'Ich spreche Probleme direkt an und gehe Konflikten eher nicht aus dem Weg.'},
+  {id:'D4',d:'D',t:'Ich setze mir ehrgeizige Ziele und fordere auch andere dazu heraus.'},
+  {id:'D5',d:'D',t:'Ich kann mich gut durchsetzen, auch wenn andere anderer Meinung sind.'},
+  {id:'D6',d:'D',t:'Ich mag Wettbewerb und messe mich gerne mit anderen.'},
+  {id:'D7',d:'D',t:'Ich übernehme Verantwortung, auch wenn es riskant ist.'},
+  {id:'D8',d:'D',reverse:true,t:'Ich lasse lieber andere entscheiden, um Konflikte zu vermeiden.'},
+  {id:'I1',d:'I',t:'Ich knüpfe leicht Kontakte und gehe offen auf Menschen zu.'},
+  {id:'I2',d:'I',t:'Ich motiviere andere gerne durch Begeisterung und positive Energie.'},
+  {id:'I3',d:'I',t:'Ich rede gerne und erzähle Geschichten, um andere mitzunehmen.'},
+  {id:'I4',d:'I',t:'Ich suche aktiv Anerkennung und Feedback von meinem Umfeld.'},
+  {id:'I5',d:'I',t:'Ich fühle mich in Gruppen wohl und bringe mich gerne ein.'},
+  {id:'I6',d:'I',t:'Ich überzeuge andere oft durch Charme und Optimismus.'},
+  {id:'I7',d:'I',t:'Ich handle manchmal spontan, wenn mich etwas begeistert.'},
+  {id:'I8',d:'I',reverse:true,t:'In Gruppen halte ich mich meistens im Hintergrund und bleibe lieber still.'},
+  {id:'S1',d:'S',t:'Ich bin geduldig und bleibe auch in stressigen Situationen ruhig.'},
+  {id:'S2',d:'S',t:'Ich arbeite gerne in einem stabilen, harmonischen Umfeld.'},
+  {id:'S3',d:'S',t:'Ich bin zuverlässig und halte meine Zusagen ein.'},
+  {id:'S4',d:'S',t:'Ich unterstütze andere gerne und helfe, wo ich kann.'},
+  {id:'S5',d:'S',t:'Ich bevorzuge klare Abläufe und Routinen.'},
+  {id:'S6',d:'S',t:'Ich bin ein guter Zuhörer und nehme mir Zeit für andere.'},
+  {id:'S7',d:'S',t:'Ich vermeide plötzliche Veränderungen, wenn es nicht nötig ist.'},
+  {id:'S8',d:'S',reverse:true,t:'Ich werde schnell ungeduldig, wenn Dinge langsam oder gleichförmig laufen.'},
+  {id:'C1',d:'C',t:'Ich achte auf Details und arbeite sehr genau.'},
+  {id:'C2',d:'C',t:'Ich plane gründlich, bevor ich eine Aufgabe beginne.'},
+  {id:'C3',d:'C',t:'Ich halte mich gerne an Regeln und Standards.'},
+  {id:'C4',d:'C',t:'Ich überprüfe meine Arbeit lieber zweimal, um Fehler zu vermeiden.'},
+  {id:'C5',d:'C',t:'Ich analysiere Probleme systematisch und methodisch, bevor ich handle.'},
+  {id:'C6',d:'C',t:'Ich fühle mich unwohl, wenn ich ohne ausreichende Vorbereitung improvisieren muss.'},
+  {id:'C7',d:'C',t:'Ich dokumentiere meine Arbeit sorgfältig und detailliert.'},
+  {id:'C8',d:'C',reverse:true,t:'Details sind mir oft egal – Hauptsache, es geht schnell vorwärts.'},
+];
+
+const TYPE_INFO = {
+  D:{name:'Der Macher',    sub:'Dominant · Ergebnisorientiert · Direkt',  hex:'#e63946',
+    strengths:['Entscheidungsfreudig','Zielorientiert','Direkt und klar','Treibt Veränderung an'],
+    challenges:['Wirkt ungeduldig','Wenig Fokus auf Details','Überhört manchmal andere','Geht Risiken ein'],
+    motivation:'Resultate, Kontrolle, Einfluss', fear:'Kontrollverlust, Scheitern',
+    teamrole:'Antreiber — setzt Impulse und bricht Stagnation auf',
+    communication:'Direkt, knapp, resultatorientiert'},
+  I:{name:'Der Inspirator', sub:'Einflussreich · Enthusiastisch · Sozial',  hex:'#f4a261',
+    strengths:['Begeisterungsfähig','Motiviert andere','Kreativ und offen','Starker Netzwerker'],
+    challenges:['Wenig strukturiert','Schnell abgelenkt','Vermeidet manchmal Konflikte','Überschätzt gelegentlich'],
+    motivation:'Anerkennung, Kreativität, Spass', fear:'Ablehnung, Isolation, Langeweile',
+    teamrole:'Energiegeber — Begeisterung und sozialer Zusammenhalt',
+    communication:'Offen, persönlich, emotional'},
+  S:{name:'Der Stabilisierer',sub:'Stetig · Zuverlässig · Harmonisch',    hex:'#2a9d8f',
+    strengths:['Verlässlich und beständig','Aufmerksamer Zuhörer','Loyal','Hält Team zusammen'],
+    challenges:['Vermeidet Konflikte aktiv','Schwer bei Veränderung','Sagt selten Nein','Entscheide dauern lang'],
+    motivation:'Stabilität, Harmonie, Sicherheit', fear:'Konflikte, plötzliche Veränderungen',
+    teamrole:'Anker — Verlässlichkeit und sozialer Kitt',
+    communication:'Geduldig, freundlich, indirekt'},
+  C:{name:'Der Analytiker', sub:'Gewissenhaft · Präzise · Systematisch',   hex:'#4a90d9',
+    strengths:['Hohe Qualitätsstandards','Analytisch und gründlich','Strukturiert','Präzise in Details'],
+    challenges:['Kann überanalysieren','Perfektionistisch','Vorsichtig bei Entscheiden','Wenig spontan'],
+    motivation:'Qualität, Genauigkeit, Korrektheit', fear:'Fehler, Kritik, Unordnung',
+    teamrole:'Qualitätshüter — hält Standards und erkennt Risiken',
+    communication:'Faktenbasiert, präzise, schriftlich bevorzugt'},
+};
+const DIM_NAMES = {D:'Dominanz',I:'Initiative',S:'Stetigkeit',C:'Gewissenhaftigkeit'};
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; }
+const SHUFFLED  = shuffle([...QUESTIONS]);
+const PAGE_SIZE = 8;
+const PAGES     = Array.from({length:Math.ceil(SHUFFLED.length/PAGE_SIZE)},(_,i)=>SHUFFLED.slice(i*PAGE_SIZE,(i+1)*PAGE_SIZE));
+
+let discPhase='nat', discPage=0;
+const discAnswers = {nat:{},role:{}};
+
+function showDiscTest() {
+  if (Object.keys(discAnswers.role).length === QUESTIONS.length) { buildDiscResults(); return; }
+  if (Object.keys(discAnswers.nat).length === QUESTIONS.length && discPhase==='nat') { show('sDiscTransition'); return; }
+  show('sDiscIntro');
+}
+
+function startDiscPhase(ph) { discPhase=ph; discPage=0; renderDiscPage(); show('sDiscQuestions'); }
+
+function renderDiscPage() {
+  const qs   = PAGES[discPage];
+  const ans  = discAnswers[discPhase];
+  const isNat= discPhase==='nat';
+  const base = discPage * PAGE_SIZE;
+
+  document.getElementById('pgLabel').textContent = `SEITE ${discPage+1} VON ${PAGES.length}`;
+  document.getElementById('pgCount').textContent = `${Object.keys(ans).length} / ${QUESTIONS.length}`;
+  document.getElementById('pgBar').style.width   = `${(discPage+1)*25}%`;
+  document.getElementById('btnBack').style.display = discPage>0 ? 'inline-flex':'none';
+  document.getElementById('btnNext').textContent = discPage===PAGES.length-1 ? 'Auswertung →':'Weiter →';
+  document.getElementById('warnMsg').style.display = 'none';
+
+  document.getElementById('phaseHead').innerHTML = `
+    <div class="phase-tag ${isNat?'nat':'role'}">
+      <span>${isNat?'◉':'◎'}</span><span>${isNat?'Natürliches Profil':'Rollenprofil'}</span>
+    </div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;margin-bottom:6px;">
+      ${isNat?'Wie bist du wirklich?':'Wie bist du bei der Arbeit?'}
+    </div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">
+      ${isNat?'Antworte so, wie du dich im privaten Alltag verhältst.':'Dieselben Aussagen aus deiner beruflichen Rolle heraus.'}
+    </div>`;
+
+  document.getElementById('qContainer').innerHTML = qs.map((q,i) => {
+    const saved = ans[q.id] || null;
+    return `<div class="q-block" id="qb-${q.id}">
+      <div class="q-num">AUSSAGE ${base+i+1} / ${QUESTIONS.length}</div>
+      <div class="q-text">${q.t}</div>
+      <div class="scale-row">
+        <div class="scale-end">Trifft nicht zu</div>
+        <div class="scale-opts">
+          ${[1,2,3,4,5].map(v=>`
+            <div class="scale-opt">
+              <input type="radio" name="${discPhase}_${q.id}" id="r_${discPhase}_${q.id}_${v}" value="${v}" ${saved===v?'checked':''}>
+              <label for="r_${discPhase}_${q.id}_${v}">${v}</label>
+            </div>`).join('')}
+        </div>
+        <div class="scale-end" style="text-align:right;">Trifft voll zu</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  qs.forEach(q => {
+    for(let v=1;v<=5;v++){
+      const r = document.getElementById(`r_${discPhase}_${q.id}_${v}`);
+      if(r) r.addEventListener('change',()=>{
+        discAnswers[discPhase][q.id]=v;
+        document.getElementById(`qb-${q.id}`).classList.remove('error');
+        document.getElementById('pgCount').textContent=`${Object.keys(discAnswers[discPhase]).length} / 28`;
+      });
+    }
+  });
+}
+
+function discNextPage() {
+  const qs = PAGES[discPage];
+  const missing = qs.filter(q => !discAnswers[discPhase][q.id]);
+  if (missing.length) {
+    document.getElementById('warnMsg').style.display='block';
+    missing.forEach(q=>document.getElementById(`qb-${q.id}`).classList.add('error'));
+    document.getElementById(`qb-${missing[0].id}`).scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  if (discPage < PAGES.length-1) { discPage++; renderDiscPage(); window.scrollTo({top:0}); }
+  else { discPhase==='nat' ? show('sDiscTransition') : buildDiscResults(); }
+}
+function discPrevPage() { if(discPage>0){ discPage--; renderDiscPage(); window.scrollTo({top:0}); } }
+
+function calcScores(ph) {
+  const raw={D:0,I:0,S:0,C:0}, n={D:0,I:0,S:0,C:0};
+  QUESTIONS.forEach(q => { let v=discAnswers[ph][q.id]; if(v){ if(q.reverse)v=6-v; raw[q.d]+=v; n[q.d]++; } });
+  const pct={};
+  ['D','I','S','C'].forEach(d=>{ pct[d]=n[d]?Math.round((raw[d]/(n[d]*5))*100):0; });
+  return {pct,raw,n};
+}
+function domType(p){ return Object.entries(p).sort((a,b)=>b[1]-a[1])[0][0]; }
+
+function buildDiscResults() {
+  const ns=calcScores('nat'), rs=calcScores('role');
+  const nT=domType(ns.pct), rT=domType(rs.pct);
+  const nI=TYPE_INFO[nT], rI=TYPE_INFO[rT];
+  const tensions=['D','I','S','C'].map(d=>({d,delta:rs.pct[d]-ns.pct[d]})).filter(t=>Math.abs(t.delta)>=15);
+
+  const bars = ['D','I','S','C'].map(d=>`
+    <div class="dim-row">
+      <div class="dim-labels">
+        <div class="dim-letter" style="color:${TYPE_INFO[d].hex}">${d}</div>
+        <div class="dim-name">${DIM_NAMES[d]}</div>
+        <div class="dim-scores">${ns.pct[d]}<span style="opacity:.4"> / ${rs.pct[d]}</span></div>
+      </div>
+      <div class="dual-track">
+        <div class="bar-track"><div class="bar-fill" style="background:${TYPE_INFO[d].hex};width:0%" data-w="${ns.pct[d]}"></div></div>
+        <div class="bar-track"><div class="bar-fill" style="background:${TYPE_INFO[d].hex};opacity:.4;width:0%" data-w="${rs.pct[d]}"></div></div>
+      </div>
+    </div>`).join('');
+
+  const tensHTML = tensions.length
+    ? `<div class="tension-card"><h3>⚡ Rollenaufwand</h3>${tensions.map(t=>`<div class="tension-item"><strong style="color:${TYPE_INFO[t.d].hex}">${t.d} – ${DIM_NAMES[t.d]}</strong>: ${t.delta>0?`In der Rolle <strong>+${t.delta}%</strong> höher`:`In der Rolle <strong>${t.delta}%</strong> tiefer`} — das kostet Energie.</div>`).join('')}</div>`
+    : `<div class="card" style="margin-bottom:12px;"><p style="font-size:15px;color:var(--muted);">✓ Deine Profile sind konsistent — du kannst bei der Arbeit weitgehend du selbst sein.</p></div>`;
+
+  document.getElementById('resultsContent').innerHTML = `
+    <div style="max-width:640px;">
+      <div class="profile-card"><div class="pc-label" style="color:var(--S);">◉ Natürliches Profil</div>
+        <div class="pc-main"><div class="pc-ball" style="background:${nI.hex}">${nT}</div>
+          <div><div class="pc-name">${nI.name}</div><div class="pc-sub">${nI.sub}</div></div></div></div>
+      <div class="profile-card"><div class="pc-label" style="color:var(--C);">◎ Rollenprofil</div>
+        <div class="pc-main"><div class="pc-ball" style="background:${rI.hex};opacity:.8">${rT}</div>
+          <div><div class="pc-name">${rI.name}</div><div class="pc-sub">${rI.sub}</div></div></div></div>
+      <div class="bar-card">
+        <div class="bar-title">Profil-Vergleich</div>
+        <div class="bar-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--S)"></div>Natürlich</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--muted);opacity:.5"></div>Rolle</div>
+        </div>${bars}</div>
+      ${tensHTML}
+      <div class="detail-card">
+        <h2 style="color:${nI.hex}">Dein natürlicher Stil: ${nI.name}</h2>
+        <div class="trait-grid">
+          <div class="trait-card"><div class="trait-lbl">Stärken</div><ul>${nI.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+          <div class="trait-card"><div class="trait-lbl">Herausforderungen</div><ul>${nI.challenges.map(c=>`<li>${c}</li>`).join('')}</ul></div>
+        </div>
+        <div class="info-row"><div class="ir-lbl">Motivation</div><p>${nI.motivation}</p></div>
+        <div class="info-row"><div class="ir-lbl">Grundangst</div><p>${nI.fear}</p></div>
+        <div class="info-row"><div class="ir-lbl">Kommunikation</div><p>${nI.communication}</p></div>
+        <div class="info-row"><div class="ir-lbl">Teamrolle</div><p>${nI.teamrole}</p></div>
+      </div>
+      ${nT!==rT?`<div class="detail-card"><h2 style="color:${rI.hex}">Dein Rollenstil: ${rI.name}</h2>
+        <p style="font-size:15px;color:var(--muted);margin-bottom:16px;">Bei der Arbeit verhältst du dich anders als in deinem natürlichen Profil.</p>
+        <div class="trait-grid">
+          <div class="trait-card"><div class="trait-lbl">In der Rolle stark</div><ul>${rI.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+          <div class="trait-card"><div class="trait-lbl">Reibungspunkte</div><ul>${rI.challenges.map(c=>`<li>${c}</li>`).join('')}</ul></div>
+        </div></div>`:''}
+      <div class="bar-card">
+        <div class="bar-title">Rohwerte</div>
+        <div class="scores-grid">
+          ${['D','I','S','C'].map(d=>`<div class="score-cell">
+            <div class="score-val" style="color:${TYPE_INFO[d].hex}">${ns.pct[d]}</div>
+            <div class="score-role-val" style="color:${TYPE_INFO[d].hex}">${rs.pct[d]}</div>
+            <div class="score-dim">${d}</div></div>`).join('')}
+        </div>
+      </div>
+      <div style="margin-top:16px;padding-bottom:32px;">
+        <button class="btn btn-ghost" onclick="window.print()" style="margin-bottom:10px;">PDF speichern</button>
+      </div>
+    </div>`;
+
+  show('sDiscResults');
+  setTimeout(()=>{ document.querySelectorAll('.bar-fill[data-w]').forEach(el=>{ el.style.width=el.getAttribute('data-w')+'%'; }); }, 150);
+}
+
+function getDiscPayload() {
+  const ns=calcScores('nat'), rs=calcScores('role');
+  const natural=ns.pct, role=rs.pct;
+  const deltas={};
+  ['D','I','S','C'].forEach(d=>deltas[d]=role[d]-natural[d]);
+  const stress=['D','I','S','C'].reduce((a,d)=>a+Math.abs(deltas[d]),0);
+  return { natural, role, naturalType:domType(natural), roleType:domType(role), raw:{natural:ns.raw,role:rs.raw}, deltas, stress,
+    map:{ natural:{x:natural.D-natural.S,y:natural.I-natural.C}, role:{x:role.D-role.S,y:role.I-role.C} } };
+}
+
+async function sendDiscResult() {
+  const btn = document.getElementById('sendBtn');
+  btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
+  try {
+    const p = getDiscPayload();
+    const res = await fetch(EDGE+'/submit-result', { method:'POST', headers:HDR,
+      body: JSON.stringify({ participantId:session.participantId, joinToken:session.joinToken, alias:session.alias,
+        natural:p.natural, role:p.role, raw:p.raw,
+        computed:{ deltas:p.deltas, stress:p.stress, map:p.map, naturalType:p.naturalType, roleType:p.roleType } }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error||'Fehler');
+    btn.textContent='Gesendet ✓'; btn.style.background='linear-gradient(135deg,#1a5c53,var(--S))';
+    toast('Profil erfolgreich gesendet ✓','success');
+  } catch(e) {
+    toast('Fehler: '+e.message,'error');
+    btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Profil senden';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+(async function init() {
   const params  = new URLSearchParams(window.location.search);
   const urlCode = params.get('code')?.trim().toUpperCase();
-  const storedCode = localStorage.getItem('disc_workshop_code');
-  const storedId   = localStorage.getItem('disc_workshop_id');
+  const stored  = localStorage.getItem('disc_session');
 
-  // REGEL: Nur mit URL-Code darf auto-reconnect stattfinden.
-  // Ohne ?code= → IMMER Join-Screen zeigen (keine stille Auto-Verbindung).
-  if (!urlCode) {
-    showJoinOverlay(storedCode || '');
-    return;
-  }
-
-  // URL-Code vorhanden aber ANDERS als gespeichert → alles resetten
-  if (urlCode !== storedCode) {
-    ['disc_workshop_code','disc_participant_id','disc_join_token','disc_workshop_id'].forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('disc_workshop_code', urlCode);
-    showJoinOverlay(urlCode);
-    return;
-  }
-
-  // URL-Code stimmt mit gespeichertem überein + Workshop-ID vorhanden → reconnect
-  if (storedId) {
-    startRealtimeListener(storedId);
+  if (stored) {
     try {
-      const res  = await fetch(SUPABASE_URL + '/rest/v1/workshops?id=eq.' + storedId + '&select=current_module,module_data', { headers: { 'apikey': SUPABASE_PUBLISHABLE_KEY } });
-      const data = await res.json();
-      if (data?.[0]?.current_module) handleModuleChange(data[0].current_module, data[0].module_data || {});
-      else handleModuleChange('waiting', {});
-    } catch(e) { console.warn('Modul-Status Fehler:', e); handleModuleChange('waiting', {}); }
-    return;
+      const s = JSON.parse(stored);
+      if (s.code && s.participantId && s.workshopId) {
+        if (urlCode && urlCode !== s.code) { localStorage.removeItem('disc_session'); if(urlCode) joinCodeEl.value=urlCode; return; }
+        session = s;
+        setHeader('live');
+        initRealtime();
+        const res = await fetch(SB_URL+'/rest/v1/workshops?id=eq.'+s.workshopId+'&select=current_module,module_data', { headers:{'apikey':SB_KEY} });
+        const ws  = await res.json();
+        handleModule(ws?.[0]?.current_module||'waiting', ws?.[0]?.module_data||{});
+        return;
+      }
+    } catch(e) { localStorage.removeItem('disc_session'); }
   }
-
-  // URL-Code da, aber noch kein Join → Join-Screen mit vorausgefülltem Code
-  showJoinOverlay(urlCode);
+  if (urlCode) joinCodeEl.value = urlCode;
+  show('sJoin');
 })();
 </script>
 </body>
