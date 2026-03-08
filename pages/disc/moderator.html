@@ -217,7 +217,7 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
     <div class="small">Teilnehmer-Link (mit Code):</div>
     <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:12px">–</a>
   </div>
-  <button class="btn gold" onclick="window.open('beamer.html','beamer','width=1920,height=1080')">📽 Beamer</button>
+  <button class="btn gold" onclick="window.open('beamer.html?module='+(onlineSession?.currentModule||'waiting'),'beamer','width=1920,height=1080')">📽 Beamer</button>
   <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
 </div>
 
@@ -568,7 +568,8 @@ function buildModuleGrid(){
 async function activateModule(moduleId){
   if(!onlineSession?.workshopId||!onlineSession?.adminToken){alert('Kein aktiver Workshop.');return}
   const mod=MODULES.find(m=>m.id===moduleId);
-  if(!confirm(`Modul "${mod?.name||moduleId}" aktivieren?\nAlle Teilnehmer sehen das sofort.`))return;
+  // Kein Confirm für 'waiting' - sofort setzen
+  if(moduleId!=='waiting'&&!confirm(`Modul "${mod?.name||moduleId}" aktivieren?\nAlle Teilnehmer sehen das sofort.`))return;
   initSupabase();
   try{
     const{data,error}=await sb.rpc('set_workshop_module',{

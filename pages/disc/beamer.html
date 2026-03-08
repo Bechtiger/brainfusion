@@ -703,7 +703,14 @@ window.addEventListener('resize', () => { if(currentModule==='disc_map'){ resize
   sb = window.supabase.createClient(SB_URL, SB_KEY);
   initRealtime();
 
-  // Load current module
+  // URL-Param ?module= überschreibt DB-Status (gesetzt vom Dashboard)
+  const urlModule = new URLSearchParams(location.search).get('module');
+  if (urlModule) {
+    // Dashboard hat explizit ein Modul übergeben → sofort anzeigen
+    await handleModule(urlModule, {});
+  }
+
+  // Load current module from DB (Realtime-Sync)
   try {
     const { data } = await sb.from('workshops')
       .select('current_module,module_data,title')
@@ -711,11 +718,14 @@ window.addEventListener('resize', () => { if(currentModule==='disc_map'){ resize
       .single();
     if (data) {
       if (data.title) session.title = data.title;
-      await handleModule(data.current_module || 'waiting', data.module_data || {});
-    } else {
+      // Nur updaten wenn kein URL-Param gesetzt war
+      if (!urlModule) {
+        await handleModule(data.current_module || 'waiting', data.module_data || {});
+      }
+    } else if (!urlModule) {
       showWaiting();
     }
-  } catch(e) { showWaiting(); }
+  } catch(e) { if (!urlModule) showWaiting(); }
 
   // Initial data + polling
   await refreshData();
