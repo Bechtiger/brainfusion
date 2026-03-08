@@ -356,6 +356,7 @@ let participants = [];
 let feedResponses = [];
 let joinedCount = 0;
 let pollTimer = null;
+let feedPollTimer = null;
 let rtChannel = null;
 let exChannel = null;
 
@@ -373,6 +374,7 @@ function show(id) {
 ═══════════════════════════════════════════════════════ */
 async function handleModule(mod, data) {
   currentModule = mod;
+  stopFeedPolling(); // immer stoppen beim Wechsel
   const meta = MODULE_META[mod];
   if (!meta) { handleGenericModule(mod, data); return; }
 
@@ -380,7 +382,7 @@ async function handleModule(mod, data) {
     case 'sWaiting':  showWaiting(); break;
     case 'sTest':     showTest(); break;
     case 'sMap':      showMap(); break;
-    case 'sFeed':     showFeed(meta, data); await loadFeedResponses(mod); break;
+    case 'sFeed':     showFeed(meta, data); startFeedPolling(mod); break;
     case 'sGeneric':  showGeneric(meta, data); break;
     case 'sClosing':  showClosing(); break;
     default:          showGeneric(meta, data);
@@ -540,20 +542,37 @@ function showFeed(meta, data) {
   show('sFeed');
 }
 
-async function loadFeedResponses(mod) {
-  if (!sb || !session?.workshopId) return;
+/* Feed-Polling: alle 3s wenn Feed-Modul aktiv */
+function startFeedPolling(mod) {
+  stopFeedPolling();
+  pollFeed(mod); // sofort
+  feedPollTimer = setInterval(() => pollFeed(mod), 3000);
+}
+
+function stopFeedPolling() {
+  if (feedPollTimer) { clearInterval(feedPollTimer); feedPollTimer = null; }
+}
+
+async function pollFeed(mod) {
+  if (!sb || !session?.workshopId || currentModule !== mod) { stopFeedPolling(); return; }
   try {
     const { data } = await sb
       .from('exercise_responses')
-      .select('alias, content, anonymous, created_at')
+      .select('alias, content, anonymous, created_at, module')
       .eq('workshop_id', session.workshopId)
       .eq('module', mod)
       .order('created_at', { ascending: false });
-    if (data?.length) {
+    if (!data) return;
+    // Nur neu rendern wenn sich Anzahl geändert hat
+    if (data.length !== feedResponses.length) {
       feedResponses = data;
       renderFeed();
     }
-  } catch(e) { console.warn('loadFeedResponses:', e.message); }
+  } catch(e) { console.warn('pollFeed:', e.message); }
+}
+
+async function loadFeedResponses(mod) {
+  return pollFeed(mod);
 }
 
 function addFeedResponse(row) {
