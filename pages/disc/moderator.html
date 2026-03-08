@@ -59,8 +59,11 @@
 
     /* ─── MODULE PANEL ─── */
     .module-panel{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:none}
-    .module-panel-title{font-size:13px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
-    .module-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+    .module-panel-title{font-size:13px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+    .module-phase-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin:12px 0 6px;border-bottom:1px solid var(--border);padding-bottom:4px}
+    .module-phase-label:first-child{margin-top:0}
+    .module-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+    @media(max-width:1100px){.module-grid{grid-template-columns:repeat(4,1fr)}}
     @media(max-width:900px){.module-grid{grid-template-columns:repeat(3,1fr)}}
     .module-btn{background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;transition:all .15s;position:relative}
     .module-btn:hover{background:var(--surface2);border-color:#4a6080}
@@ -95,8 +98,8 @@
 
   <!-- Module Navigation Panel (hidden by default) -->
   <div class="module-panel" id="modulePanel">
-    <div class="module-panel-title">🎯 Workshop-Modul aktivieren — Teilnehmer sehen dies sofort auf ihrem Handy</div>
-    <div class="module-grid" id="moduleGrid"></div>
+    <div class="module-panel-title">🎯 Workshop-Modul aktivieren — Teilnehmer sehen dies sofort auf ihrem Notebook</div>
+    <div id="moduleGrid"></div>
   </div>
 
   <!-- Online Workshop Status Bar (hidden by default) -->
@@ -187,30 +190,61 @@ let supabaseClient = null;
 const state = { anonymous:false, showRole:true, showLines:true };
 
 // ─── MODULE DEFINITIONS ───────────────────────────────
-const MODULES = [
-  { id:'waiting',      icon:'⏳', name:'Bereit',        sub:'Workshop läuft' },
-  { id:'intro',        icon:'💬', name:'Einstieg',      sub:'Eingangsfrage' },
-  { id:'disc_test',    icon:'📊', name:'DISC-Test',     sub:'28×2 Fragen' },
-  { id:'live_map',     icon:'🗺', name:'Live-Map',      sub:'Quadranten' },
-  { id:'reflexion',    icon:'🔍', name:'Reflexion',     sub:'Was überrascht?' },
-  { id:'team_pattern', icon:'🧩', name:'Team-Muster',   sub:'Analyse' },
-  { id:'exercise_1',   icon:'💪', name:'Übung 1',       sub:'Stärken' },
-  { id:'exercise_2',   icon:'⚡', name:'Übung 2',       sub:'Reibung' },
-  { id:'exercise_3',   icon:'📋', name:'Übung 3',       sub:'Spielregeln' },
-  { id:'closing',      icon:'🏆', name:'Abschluss',     sub:'Urkunde' },
+const MODULE_PHASES = [
+  {
+    label: '▸ Tag 1 – Vorbereitung',
+    modules: [
+      { id:'waiting',           icon:'⏳', name:'Bereit',           sub:'Warten' },
+      { id:'disc_test',         icon:'📊', name:'DISC-Test',        sub:'28×2 Fragen' },
+      { id:'disc_map',          icon:'🗺', name:'Live-Map',         sub:'Beamer' },
+    ]
+  },
+  {
+    label: '▸ Tag 1 – Übungen',
+    modules: [
+      { id:'intro_question',    icon:'💬', name:'Einstiegsfrage',   sub:'Freetext' },
+      { id:'kernbotschaften_info', icon:'⚡', name:'Kernbtsch. Info', sub:'Beamer' },
+      { id:'kernbotschaften',   icon:'⚡', name:'Kernbotschaft',    sub:'Freetext' },
+      { id:'johari_quiz',       icon:'🪟', name:'Johari Quiz',      sub:'Multiple Choice' },
+      { id:'johari_reflexion',  icon:'🔍', name:'Johari Refl.',     sub:'Freetext' },
+    ]
+  },
+  {
+    label: '▸ Tag 2 – Vertiefen',
+    modules: [
+      { id:'morgen_reflexion',  icon:'🌅', name:'Morgen-Check',     sub:'Freetext' },
+      { id:'raci_info',         icon:'📋', name:'RACI Info',        sub:'Beamer' },
+      { id:'raci',              icon:'📋', name:'RACI',             sub:'Auswahl' },
+      { id:'gfk',               icon:'🕊', name:'GFK',              sub:'Freetext' },
+    ]
+  },
+  {
+    label: '▸ Tag 2 – Abschluss',
+    modules: [
+      { id:'steckbrief_feiern', icon:'🎉', name:'Steckbrief',       sub:'Feiern' },
+      { id:'steckbrief_grenzen',icon:'🚫', name:'Steckbrief',       sub:'Grenzen' },
+      { id:'steckbrief_zumuten',icon:'💪', name:'Steckbrief',       sub:'Zumuten' },
+      { id:'ritual',            icon:'✍️', name:'Ritual',           sub:'Versprechen' },
+      { id:'closing',           icon:'🏆', name:'Abschluss',        sub:'Ende' },
+    ]
+  }
 ];
+const MODULES = MODULE_PHASES.flatMap(p => p.modules);
 
 // ─── MODULE ENGINE ─────────────────────────────────────────
 function buildModuleGrid(){
   const grid = document.getElementById('moduleGrid');
   const activeId = onlineSession?.currentModule || 'waiting';
-  grid.innerHTML = MODULES.map(m => `
-    <div class="module-btn${m.id===activeId?' active':''}" onclick="setModule('${m.id}')" title="Modul aktivieren: ${m.name}">
-      ${m.id===activeId?'<div class="m-badge"></div>':''}
-      <div class="m-icon">${m.icon}</div>
-      <div class="m-name">${m.name}</div>
-      <div class="m-sub">${m.sub}</div>
-    </div>
+  grid.innerHTML = MODULE_PHASES.map(phase => `
+    <div class="module-phase-label">${phase.label}</div>
+    <div class="module-grid">${phase.modules.map(m => `
+      <div class="module-btn${m.id===activeId?' active':''}" onclick="setModule('${m.id}')" title="Modul aktivieren: ${m.name}">
+        ${m.id===activeId?'<div class="m-badge"></div>':''}
+        <div class="m-icon">${m.icon}</div>
+        <div class="m-name">${m.name}</div>
+        <div class="m-sub">${m.sub}</div>
+      </div>
+    `).join('')}</div>
   `).join('');
 }
 
@@ -376,7 +410,8 @@ async function refreshOnlineWorkshop(){
 
     // Exercise-Antworten laden wenn aktuelles Modul exercise_*
     const exBox = document.getElementById('exerciseResponsesBox');
-    if(exBox && onlineSession?.workshopId && onlineSession?.currentModule?.startsWith('exercise_')){
+    const INTERACTIVE_MODULES = ['intro_question','johari_quiz','johari_reflexion','kernbotschaften','morgen_reflexion','gfk','raci','steckbrief_feiern','steckbrief_grenzen','steckbrief_zumuten','ritual'];
+    if(exBox && onlineSession?.workshopId && INTERACTIVE_MODULES.includes(onlineSession?.currentModule)){
       const { data: exResponses } = await supabaseClient
         .from('exercise_responses')
         .select('alias, content, created_at')
