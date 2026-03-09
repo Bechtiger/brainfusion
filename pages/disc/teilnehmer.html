@@ -760,7 +760,7 @@ async function doJoin() {
     if (!res.ok) throw new Error(data.error || 'Beitritt fehlgeschlagen');
 
     session = { code, alias, participantId: data.participantId, joinToken: data.joinToken, workshopId: data.workshopId };
-    localStorage.setItem('disc_session', JSON.stringify(session));
+    sessionStorage.setItem('disc_session', JSON.stringify(session));
     setHeader('live');
     initRealtime();
 
@@ -789,7 +789,7 @@ function initRealtime() {
 function leaveWorkshop() {
   if (rtChannel) { rtChannel.unsubscribe(); rtChannel = null; }
   session = { code:'', alias:'', participantId:'', joinToken:'', workshopId:'' };
-  localStorage.removeItem('disc_session');
+  sessionStorage.removeItem('disc_session');
   setHeader('none');
   joinCodeEl.value = ''; joinAliasEl.value = '';
   show('sJoin');
@@ -1543,13 +1543,13 @@ async function sendDiscResult() {
 (async function init() {
   const params  = new URLSearchParams(window.location.search);
   const urlCode = params.get('code')?.trim().toUpperCase();
-  const stored  = localStorage.getItem('disc_session');
+  const stored  = sessionStorage.getItem('disc_session');
 
   if (stored) {
     try {
       const s = JSON.parse(stored);
       if (s.code && s.participantId && s.workshopId) {
-        if (urlCode && urlCode !== s.code) { localStorage.removeItem('disc_session'); if(urlCode) joinCodeEl.value=urlCode; return; }
+        if (urlCode && urlCode !== s.code) { sessionStorage.removeItem('disc_session'); if(urlCode) joinCodeEl.value=urlCode; return; }
         session = s;
         setHeader('live');
         initRealtime();
@@ -1558,7 +1558,7 @@ async function sendDiscResult() {
         handleModule(ws?.[0]?.current_module||'waiting', ws?.[0]?.module_data||{});
         return;
       }
-    } catch(e) { localStorage.removeItem('disc_session'); }
+    } catch(e) { sessionStorage.removeItem('disc_session'); }
   }
   if (urlCode) joinCodeEl.value = urlCode;
   show('sJoin');
