@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -307,57 +307,64 @@ body:hover #fsBtn{ opacity:1; }
 
   <!-- ══ JOHARI WINDOW SCREEN ══ -->
   <div class="screen" id="sJohari">
-    <div class="johari-wrap">
-      <div class="johari-title">Johari-Fenster</div>
-      <div class="johari-subtitle">Selbst- und Fremdbild · Wahrheitsfähigkeit im Team</div>
-      <div class="johari-outer" id="johariGrid">
+    <div style="flex:1;display:flex;flex-direction:column;padding:36px 52px 28px;background:#060610;">
 
-        <!-- Achsenbeschriftung oben -->
-        <div style="grid-column:1;grid-row:1;"></div>
-        <div class="johari-axis-top">
-          <div class="johari-axis-label">Bekannt für mich</div>
-          <div class="johari-axis-label">Unbekannt für mich</div>
-        </div>
+      <!-- Titel -->
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:8px;text-transform:uppercase;color:rgba(255,255,255,.65);">Johari-Fenster</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:6px;">Selbst- und Fremdbild &nbsp;&#183;&nbsp; Wahrheitsf&#228;higkeit im Team</div>
+      </div>
 
-        <!-- Achsenbeschriftung links -->
-        <div class="johari-axis-left">
-          <div class="johari-axis-label vertical">Bekannt für andere</div>
-          <div class="johari-axis-label vertical">Unbekannt für andere</div>
-        </div>
+      <!-- Grid-Wrapper: Achsen + 4 Quadranten -->
+      <div style="flex:1;display:grid;grid-template-columns:52px 1fr 1fr;grid-template-rows:44px 1fr 1fr;gap:4px;min-height:0;">
+
+        <!-- Ecke leer -->
+        <div></div>
+
+        <!-- Achse oben links -->
+        <div style="display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);">Bekannt f&#252;r mich</div>
+        <!-- Achse oben rechts -->
+        <div style="display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);">Unbekannt f&#252;r mich</div>
+
+        <!-- Achse links oben -->
+        <div style="display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;transform:rotate(180deg);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);">Bekannt f&#252;r andere</div>
 
         <!-- Q1: ARENA -->
-        <div class="johari-quadrant jq-arena" id="jq1">
-          <div class="jq-icon">🟢</div>
-          <div class="jq-name">ARENA</div>
-          <div class="jq-known">Bekannt · Bekannt</div>
-          <div class="jq-desc">Was ich über mich weiss — und was andere auch sehen. Der Raum echter Zusammenarbeit.</div>
+        <div class="jq-card" id="jq1" style="background:rgba(42,157,143,.15);border:1px solid rgba(42,157,143,.4);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;opacity:0;transform:scale(.94);transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);">
+          <div style="font-size:44px;margin-bottom:10px;line-height:1;">&#128994;</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:#2ee8c8;margin-bottom:8px;line-height:1;">ARENA</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(46,232,200,.6);margin-bottom:12px;">Bekannt &#183; Bekannt</div>
+          <div style="font-size:15px;color:rgba(255,255,255,.55);line-height:1.55;max-width:280px;">Was ich &#252;ber mich weiss &mdash; und was andere auch sehen. Der Raum echter Zusammenarbeit.</div>
         </div>
 
         <!-- Q2: BLINDER FLECK -->
-        <div class="johari-quadrant jq-blind" id="jq2">
-          <div class="jq-icon">🔴</div>
-          <div class="jq-name">BLINDER FLECK</div>
-          <div class="jq-known">Unbekannt · Bekannt</div>
-          <div class="jq-desc">Was andere an mir sehen — was ich selbst nicht erkenne. Feedback öffnet diesen Raum.</div>
+        <div class="jq-card" id="jq2" style="background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.35);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;opacity:0;transform:scale(.94);transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);">
+          <div style="font-size:44px;margin-bottom:10px;line-height:1;">&#128308;</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:#ff6b6b;margin-bottom:8px;line-height:1;">BLINDER FLECK</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,107,107,.55);margin-bottom:12px;">Unbekannt &#183; Bekannt</div>
+          <div style="font-size:15px;color:rgba(255,255,255,.55);line-height:1.55;max-width:280px;">Was andere an mir sehen &mdash; was ich selbst nicht erkenne. Feedback &#246;ffnet diesen Raum.</div>
         </div>
 
+        <!-- Achse links unten -->
+        <div style="display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;transform:rotate(180deg);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);">Unbekannt f&#252;r andere</div>
+
         <!-- Q3: FASSADE -->
-        <div class="johari-quadrant jq-facade" id="jq3">
-          <div class="jq-icon">🟡</div>
-          <div class="jq-name">FASSADE</div>
-          <div class="jq-known">Bekannt · Unbekannt</div>
-          <div class="jq-desc">Was ich über mich weiss — aber verberge. Vertrauen öffnet diesen Raum.</div>
+        <div class="jq-card" id="jq3" style="background:rgba(244,162,97,.1);border:1px solid rgba(244,162,97,.3);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;opacity:0;transform:scale(.94);transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);">
+          <div style="font-size:44px;margin-bottom:10px;line-height:1;">&#128993;</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:#f4b76f;margin-bottom:8px;line-height:1;">FASSADE</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,183,111,.55);margin-bottom:12px;">Bekannt &#183; Unbekannt</div>
+          <div style="font-size:15px;color:rgba(255,255,255,.55);line-height:1.55;max-width:280px;">Was ich &#252;ber mich weiss &mdash; aber verberge. Vertrauen &#246;ffnet diesen Raum.</div>
         </div>
 
         <!-- Q4: UNBEKANNT -->
-        <div class="johari-quadrant jq-unknown" id="jq4">
-          <div class="jq-icon">⚫</div>
-          <div class="jq-name">UNBEKANNT</div>
-          <div class="jq-known">Unbekannt · Unbekannt</div>
-          <div class="jq-desc">Was weder ich noch andere kennen. Entfaltet sich durch Erfahrung und Reflexion.</div>
+        <div class="jq-card" id="jq4" style="background:rgba(30,30,60,.5);border:1px solid rgba(100,100,160,.2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;opacity:0;transform:scale(.94);transition:opacity .6s ease,transform .6s cubic-bezier(.16,1,.3,1);">
+          <div style="font-size:44px;margin-bottom:10px;line-height:1;">&#9899;</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:rgba(255,255,255,.38);margin-bottom:8px;line-height:1;">UNBEKANNT</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:12px;">Unbekannt &#183; Unbekannt</div>
+          <div style="font-size:15px;color:rgba(255,255,255,.35);line-height:1.55;max-width:280px;">Was weder ich noch andere kennen. Entfaltet sich durch Erfahrung und Reflexion.</div>
         </div>
 
-      </div>
+      </div><!-- /grid -->
     </div>
   </div>
 <div class="screen" id="sClosing">
@@ -615,23 +622,21 @@ let johariTransformed = false;
 function showJohari(data) {
   // Reset state
   johariTransformed = false;
-  const grid = document.getElementById('johariGrid');
-  if (grid) grid.classList.remove('transform');
 
-  // Quadranten nacheinander einblenden
+  // Quadranten ausblenden (inline style — kein CSS benötigt)
   const quads = ['jq1','jq2','jq3','jq4'];
   quads.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.classList.remove('visible');
+    if (el) { el.style.opacity = '0'; el.style.transform = 'scale(0.94)'; }
   });
 
   show('sJohari');
 
-  // Sequenzielles Einblenden (Dramatik!)
+  // Sequenzielles Einblenden mit Dramatik
   quads.forEach((id, i) => {
     setTimeout(() => {
       const el = document.getElementById(id);
-      if (el) el.classList.add('visible');
+      if (el) { el.style.opacity = '1'; el.style.transform = 'scale(1)'; }
     }, 300 + i * 350);
   });
 
@@ -643,9 +648,28 @@ function showJohari(data) {
 
 function triggerJohariTransform() {
   johariTransformed = !johariTransformed;
-  const grid = document.getElementById('johariGrid');
-  if (!grid) return;
-  grid.classList.toggle('transform', johariTransformed);
+
+  const styles = {
+    jq1: johariTransformed
+      ? { transform:'scale(1.07)', borderColor:'rgba(42,157,143,.9)', background:'rgba(42,157,143,.32)' }
+      : { transform:'scale(1)',    borderColor:'rgba(42,157,143,.4)',  background:'rgba(42,157,143,.15)' },
+    jq2: johariTransformed
+      ? { transform:'scale(0.91)', opacity:'0.55', background:'rgba(230,57,70,.07)' }
+      : { transform:'scale(1)',    opacity:'1',    background:'rgba(230,57,70,.12)' },
+    jq3: johariTransformed
+      ? { transform:'scale(0.91)', opacity:'0.55', background:'rgba(244,162,97,.05)' }
+      : { transform:'scale(1)',    opacity:'1',    background:'rgba(244,162,97,.10)' },
+    jq4: johariTransformed
+      ? { transform:'scale(0.93)', opacity:'0.45' }
+      : { transform:'scale(1)',    opacity:'1' },
+  };
+
+  Object.entries(styles).forEach(([id, css]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.transition = 'all 1.1s cubic-bezier(0.16,1,0.3,1)';
+    Object.entries(css).forEach(([prop, val]) => { el.style[prop] = val; });
+  });
 }
 
 function showFeed(meta, data) {
