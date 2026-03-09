@@ -337,6 +337,9 @@ let allJoined=[];          // [{alias, joined_at}] from participants table
 let discDoneSet=new Set(); // aliases who finished DISC
 let respondedSet=new Set(); // aliases who responded to current module
 let liveResponses=[];      // exercise_responses for current module
+let kiDebounceTimer=null;  // Debounce-Timer für KI-Analyse
+let kiLastCount=-1;        // letzte analysierte Antwort-Anzahl
+let kiCurrentModule='';    // Modul bei letzter Analyse
 const state={anonymous:false,showRole:true,showLines:true};
 
 // ─── MODULE DEFINITIONS ───────────────────────────────────────────────────────
@@ -644,6 +647,7 @@ async function activateModule(moduleId){
     buildModuleGrid();
     respondedSet.clear();
     liveResponses=[];
+    kiLastCount=-1; kiCurrentModule=''; // KI-State zurücksetzen
     renderModuleContent(moduleId);
   }catch(e){alert('Fehler: '+e.message)}
 }
@@ -767,8 +771,9 @@ function renderDiscMapSection(){
 }
 
 function renderLiveFeedSection(){
-  if(liveResponses.length===0)return'<div class="feed-empty">Noch keine Antworten eingegangen...<br><span style="font-size:11px;margin-top:4px;display:block">Wird alle 5 Sekunden aktualisiert</span></div>';
-  return`<div class="section-title">Live-Antworten (${liveResponses.length})</div>
+  const feedCards = liveResponses.length===0
+    ? '<div class="feed-empty">Noch keine Antworten eingegangen...<br><span style="font-size:11px;margin-top:4px;display:block">Wird alle 5 Sekunden aktualisiert</span></div>'
+    : `<div class="section-title">Live-Antworten (${liveResponses.length})</div>
     <div class="live-feed-wrap">
       ${liveResponses.map(r=>{
         const alias=r.alias||null;
@@ -781,6 +786,22 @@ function renderLiveFeedSection(){
         </div>`;
       }).join('')}
     </div>`;
+
+  const kiPanel = `<div id="kiAnalysisPanel" style="margin-top:14px;border-radius:12px;border:1px solid rgba(74,144,217,.3);background:rgba(74,144,217,.06);overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid rgba(74,144,217,.2);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">🤖</span>
+        <span style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(74,144,217,.85);">KI-Analyse</span>
+        <span id="kiStatusDot" style="width:7px;height:7px;border-radius:50%;background:rgba(74,144,217,.35);display:inline-block;"></span>
+      </div>
+      <button onclick="manualKiAnalysis()" style="background:rgba(74,144,217,.15);border:1px solid rgba(74,144,217,.3);color:rgba(74,144,217,.9);font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer;">↻ Aktualisieren</button>
+    </div>
+    <div id="kiAnalysisContent" style="padding:12px 14px;font-size:13px;color:rgba(200,210,255,.75);min-height:42px;">
+      <span style="color:rgba(130,150,180,.5);font-style:italic;">Analyse startet ab 3 Antworten automatisch…</span>
+    </div>
+  </div>`;
+
+  return feedCards + kiPanel;
 }
 
 function renderJohariSection(){
@@ -1002,6 +1023,7 @@ async function refreshOnlineWorkshop(){
       if(!exErr&&ex){
         liveResponses=ex;
         respondedSet=new Set(ex.map(r=>(r.alias||'').toLowerCase()).filter(a=>a));
+        scheduleKiAnalysis(); // KI-Analyse automatisch triggern
       }
     }else{
       if(!mod||!INTERACTIVE.includes(mod)){liveResponses=[];respondedSet.clear()}
@@ -1310,7 +1332,130 @@ async function triggerJohariTransformation() {
     });
   } catch(e) { console.warn('johariTransform:', e.message); }
 }
-// ─── KI-ZUSAMMENFASSUNG ────────────────────────────────────────────────────────
+// ─── KI-ECHTZEIT-ANALYSE ──────────────────────────────────────────────────────
+
+const KI_FEED_MODULES = new Set(['intro_question','kernbotschaften','johari_reflexion',
+  'morgen_reflexion','gfk','steckbrief_feiern','steckbrief_grenzen','steckbrief_zumuten','ritual']);
+
+function scheduleKiAnalysis() {
+  const mod = onlineSession?.currentModule;
+  if (!KI_FEED_MODULES.has(mod)) return;
+  if (liveResponses.length < 3) return;
+  // Nur neu analysieren wenn sich etwas verändert hat
+  if (liveResponses.length === kiLastCount && mod === kiCurrentModule) return;
+  if (kiDebounceTimer) clearTimeout(kiDebounceTimer);
+  // Kurzes Warten — nicht bei jedem einzelnen neuen Eintrag sofort feuern
+  kiDebounceTimer = setTimeout(() => analyzeWithKI(mod), 9000);
+  setKiStatus('waiting');
+}
+
+function manualKiAnalysis() {
+  const mod = onlineSession?.currentModule;
+  if (!KI_FEED_MODULES.has(mod)) return;
+  if (liveResponses.length < 1) return;
+  if (kiDebounceTimer) clearTimeout(kiDebounceTimer);
+  analyzeWithKI(mod);
+}
+
+function setKiStatus(state) {
+  const dot = document.getElementById('kiStatusDot');
+  if (!dot) return;
+  if (state==='loading') { dot.style.background='#f7c46c'; dot.style.animation='pulse 0.8s infinite'; }
+  else if (state==='done') { dot.style.background='#3ecf8e'; dot.style.animation='none'; }
+  else if (state==='error') { dot.style.background='#ff8e8e'; dot.style.animation='none'; }
+  else { dot.style.background='rgba(74,144,217,.4)'; dot.style.animation='none'; } // waiting
+}
+
+function setKiContent(html) {
+  const el = document.getElementById('kiAnalysisContent');
+  if (el) el.innerHTML = html;
+}
+
+async function analyzeWithKI(mod) {
+  if (!document.getElementById('kiAnalysisPanel')) return; // Panel nicht mehr sichtbar
+  kiLastCount = liveResponses.length;
+  kiCurrentModule = mod;
+  setKiStatus('loading');
+  setKiContent('<span style="color:rgba(247,196,108,.7);font-style:italic;">🤖 Analysiere ' + liveResponses.length + ' Antworten…</span>');
+
+  const question = MODULE_QUESTIONS[mod] || mod;
+  const modLabel = MODULE_LABELS[mod] || mod;
+  const answers = liveResponses.map((r,i) => {
+    const alias = r.alias && r.alias !== 'anon' ? r.alias : 'Anonym';
+    let content = r.content || '';
+    try { const j = JSON.parse(content); if (j.text) content = j.text; } catch {}
+    return `${i+1}. [${alias}]: ${content}`;
+  }).join('\n');
+
+  const systemPrompt = `Du bist ein erfahrener Workshop-Moderations-Assistent. Du analysierst anonymisierte Team-Antworten aus einem laufenden Workshop zum Thema "Wahrheitsfähigkeit im Team" und gibst dem Moderator kompakte, handlungsrelevante Hinweise.
+
+Antworte NUR mit einem JSON-Objekt, ohne Markdown, ohne Erklärungen davor oder danach.
+
+Das JSON hat diese Struktur:
+{
+  "tendenzen": ["Kurzer Satz (max 8 Wörter)", "Kurzer Satz"],
+  "spannung": "Ein Satz zur auffälligsten Spannung oder null",
+  "tip": "Konkreter Moderationshinweis — was jetzt ansprechen?",
+  "bemerkenswert": "Eine besonders tiefe/mutige/unerwartete Antwort in Anführungszeichen, oder null"
+}
+
+Halte dich kurz. Jeder Punkt max 1-2 Sätze. Schreib auf Deutsch, direkt zum Moderator.`;
+
+  const userPrompt = `Modul: ${modLabel}
+Frage an die Teilnehmer: "${question}"
+Anzahl Antworten: ${liveResponses.length}
+
+Antworten:
+${answers}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    if (!res.ok) throw new Error('API ' + res.status);
+    const data = await res.json();
+    const rawText = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = rawText.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    renderKiResult(parsed, liveResponses.length);
+    setKiStatus('done');
+  } catch(e) {
+    console.warn('KI-Analyse:', e.message);
+    setKiStatus('error');
+    setKiContent('<span style="color:rgba(255,142,142,.7);font-style:italic;">⚠ Analyse nicht verfügbar — bitte manuell aktualisieren</span>');
+  }
+}
+
+function renderKiResult(r, count) {
+  const tendenzenHTML = (r.tendenzen||[]).map(t =>
+    `<span style="background:rgba(74,144,217,.15);border:1px solid rgba(74,144,217,.25);border-radius:20px;padding:2px 10px;font-size:12px;white-space:nowrap;">${escapeHtml(t)}</span>`
+  ).join(' ');
+
+  const rows = [];
+  if (r.tendenzen?.length) rows.push(
+    `<div style="margin-bottom:10px;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(74,144,217,.6);margin-bottom:5px;">🎯 Haupttendenzen</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${tendenzenHTML}</div></div>`
+  );
+  if (r.spannung) rows.push(
+    `<div style="margin-bottom:10px;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(247,196,108,.65);margin-bottom:4px;">⚡ Spannung im Team</div><div style="color:rgba(247,196,108,.85);font-size:13px;">${escapeHtml(r.spannung)}</div></div>`
+  );
+  if (r.tip) rows.push(
+    `<div style="margin-bottom:10px;background:rgba(62,207,142,.07);border-left:2px solid rgba(62,207,142,.5);padding:6px 10px;border-radius:0 6px 6px 0;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(62,207,142,.65);margin-bottom:4px;">💡 Dein Tipp</div><div style="color:rgba(220,240,230,.9);font-size:13px;line-height:1.5;">${escapeHtml(r.tip)}</div></div>`
+  );
+  if (r.bemerkenswert) rows.push(
+    `<div style="margin-bottom:4px;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(201,168,76,.6);margin-bottom:4px;">✨ Bemerkenswert</div><div style="color:rgba(201,168,76,.9);font-size:13px;font-style:italic;">${escapeHtml(r.bemerkenswert)}</div></div>`
+  );
+
+  const ts = new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
+  const footer = `<div style="margin-top:8px;font-size:10px;color:rgba(130,150,180,.4);text-align:right;">Analysiert: ${count} Antworten · ${ts}</div>`;
+  setKiContent(rows.join('') + footer);
+}
 
 // Fragen-Map: module_id → Fragetext (für Zusammenfassung)
 const MODULE_QUESTIONS = {
