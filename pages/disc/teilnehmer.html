@@ -977,15 +977,14 @@ async function submitFbAnswer(choice, scenarioId) {
   fbScenarioId = scenarioId;
 
   try {
-    await fetch(`${EDGE_BASE}/submit-exercise`, {
+    await fetch(`${EDGE}/submit-exercise`, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:HDR,
       body: JSON.stringify({
-        workshop_id:   session.workshopId,
-        participant_id: session.participantId,
-        alias:          session.alias,
+        participantId:  session.participantId,
+        joinToken:      session.joinToken,
         module:         'johari_fallbeispiele_' + scenarioId,
-        response_type:  'mc',
+        responseType:   'mc',
         content:        choice
       })
     });
