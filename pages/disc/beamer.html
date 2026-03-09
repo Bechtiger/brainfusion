@@ -231,6 +231,7 @@ body{font-family:'IBM Plex Sans',sans-serif}
 }
 body:hover #fsBtn{ opacity:1; }
 #fsBtn:hover{ background:rgba(42,157,143,0.4);color:#fff;border-color:var(--S); }
+
 </style>
 </head>
 <body>
@@ -303,6 +304,62 @@ body:hover #fsBtn{ opacity:1; }
 </div>
 
 <!-- ══ CLOSING ═══════════════════════════════════ -->
+
+  <!-- ══ JOHARI WINDOW SCREEN ══ -->
+  <div class="screen" id="sJohari">
+    <div class="johari-wrap">
+      <div class="johari-title">Johari-Fenster</div>
+      <div class="johari-subtitle">Selbst- und Fremdbild · Wahrheitsfähigkeit im Team</div>
+      <div class="johari-outer" id="johariGrid">
+
+        <!-- Achsenbeschriftung oben -->
+        <div style="grid-column:1;grid-row:1;"></div>
+        <div class="johari-axis-top">
+          <div class="johari-axis-label">Bekannt für mich</div>
+          <div class="johari-axis-label">Unbekannt für mich</div>
+        </div>
+
+        <!-- Achsenbeschriftung links -->
+        <div class="johari-axis-left">
+          <div class="johari-axis-label vertical">Bekannt für andere</div>
+          <div class="johari-axis-label vertical">Unbekannt für andere</div>
+        </div>
+
+        <!-- Q1: ARENA -->
+        <div class="johari-quadrant jq-arena" id="jq1">
+          <div class="jq-icon">🟢</div>
+          <div class="jq-name">ARENA</div>
+          <div class="jq-known">Bekannt · Bekannt</div>
+          <div class="jq-desc">Was ich über mich weiss — und was andere auch sehen. Der Raum echter Zusammenarbeit.</div>
+        </div>
+
+        <!-- Q2: BLINDER FLECK -->
+        <div class="johari-quadrant jq-blind" id="jq2">
+          <div class="jq-icon">🔴</div>
+          <div class="jq-name">BLINDER FLECK</div>
+          <div class="jq-known">Unbekannt · Bekannt</div>
+          <div class="jq-desc">Was andere an mir sehen — was ich selbst nicht erkenne. Feedback öffnet diesen Raum.</div>
+        </div>
+
+        <!-- Q3: FASSADE -->
+        <div class="johari-quadrant jq-facade" id="jq3">
+          <div class="jq-icon">🟡</div>
+          <div class="jq-name">FASSADE</div>
+          <div class="jq-known">Bekannt · Unbekannt</div>
+          <div class="jq-desc">Was ich über mich weiss — aber verberge. Vertrauen öffnet diesen Raum.</div>
+        </div>
+
+        <!-- Q4: UNBEKANNT -->
+        <div class="johari-quadrant jq-unknown" id="jq4">
+          <div class="jq-icon">⚫</div>
+          <div class="jq-name">UNBEKANNT</div>
+          <div class="jq-known">Unbekannt · Unbekannt</div>
+          <div class="jq-desc">Was weder ich noch andere kennen. Entfaltet sich durch Erfahrung und Reflexion.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 <div class="screen" id="sClosing">
   <div class="closing-icon">🏆</div>
   <div class="closing-title">Herzlichen Dank!</div>
@@ -345,6 +402,7 @@ const MODULE_META = {
   intro_question:       { screen:'sFeed',    icon:'💬', label:'Einstieg',          title:'Einstiegsfrage',             question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?' },
   kernbotschaften_info: { screen:'sGeneric', icon:'⚡', title:'Kernbotschaften',    desc:'Vier Sätze, die alles sagen.' },
   kernbotschaften:      { screen:'sFeed',    icon:'⚡', label:'Kernbotschaft',      title:'Welcher Satz trifft dich?',  question:'Wähle den Satz, der dich am meisten anspricht – und erkläre warum.' },
+  johari_erklaerung:    { screen:'sJohari' },
   johari_quiz:          { screen:'sFeed',    icon:'🪟', label:'Johari-Fenster',     title:'Johari-Quiz',                question:'Abstimmung – mehrere Antworten möglich.' },
   johari_reflexion:     { screen:'sFeed',    icon:'🔍', label:'Johari-Reflexion',   title:'Mein blinder Fleck',         question:'Was denkst du: Wo liegt dein grösster blinder Fleck?' },
   morgen_reflexion:     { screen:'sFeed',    icon:'🌅', label:'Tag 2 – Einstieg',   title:'Was hat die Nacht gebracht?', question:'Ein Satz. Was nimmst du mit in den heutigen Tag?' },
@@ -396,6 +454,7 @@ async function handleModule(mod, data) {
     case 'sTest':     showTest(); break;
     case 'sMap':      showMap(); break;
     case 'sFeed':     showFeed(meta, data); startFeedPolling(mod); break;
+    case 'sJohari':  showJohari(data); break;
     case 'sGeneric':  showGeneric(meta, data); break;
     case 'sClosing':  showClosing(); break;
     default:          showGeneric(meta, data);
@@ -547,6 +606,48 @@ function renderMap() {
 /* ═══════════════════════════════════════════════════════
    LIVE FEED
 ═══════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════
+   JOHARI WINDOW
+══════════════════════════════════════════════ */
+let johariTransformed = false;
+
+function showJohari(data) {
+  // Reset state
+  johariTransformed = false;
+  const grid = document.getElementById('johariGrid');
+  if (grid) grid.classList.remove('transform');
+
+  // Quadranten nacheinander einblenden
+  const quads = ['jq1','jq2','jq3','jq4'];
+  quads.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('visible');
+  });
+
+  show('sJohari');
+
+  // Sequenzielles Einblenden (Dramatik!)
+  quads.forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('visible');
+    }, 300 + i * 350);
+  });
+
+  // Transformation via module_data triggern
+  if (data?.transform) {
+    setTimeout(() => triggerJohariTransform(), 800);
+  }
+}
+
+function triggerJohariTransform() {
+  johariTransformed = !johariTransformed;
+  const grid = document.getElementById('johariGrid');
+  if (!grid) return;
+  grid.classList.toggle('transform', johariTransformed);
+}
+
 function showFeed(meta, data) {
   document.getElementById('feedIcon').textContent    = meta.icon || '💬';
   document.getElementById('feedLabel').textContent   = meta.label || 'Modul';

@@ -340,30 +340,30 @@ const state={anonymous:false,showRole:true,showLines:true};
 
 // ─── MODULE DEFINITIONS ───────────────────────────────────────────────────────
 const MODULE_PHASES=[
-  {label:'▸ Tag 1 – Vorbereitung',modules:[
-    {id:'waiting',        icon:'�?�',name:'Bereit',        sub:'Warten'},
-    {id:'disc_test',      icon:'📊',name:'DISC-Test',     sub:'28×2 Fragen'},
-    {id:'disc_map',       icon:'🗺',name:'Live-Map',      sub:'Beamer'},
+  {label:'▸ Tag 1 – Einstieg & Johari',modules:[
+    {id:'waiting',           icon:'🕐',name:'Bereit',          sub:'Warten'},
+    {id:'intro_question',    icon:'💬',name:'Einstiegsfrage',  sub:'Live-Feed'},
+    {id:'johari_erklaerung', icon:'🪟',name:'Johari Fenster',  sub:'Beamer-Grafik'},
+    {id:'johari_reflexion',  icon:'🔍',name:'Johari Reflexion',sub:'Live-Feed'},
   ]},
-  {label:'▸ Tag 1 – Übungen',modules:[
-    {id:'intro_question', icon:'💬',name:'Einstiegsfrage',sub:'Freetext'},
-    {id:'kernbotschaften_info',icon:'⚡',name:'Kernbtsch.',sub:'Info/Beamer'},
-    {id:'kernbotschaften',icon:'⚡',name:'Kernbotschaft', sub:'Freetext'},
-    {id:'johari_quiz',    icon:'🪟',name:'Johari Quiz',   sub:'Multiple Choice'},
-    {id:'johari_reflexion',icon:'�?',name:'Johari Refl.', sub:'Freetext'},
+  {label:'▸ Tag 1 – DISC & Kernbotschaften',modules:[
+    {id:'disc_test',           icon:'📊',name:'DISC-Test',      sub:'28×2 Fragen'},
+    {id:'disc_map',            icon:'🗺',name:'DISC Live-Map',  sub:'Beamer'},
+    {id:'kernbotschaften_info',icon:'⚡',name:'Kernbtsch.',     sub:'Info/Beamer'},
+    {id:'kernbotschaften',     icon:'⚡',name:'Kernbotschaft',  sub:'Live-Feed'},
   ]},
   {label:'▸ Tag 2 – Vertiefen',modules:[
-    {id:'morgen_reflexion',icon:'🌅',name:'Morgen-Check', sub:'Freetext'},
-    {id:'raci_info',      icon:'📋',name:'RACI Info',     sub:'Beamer'},
-    {id:'raci',           icon:'📋',name:'RACI',          sub:'Auswahl'},
-    {id:'gfk',            icon:'🕊',name:'GFK',           sub:'Freetext'},
+    {id:'morgen_reflexion',icon:'🌅',name:'Morgen-Check',  sub:'Live-Feed'},
+    {id:'raci_info',       icon:'📋',name:'RACI Info',     sub:'Beamer'},
+    {id:'raci',            icon:'📋',name:'RACI',          sub:'Auswahl'},
+    {id:'gfk',             icon:'🕊',name:'GFK',           sub:'Live-Feed'},
   ]},
   {label:'▸ Tag 2 – Abschluss',modules:[
     {id:'steckbrief_feiern', icon:'🎉',name:'Steckbrief',sub:'Feiern'},
     {id:'steckbrief_grenzen',icon:'🚫',name:'Steckbrief',sub:'Grenzen'},
     {id:'steckbrief_zumuten',icon:'💪',name:'Steckbrief',sub:'Zumuten'},
-    {id:'ritual',         icon:'�?�?',name:'Ritual',        sub:'Versprechen'},
-    {id:'closing',        icon:'�?�',name:'Abschluss',     sub:'Ende'},
+    {id:'ritual',            icon:'✍️',name:'Ritual',     sub:'Versprechen'},
+    {id:'closing',           icon:'🏆',name:'Abschluss',  sub:'Ende'},
   ]}
 ];
 const MODULES=MODULE_PHASES.flatMap(p=>p.modules);
@@ -429,6 +429,15 @@ const MODULE_DETAILS={
       'Frage: "Was macht es so schwer, das direkt zu sagen?"'],
     beamer:'Beamer zeigt Live-Feed der Antworten (anonym möglich)',
     dataType:'live_feed'
+  },
+  johari_erklaerung:{
+    desc:'Johari-Fenster Erklärung — Beamer zeigt animierte Grafik, du referierst.',
+    hints:['Erkläre die 4 Quadranten kurz: Arena, Blinder Fleck, Fassade, Unbekannt',
+      'Klicke "Transformation zeigen" um zu zeigen wie Wahrheitsfähigkeit die Arena vergrössert',
+      'Frage: "In welchem Quadrant verbringen wir im Team am meisten Zeit?"',
+      'Überleitung: "Gleich schreiben wir auf — wo liegt dein eigener blinder Fleck?"'],
+    beamer:'Beamer zeigt animiertes Johari-Fenster mit allen 4 Quadranten',
+    dataType:'johari_static'
   },
   johari_quiz:{
     desc:'Teilnehmer wählen Adjektive — Basis für das Johari-Fenster.',
@@ -677,6 +686,7 @@ function renderModuleContent(moduleId){
     case'live_feed': dataHTML=renderLiveFeedSection();break;
     case'johari':    dataHTML=renderJohariSection();break;
     case'raci':      dataHTML=renderRaciSection();break;
+    case'johari_static': dataHTML=renderJohariStaticSection();break;
     case'static':    dataHTML=renderStaticSection(detail);break;
   }
 
@@ -799,6 +809,35 @@ function renderRaciSection(){
     </div>`;
 }
 
+function renderJohariStaticSection(){
+  return `<div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:rgba(42,157,143,.1);border:1px solid rgba(42,157,143,.35);border-radius:10px;padding:14px">
+        <div style="font-size:11px;color:var(--S);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">🟢 Arena</div>
+        <div style="font-size:13px;color:var(--muted)">Bekannt / Bekannt — Raum echter Zusammenarbeit</div>
+      </div>
+      <div style="background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.3);border-radius:10px;padding:14px">
+        <div style="font-size:11px;color:var(--D);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">🔴 Blinder Fleck</div>
+        <div style="font-size:13px;color:var(--muted)">Unbekannt / Bekannt — Feedback öffnet diesen Raum</div>
+      </div>
+      <div style="background:rgba(244,162,97,.08);border:1px solid rgba(244,162,97,.28);border-radius:10px;padding:14px">
+        <div style="font-size:11px;color:var(--I);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">🟡 Fassade</div>
+        <div style="font-size:13px;color:var(--muted)">Bekannt / Unbekannt — Vertrauen öffnet diesen Raum</div>
+      </div>
+      <div style="background:rgba(30,30,50,.4);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">⚫ Unbekannt</div>
+        <div style="font-size:13px;color:var(--muted)">Unbekannt / Unbekannt — entfaltet sich durch Erfahrung</div>
+      </div>
+    </div>
+    <button class="btn gold" onclick="triggerJohariTransformation()" id="johariTransformBtn"
+      style="width:100%;font-size:13px;padding:11px">
+      ✨ Transformation zeigen — Arena wächst
+    </button>
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px">
+      Klicke nochmal zum Zurücksetzen
+    </div>
+  </div>`;
+}
 function renderStaticSection(detail){
   if(!detail.staticContent)return'';
   return`<div class="info-cards">
@@ -1178,6 +1217,31 @@ document.getElementById('showRoleToggle').addEventListener('change',e=>{state.sh
 document.getElementById('showLinesToggle').addEventListener('change',e=>{state.showLines=e.target.checked;renderCanvas()});
 
 
+
+// ─── JOHARI TRANSFORMATION ────────────────────────────────────────────────────
+let johariTransformState = false;
+async function triggerJohariTransformation() {
+  if (!onlineSession?.workshopId || !onlineSession?.adminToken) return;
+  johariTransformState = !johariTransformState;
+  const btn = document.getElementById('johariTransformBtn');
+  if (btn) {
+    btn.textContent = johariTransformState
+      ? '↩ Zurücksetzen — Original'
+      : '✨ Transformation zeigen — Arena wächst';
+    btn.style.background = johariTransformState
+      ? 'linear-gradient(135deg,#1a6b4a,#2a9d8f)'
+      : '';
+  }
+  initSupabase();
+  try {
+    await sb.rpc('set_workshop_module', {
+      p_workshop_id:  onlineSession.workshopId,
+      p_admin_token:  onlineSession.adminToken,
+      p_module:       'johari_erklaerung',
+      p_module_data:  { transform: johariTransformState }
+    });
+  } catch(e) { console.warn('johariTransform:', e.message); }
+}
 // ─── KI-ZUSAMMENFASSUNG ────────────────────────────────────────────────────────
 
 // Fragen-Map: module_id → Fragetext (für Zusammenfassung)

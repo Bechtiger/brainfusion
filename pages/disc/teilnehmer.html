@@ -804,6 +804,7 @@ function handleModule(mod, data) {
     case 'disc_test':             showDiscTest(); break;
     case 'disc_results':          /* stay on results screen */ break;
     case 'disc_map':
+    case 'johari_erklaerung':
     case 'kernbotschaften_info':
     case 'raci_info':
       showBeamerMode(mod, data); break;
@@ -825,6 +826,7 @@ function showWaiting(data) {
 ═══════════════════════════════════════════════════════ */
 const BEAMER_META = {
   disc_map:             { icon:'🗺',  title:'Schau auf den Beamer!', desc:'Dein Profil ist jetzt auf der Live-Map sichtbar.' },
+  johari_erklaerung:    { icon:'🪟',  title:'Schau auf den Beamer!', desc:'Das Johari-Fenster wird erklärt. Folge dem Moderator.' },
   kernbotschaften_info: { icon:'⚡',  title:'Schau auf den Beamer!', desc:'Der Moderator zeigt vier wichtige Sätze.' },
   raci_info:            { icon:'📋', title:'Schau auf den Beamer!', desc:'RACI-Einführung. Bitte aufmerksam folgen.' },
 };
