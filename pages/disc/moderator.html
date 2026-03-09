@@ -794,10 +794,13 @@ function renderLiveFeedSection(){
         <span style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(74,144,217,.85);">KI-Analyse</span>
         <span id="kiStatusDot" style="width:7px;height:7px;border-radius:50%;background:rgba(74,144,217,.35);display:inline-block;"></span>
       </div>
-      <button onclick="manualKiAnalysis()" style="background:rgba(74,144,217,.15);border:1px solid rgba(74,144,217,.3);color:rgba(74,144,217,.9);font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer;">↻ Aktualisieren</button>
+      <div style="display:flex;gap:6px;">
+        <button onclick="runKiDemoTest()" title="Analyse mit Beispiel-Antworten testen" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:rgba(201,168,76,.85);font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer;">🧪 Demo</button>
+        <button onclick="manualKiAnalysis()" style="background:rgba(74,144,217,.15);border:1px solid rgba(74,144,217,.3);color:rgba(74,144,217,.9);font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer;">↻ Aktualisieren</button>
+      </div>
     </div>
     <div id="kiAnalysisContent" style="padding:12px 14px;font-size:13px;color:rgba(200,210,255,.75);min-height:42px;">
-      <span style="color:rgba(130,150,180,.5);font-style:italic;">Analyse startet ab 3 Antworten automatisch…</span>
+      <span style="color:rgba(130,150,180,.5);font-style:italic;">Analyse startet ab 3 Antworten automatisch… · 🧪 Demo zum Testen</span>
     </div>
   </div>`;
 
@@ -1433,8 +1436,7 @@ ${answers}`;
   }
 }
 
-function renderKiResult(r, count) {
-  const tendenzenHTML = (r.tendenzen||[]).map(t =>
+function renderKiResult(r, count, prefix='') {  const tendenzenHTML = (r.tendenzen||[]).map(t =>
     `<span style="background:rgba(74,144,217,.15);border:1px solid rgba(74,144,217,.25);border-radius:20px;padding:2px 10px;font-size:12px;white-space:nowrap;">${escapeHtml(t)}</span>`
   ).join(' ');
 
@@ -1454,7 +1456,100 @@ function renderKiResult(r, count) {
 
   const ts = new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
   const footer = `<div style="margin-top:8px;font-size:10px;color:rgba(130,150,180,.4);text-align:right;">Analysiert: ${count} Antworten · ${ts}</div>`;
-  setKiContent(rows.join('') + footer);
+  setKiContent(prefix + rows.join('') + footer);
+}
+
+// ─── KI DEMO-TEST ─────────────────────────────────────────────────────────────
+const KI_DEMO_SETS = {
+  intro_question: [
+    { alias: 'Thomas M.', content: 'Ich weiss nie wie mein Chef reagiert — mal lobt er direkte Aussagen, mal findet er sie anmassend.' },
+    { alias: 'Sara K.', content: 'Angst vor Konsequenzen. Letztes Mal als ich offen war, wurde es gegen mich verwendet.' },
+    { alias: 'Anonym', content: 'Wenn alle schweigen, traut man sich selbst auch nicht.' },
+    { alias: 'Marc B.', content: 'Manchmal fehlt einfach die Energie für die Diskussion danach.' },
+    { alias: 'Lisa H.', content: 'Der Druck, immer "lösungsorientiert" zu sein — man darf keine Probleme mehr benennen ohne gleich die Lösung parat zu haben.' },
+    { alias: 'Anonym', content: 'Hierarchie. Punkt.' },
+  ],
+  johari_reflexion: [
+    { alias: 'Thomas M.', content: 'Wahrscheinlich wie ungeduldig ich wirke wenn ich unter Druck stehe.' },
+    { alias: 'Anonym', content: 'Ich glaube ich höre zu wenig zu. Oder zu selektiv.' },
+    { alias: 'Sara K.', content: 'Vielleicht dass ich Probleme herunterrede um das Team nicht zu belasten.' },
+    { alias: 'Marc B.', content: 'Keine Ahnung — das ist ja das Ding mit dem blinden Fleck.' },
+    { alias: 'Lisa H.', content: 'Mein Perfektionismus kostet das Team wahrscheinlich mehr Zeit als ich denke.' },
+  ],
+  kernbotschaften: [
+    { alias: 'Thomas M.', content: '"Ich bin bereit, unbequeme Wahrheiten auszusprechen." — Das ist so einfach gesagt. Ich merke wie selten ich es wirklich tue.' },
+    { alias: 'Sara K.', content: 'Der vierte Satz über Vertrauen. Wir haben viel Kompetenz aber wenig echtes Vertrauen.' },
+    { alias: 'Anonym', content: '"Feedback ist ein Geschenk" — ich glaube das theoretisch, aber wenn ich es bekomme, fühlt es sich selten so an.' },
+    { alias: 'Marc B.', content: 'Satz zwei. Weil Klarheit das ist was in unserem Team am meisten fehlt.' },
+  ],
+  steckbrief_feiern: [
+    { alias: 'Thomas M.', content: 'Wir lösen technische Probleme die andere für unlösbar halten. Das ist aussergewöhnlich.' },
+    { alias: 'Sara K.', content: 'Der Zusammenhalt in Krisen. Wenn es wirklich brennt, halten wir zusammen.' },
+    { alias: 'Marc B.', content: 'Unsere Mischung aus Erfahrung und frischen Ideen.' },
+    { alias: 'Lisa H.', content: 'Dass wir Fehler meistens offen ansprechen — zumindest intern.' },
+    { alias: 'Anonym', content: 'Humor. Ernst, aber nicht bierernst.' },
+  ],
+  steckbrief_grenzen: [
+    { alias: 'Thomas M.', content: 'Informationen zurückhalten die andere brauchen. Das vergiftet alles.' },
+    { alias: 'Sara K.', content: 'Hinter dem Rücken reden statt direkt ansprechen.' },
+    { alias: 'Anonym', content: 'Wenn Vereinbarungen nicht eingehalten werden ohne Erklärung.' },
+    { alias: 'Marc B.', content: 'Schuldzuweisungen wenn etwas schiefläuft.' },
+    { alias: 'Lisa H.', content: 'Meetings ohne Agenda und klare Entscheide.' },
+  ],
+  gfk: [
+    { alias: 'Thomas M.', content: 'Beobachtung: Das Meeting wird immer wieder verschoben. Gefühl: Frustration. Bedürfnis: Verlässlichkeit. Bitte: Kommuniziere Verschiebungen 24h im Voraus.' },
+    { alias: 'Sara K.', content: 'Wenn ich höre dass meine Idee "nicht praktisch" ist ohne weitere Erklärung, fühle ich mich nicht gehört. Ich brauche mehr Austausch. Kannst du mir sagen was konkret fehlt?' },
+    { alias: 'Anonym', content: 'Beobachtung: Entscheidungen die mich betreffen, ohne mich. Gefühl: Ausgeschlossen. Bedürfnis: Einbezug. Bitte: Hol mich ab bevor du entscheidest.' },
+  ],
+  default: [
+    { alias: 'Thomas M.', content: 'Das Thema ist wichtig aber ich weiss noch nicht wie ich es umsetzen soll.' },
+    { alias: 'Sara K.', content: 'Ich nehme viel mit — besonders der Teil über Selbstwahrnehmung.' },
+    { alias: 'Marc B.', content: 'Ehrlich gesagt bin ich skeptisch ob sich etwas wirklich ändert.' },
+    { alias: 'Lisa H.', content: 'Ich wünsche mir dass wir diese Offenheit auch in zwei Monaten noch haben.' },
+    { alias: 'Anonym', content: 'Danke. Das war mutiger als ich dachte.' },
+  ]
+};
+
+async function runKiDemoTest() {
+  const mod = onlineSession?.currentModule;
+  if (!KI_FEED_MODULES.has(mod)) {
+    setKiContent('<span style="color:rgba(247,196,108,.8);">⚠ Demo nur für Feed-Module verfügbar. Aktiviere zuerst ein Modul wie "Einstiegsfrage" oder "Johari-Reflexion".</span>');
+    return;
+  }
+  const demoData = KI_DEMO_SETS[mod] || KI_DEMO_SETS.default;
+  const question = MODULE_QUESTIONS[mod] || mod;
+  const modLabel = MODULE_LABELS[mod] || mod;
+
+  if (kiDebounceTimer) clearTimeout(kiDebounceTimer);
+  setKiStatus('loading');
+  setKiContent('<span style="color:rgba(201,168,76,.7);font-style:italic;">🧪 Demo-Analyse mit ' + demoData.length + ' Beispiel-Antworten…</span>');
+
+  const answers = demoData.map((r,i) => `${i+1}. [${r.alias}]: ${r.content}`).join('\n');
+
+  const systemPrompt = `Du bist ein erfahrener Workshop-Moderations-Assistent. Du analysierst anonymisierte Team-Antworten aus einem laufenden Workshop zum Thema "Wahrheitsfähigkeit im Team" und gibst dem Moderator kompakte, handlungsrelevante Hinweise.\n\nAntworte NUR mit einem JSON-Objekt, ohne Markdown, ohne Erklärungen davor oder danach.\n\nDas JSON hat diese Struktur:\n{\n  "tendenzen": ["Kurzer Satz (max 8 Wörter)", "Kurzer Satz"],\n  "spannung": "Ein Satz zur auffälligsten Spannung oder null",\n  "tip": "Konkreter Moderationshinweis — was jetzt ansprechen?",\n  "bemerkenswert": "Eine besonders tiefe/mutige/unerwartete Antwort in Anführungszeichen, oder null"\n}\n\nHalte dich kurz. Jeder Punkt max 1-2 Sätze. Schreib auf Deutsch, direkt zum Moderator.`;
+
+  const userPrompt = `Modul: ${modLabel}\nFrage an die Teilnehmer: "${question}"\nAnzahl Antworten: ${demoData.length}\n\nAntworten:\n${answers}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 600, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
+    });
+    if (!res.ok) throw new Error('API ' + res.status);
+    const data = await res.json();
+    const rawText = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const clean = rawText.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    // Demo-Badge oben drüber
+    const demoBadge = '<div style="margin-bottom:10px;padding:4px 10px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:6px;font-size:10px;color:rgba(201,168,76,.7);letter-spacing:1px;text-transform:uppercase;">🧪 Demo-Modus · Beispiel-Antworten</div>';
+    renderKiResult(parsed, demoData.length, demoBadge);
+    setKiStatus('done');
+  } catch(e) {
+    console.warn('KI-Demo:', e.message);
+    setKiStatus('error');
+    setKiContent('<span style="color:rgba(255,142,142,.7);font-style:italic;">⚠ Demo-Analyse fehlgeschlagen: ' + escapeHtml(e.message) + '</span>');
+  }
 }
 
 // Fragen-Map: module_id → Fragetext (für Zusammenfassung)
