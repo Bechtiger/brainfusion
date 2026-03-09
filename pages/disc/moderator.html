@@ -1412,19 +1412,15 @@ Antworten:
 ${answers}`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(EDGE_BASE + '/ki-analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 600,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
-      })
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY },
+      body: JSON.stringify({ system: systemPrompt, userPrompt, maxTokens: 600 })
     });
     if (!res.ok) throw new Error('API ' + res.status);
     const data = await res.json();
-    const rawText = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    if (data.error) throw new Error(data.error);
+    const rawText = data.text || '';
     const clean = rawText.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
     renderKiResult(parsed, liveResponses.length);
@@ -1531,18 +1527,19 @@ async function runKiDemoTest() {
   const userPrompt = `Modul: ${modLabel}\nFrage an die Teilnehmer: "${question}"\nAnzahl Antworten: ${demoData.length}\n\nAntworten:\n${answers}`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(EDGE_BASE + '/ki-analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 600, system: systemPrompt, messages: [{ role: 'user', content: userPrompt }] })
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY },
+      body: JSON.stringify({ system: systemPrompt, userPrompt, maxTokens: 600 })
     });
     if (!res.ok) throw new Error('API ' + res.status);
     const data = await res.json();
-    const rawText = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    if (data.error) throw new Error(data.error);
+    const rawText = data.text || '';
     const clean = rawText.replace(/```json|```/g,'').trim();
     const parsed = JSON.parse(clean);
     // Demo-Badge oben drüber
-    const demoBadge = '<div style="margin-bottom:10px;padding:4px 10px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:6px;font-size:10px;color:rgba(201,168,76,.7);letter-spacing:1px;text-transform:uppercase;">🧪 Demo-Modus · Beispiel-Antworten</div>';
+    const demoBadge = '<div style="margin-bottom:10px;padding:4px 10px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:6px;font-size:10px;color:rgba(201,168,76,.7);letter-spacing:1px;text-transform:uppercase;">&#x1F9EA; Demo-Modus &middot; Beispiel-Antworten</div>';
     renderKiResult(parsed, demoData.length, demoBadge);
     setKiStatus('done');
   } catch(e) {
@@ -1697,9 +1694,9 @@ async function generateAISummary() {
     body.innerHTML = '🤖 KI analysiert Workshop-Daten...';
     const prompt = buildAIPrompt(workshopDataCache);
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(EDGE_BASE + '/ki-analyze', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
