@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -715,17 +715,20 @@ window.addEventListener('resize', () => { if(currentModule==='disc_map'){ resize
     show('sError'); return;
   }
 
+  // Code aus URL-Param in Session übernehmen (falls Dashboard ihn mitgibt)
+  const urlParams = new URLSearchParams(location.search);
+  const codeFromUrl = urlParams.get('code');
+  if (codeFromUrl) session.code = codeFromUrl;
+
+  // Sofort Warte-Screen zeigen — Code + URL sind bereits in session
+  // Fix: verhindert den sError-Blitz und das "falsches Modul beim Öffnen"-Bug
+  showWaiting();
+
   sb = window.supabase.createClient(SB_URL, SB_KEY);
   initRealtime();
 
-  // URL-Param ?module= überschreibt DB-Status (gesetzt vom Dashboard)
-  const urlModule = new URLSearchParams(location.search).get('module');
-  if (urlModule) {
-    // Dashboard hat explizit ein Modul übergeben → sofort anzeigen
-    await handleModule(urlModule, {});
-  }
-
-  // Load current module from DB (Realtime-Sync)
+  // Aktuelles Modul immer aus DB laden — das ist die einzige Wahrheit
+  // URL-Param ?module= wird bewusst ignoriert (kann veraltete Werte haben)
   try {
     const { data } = await sb.from('workshops')
       .select('current_module,module_data,title')
@@ -733,14 +736,13 @@ window.addEventListener('resize', () => { if(currentModule==='disc_map'){ resize
       .single();
     if (data) {
       if (data.title) session.title = data.title;
-      // Nur updaten wenn kein URL-Param gesetzt war
-      if (!urlModule) {
-        await handleModule(data.current_module || 'waiting', data.module_data || {});
-      }
-    } else if (!urlModule) {
-      showWaiting();
+      await handleModule(data.current_module || 'waiting', data.module_data || {});
     }
-  } catch(e) { if (!urlModule) showWaiting(); }
+    // Kein data → bleiben beim showWaiting() von oben
+  } catch(e) {
+    // DB-Fehler → bleiben beim showWaiting() von oben
+    console.warn('init DB load:', e.message);
+  }
 
   // Initial data + polling
   await refreshData();
