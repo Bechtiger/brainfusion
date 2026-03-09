@@ -879,7 +879,7 @@ async function setFbScenario(idx){
   }
 }
 
-async async function revealFbAnswer(reveal){
+async function revealFbAnswer(reveal){
   if(!onlineSession?.workshopId||!onlineSession?.adminToken) return;
   const {data:ws} = await sb.from('workshops').select('module_data').eq('id',onlineSession.workshopId).single();
   const scenario = ws?.module_data?.scenario ?? 0;
