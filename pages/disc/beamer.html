@@ -22,8 +22,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 body{font-family:'IBM Plex Sans',sans-serif}
 
 /* SCREENS */
-.screen{display:none;position:fixed;inset:0;flex-direction:column}
-.screen.active{display:flex;animation:fadeIn .5s ease}
+.screen{display:none!important;position:fixed;inset:0;flex-direction:column}
+.screen.active{display:flex!important;animation:fadeIn .5s ease}
+.screen.active#sFeed{display:grid!important}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes bobUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
