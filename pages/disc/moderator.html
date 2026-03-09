@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8"/>
@@ -575,6 +575,17 @@ function buildModuleGrid(){
     </div>`).join('');
 }
 
+// ─── MODULE DATA (wird als module_data beim Aktivieren mitgesendet) ────────────
+const MODULE_DATA={
+  intro_question:      { question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?' },
+  kernbotschaften:     { question:'Welcher der vier Sätze trifft dich am meisten — und warum?' },
+  johari_reflexion:    { question:'Was denkst du: Wo liegt dein grösster blinder Fleck?' },
+  morgen_reflexion:    { question:'Ein Satz. Was hat die Nacht dir gebracht?' },
+  gfk:                 { question:'Formuliere eine Situation mit GFK: Beobachtung · Gefühl · Bedürfnis · Bitte.' },
+  steckbrief_feiern:   { question:'Was feiern wir als Team? Was läuft richtig gut?' },
+  steckbrief_grenzen:  { question:'Was akzeptieren wir nicht? Welches Verhalten geht gar nicht?' },
+  steckbrief_zumuten:  { question:'Was dürfen wir uns zumuten? Wo können wir unbequem ehrlich sein?' },
+};
 async function activateModule(moduleId){
   if(!onlineSession?.workshopId||!onlineSession?.adminToken){alert('Kein aktiver Workshop.');return}
   const mod=MODULES.find(m=>m.id===moduleId);
@@ -586,7 +597,7 @@ async function activateModule(moduleId){
       p_workshop_id:onlineSession.workshopId,
       p_admin_token:onlineSession.adminToken,
       p_module:moduleId,
-      p_module_data:{}
+      p_module_data:MODULE_DATA[moduleId]||{}
     });
     if(error)throw new Error(error.message);
     if(data?.error)throw new Error(data.error);
