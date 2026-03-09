@@ -446,7 +446,7 @@ const MODULE_DETAILS={
     hints:['Starte mit Szenario 1 — lies die Situation vor oder lass lesen',
       'Teilnehmer w&#228;hlen auf ihrem Handy die Antwort',
       'Klicke \"Aufl&#246;sen\" um die richtige Antwort aufzudecken',
-      'Klicke \"N&#228;chstes Szenario\" f&#252;r Szenario 2, 3, 4',
+      'Klicke \"N&#228;chstes Szenario\" f&#252;r Szenario 2, 3 ... bis 7',
       '&#220;berleitung: \"Warum ist das so schwer — auch bei uns im Team?\"'],
     beamer:'Beamer zeigt Szenario-Text + Live-Abstimmungsbalken',
     dataType:'johari_fallbeispiele'
@@ -852,7 +852,7 @@ function renderJohariStaticSection(){
   </div>`;
 }
 function renderJohariFallbeispieleSection(){
-  const labels=['Szenario 1: Thomas (Fassade)','Szenario 2: Sara (Blinder Fleck)','Szenario 3: Lukas & Maria (Arena)','Szenario 4: Der Unterbrecher (Blinder Fleck)'];
+  const labels=['Szenario 1: Thomas (Fassade)','Szenario 2: Sara (Blinder Fleck)','Szenario 3: Lukas &amp; Maria (Arena)','Szenario 4: Der Unterbrecher (Blinder Fleck)','Szenario 5: Kevin (Unbekannt)','Szenario 6: Petra (Fassade)','Szenario 7: Felix (Blinder Fleck)'];
   const btns = labels.map((l,i)=>`
     <button onclick="setFbScenario(${i})" style="text-align:left;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.75);font-size:13px;cursor:pointer;transition:.2s;" id="fbBtn${i}">${i+1}. ${l}</button>
   `).join('');
@@ -897,7 +897,7 @@ async function nextFbScenario(){
   if(!onlineSession?.workshopId||!onlineSession?.adminToken) return;
   const {data:ws} = await sb.from('workshops').select('module_data').eq('id',onlineSession.workshopId).single();
   const current = ws?.module_data?.scenario ?? 0;
-  const next = Math.min(current + 1, 3); // max 4 Szenarien (0-3)
+  const next = Math.min(current + 1, 6); // max 7 Szenarien (0-6)
   await sb.rpc('set_workshop_module',{
     p_workshop_id:onlineSession.workshopId,
     p_admin_token:onlineSession.adminToken,
