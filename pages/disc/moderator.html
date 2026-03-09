@@ -770,10 +770,10 @@ function renderDiscMapSection(){
     </div>`;
 }
 
-function renderLiveFeedSection(){
-  const feedCards = liveResponses.length===0
-    ? '<div class="feed-empty">Noch keine Antworten eingegangen...<br><span style="font-size:11px;margin-top:4px;display:block">Wird alle 5 Sekunden aktualisiert</span></div>'
-    : `<div class="section-title">Live-Antworten (${liveResponses.length})</div>
+function renderFeedCardsHTML(){
+  if(liveResponses.length===0)
+    return'<div class="feed-empty">Noch keine Antworten eingegangen...<br><span style="font-size:11px;margin-top:4px;display:block">Wird alle 5 Sekunden aktualisiert</span></div>';
+  return`<div class="section-title">Live-Antworten (${liveResponses.length})</div>
     <div class="live-feed-wrap">
       ${liveResponses.map(r=>{
         const alias=r.alias||null;
@@ -786,8 +786,10 @@ function renderLiveFeedSection(){
         </div>`;
       }).join('')}
     </div>`;
+}
 
-  const kiPanel = `<div id="kiAnalysisPanel" style="margin-top:14px;border-radius:12px;border:1px solid rgba(74,144,217,.3);background:rgba(74,144,217,.06);overflow:hidden;">
+function renderLiveFeedSection(){
+  const kiPanel=`<div id="kiAnalysisPanel" style="margin-top:14px;border-radius:12px;border:1px solid rgba(74,144,217,.3);background:rgba(74,144,217,.06);overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid rgba(74,144,217,.2);">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:16px;">🤖</span>
@@ -803,8 +805,7 @@ function renderLiveFeedSection(){
       <span style="color:rgba(130,150,180,.5);font-style:italic;">Analyse startet ab 3 Antworten automatisch… · 🧪 Demo zum Testen</span>
     </div>
   </div>`;
-
-  return feedCards + kiPanel;
+  return`<div id="liveFeedCards">${renderFeedCardsHTML()}</div>${kiPanel}`;
 }
 
 function renderJohariSection(){
@@ -1049,8 +1050,15 @@ async function refreshOnlineWorkshop(){
       }
     }
 
-    // 6. Render
-    renderModuleContent(onlineSession?.currentModule||'waiting');
+    // 6. Render — Feed-Karten smart updaten (KI-Panel nicht überschreiben)
+    const curMod=onlineSession?.currentModule||'waiting';
+    const feedCardsEl=document.getElementById('liveFeedCards');
+    if(feedCardsEl&&MODULE_DETAILS[curMod]?.dataType==='live_feed'){
+      // Nur Feed-Karten updaten — KI-Panel bleibt stehen
+      feedCardsEl.innerHTML=renderFeedCardsHTML();
+    }else{
+      renderModuleContent(curMod);
+    }
     renderParticipantPanel();
     // Offline-Canvas auch aktuell halten
     renderCanvas();
