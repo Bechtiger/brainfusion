@@ -183,6 +183,22 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
 .coach p{margin:.35rem 0;color:#d7dff8;line-height:1.45;font-size:13px}
 @media(max-width:1140px){.offline-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.split,.hint-grid{grid-template-columns:1fr}}
+/* KI-ZUSAMMENFASSUNG MODAL */
+.summary-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.summary-box{background:#0d1428;border:1px solid var(--border);border-radius:20px;
+  width:100%;max-width:860px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.summary-head{display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;border-bottom:1px solid var(--border)}
+.summary-head h2{font-size:17px;margin:0}
+.summary-body{flex:1;overflow-y:auto;padding:24px;font-size:14px;line-height:1.7;
+  color:#dbe6ff;white-space:pre-wrap;font-family:'IBM Plex Mono',monospace}
+.summary-body.loading{display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--muted)}
+.summary-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px}
+.summary-section{background:var(--surf2);border:1px solid var(--border);border-radius:12px;
+  padding:14px 18px;margin-bottom:14px;white-space:pre-wrap;font-family:inherit}
+.summary-section h3{font-size:13px;color:var(--gold);margin:0 0 8px;text-transform:uppercase;letter-spacing:1px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -218,6 +234,7 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
     <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:12px">–</a>
   </div>
   <button class="btn gold" onclick="openBeamer()">&#127893; Beamer</button>
+    <button class="btn" style="background:linear-gradient(135deg,#2a1a5a,#7b4fc4);border:none;font-weight:600" onclick="openSummaryModal()">🤖 KI-Zusammenfassung</button>
   <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
 </div>
 
@@ -1160,6 +1177,259 @@ document.getElementById('anonToggle').addEventListener('change',e=>{state.anonym
 document.getElementById('showRoleToggle').addEventListener('change',e=>{state.showRole=e.target.checked;renderCanvas()});
 document.getElementById('showLinesToggle').addEventListener('change',e=>{state.showLines=e.target.checked;renderCanvas()});
 
+
+// ─── KI-ZUSAMMENFASSUNG ────────────────────────────────────────────────────────
+
+// Fragen-Map: module_id → Fragetext (für Zusammenfassung)
+const MODULE_QUESTIONS = {
+  intro_question:      'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?',
+  kernbotschaften:     'Welcher der vier Sätze trifft dich am meisten — und warum?',
+  johari_reflexion:    'Was denkst du: Wo liegt dein grösster blinder Fleck?',
+  morgen_reflexion:    'Ein Satz. Was hat die Nacht dir gebracht?',
+  gfk:                 'Formuliere eine Situation mit GFK: Beobachtung · Gefühl · Bedürfnis · Bitte.',
+  steckbrief_feiern:   'Was feiern wir als Team? Was läuft richtig gut?',
+  steckbrief_grenzen:  'Was akzeptieren wir nicht? Welches Verhalten geht gar nicht?',
+  steckbrief_zumuten:  'Was dürfen wir uns zumuten? Wo können wir unbequem ehrlich sein?',
+  ritual:              'Was trägst du zum Team bei? Dein persönliches Versprechen.',
+  raci:                'Welche RACI-Rolle(n) übernimmst du im Team?',
+  johari_quiz:         'Johari-Fenster: Adjektiv-Auswahl (Selbstbild)',
+};
+
+const MODULE_LABELS = {
+  intro_question:'Einstiegsfrage', kernbotschaften:'Kernbotschaft',
+  johari_reflexion:'Johari-Reflexion', morgen_reflexion:'Morgen-Reflexion',
+  gfk:'Gewaltfreie Kommunikation', steckbrief_feiern:'Team-Stärken',
+  steckbrief_grenzen:'Team-Grenzen', steckbrief_zumuten:'Team-Zumutung',
+  ritual:'Persönliches Versprechen', raci:'RACI-Rollen', johari_quiz:'Johari-Quiz'
+};
+
+let workshopDataCache = null;
+
+async function collectWorkshopData() {
+  if (!onlineSession?.workshopId) throw new Error('Kein aktiver Workshop');
+  initSupabase();
+
+  // 1. Alle Antworten (exercise_responses)
+  const { data: responses, error: rErr } = await sb
+    .from('exercise_responses')
+    .select('alias, module, content, response_type, created_at')
+    .eq('workshop_id', onlineSession.workshopId)
+    .order('created_at', { ascending: true });
+  if (rErr) throw rErr;
+
+  // 2. DISC-Ergebnisse
+  const { data: discResults, error: dErr } = await sb
+    .from('results')
+    .select('alias, natural_d, natural_i, natural_s, natural_c, role_d, role_i, role_s, role_c, natural_primary, role_primary, stress_index, computed_json')
+    .eq('workshop_id', onlineSession.workshopId);
+
+  // 3. Teilnehmer
+  const cutoff = new Date(Date.now() - 8*60*60*1000).toISOString();
+  const { data: parts } = await sb
+    .from('participants')
+    .select('alias, joined_at')
+    .eq('workshop_id', onlineSession.workshopId)
+    .gte('joined_at', cutoff);
+
+  // 4. Workshop-Info
+  const { data: ws } = await sb
+    .from('workshops')
+    .select('title, created_at')
+    .eq('id', onlineSession.workshopId)
+    .single();
+
+  // 5. Gruppiere nach Modul
+  const byModule = {};
+  (responses || []).forEach(r => {
+    if (!byModule[r.module]) byModule[r.module] = [];
+    let displayContent = r.content;
+    // Ritual: JSON → nur Text
+    if (r.response_type === 'ritual') {
+      try { const parsed = JSON.parse(r.content); displayContent = parsed.text || r.content; } catch(e) {}
+    }
+    byModule[r.module].push({
+      alias: r.alias || 'Anonym',
+      content: displayContent,
+      time: r.created_at ? new Date(r.created_at).toLocaleTimeString('de-CH', {hour:'2-digit', minute:'2-digit'}) : ''
+    });
+  });
+
+  // 6. DISC-Auswertung zusammenfassen
+  const discSummary = (discResults || []).map(r => {
+    const nat = { D: r.natural_d || 0, I: r.natural_i || 0, S: r.natural_s || 0, C: r.natural_c || 0 };
+    const role = { D: r.role_d || 0, I: r.role_i || 0, S: r.role_s || 0, C: r.role_c || 0 };
+    const natType = r.natural_primary || Object.entries(nat).sort((a,b) => b[1]-a[1])[0][0];
+    const roleType = r.role_primary || Object.entries(role).sort((a,b) => b[1]-a[1])[0][0];
+    const stress = r.stress_index || r.computed_json?.stress || 0;
+    return { alias: r.alias, naturalType: natType, roleType: roleType, stress: Math.round(stress), natural: nat, role };
+  });
+
+  return {
+    workshop: { id: onlineSession.workshopId, code: onlineSession.code, title: ws?.title || 'Workshop', date: ws?.created_at ? new Date(ws.created_at).toLocaleDateString('de-CH') : '' },
+    participants: (parts || []).map(p => p.alias),
+    discSummary,
+    modules: byModule,
+    generatedAt: new Date().toLocaleString('de-CH')
+  };
+}
+
+function buildAIPrompt(data) {
+  const lines = [];
+  lines.push(`WORKSHOP-KONTEXT:`);
+  lines.push(`Titel: ${data.workshop.title}`);
+  lines.push(`Datum: ${data.workshop.date}`);
+  lines.push(`Teilnehmer (${data.participants.length}): ${data.participants.join(', ')}`);
+  lines.push('');
+
+  if (data.discSummary.length) {
+    lines.push('DISC-PROFILE DES TEAMS:');
+    data.discSummary.forEach(p => {
+      lines.push(`• ${p.alias}: Natürlich=${p.naturalType}, Rolle=${p.roleType}, Rollenstress=${p.stress}`);
+    });
+    const types = data.discSummary.map(p => p.naturalType);
+    const counts = ['D','I','S','C'].map(t => `${t}:${types.filter(x=>x===t).length}`).join(' · ');
+    lines.push(`Verteilung: ${counts}`);
+    lines.push('');
+  }
+
+  const moduleOrder = ['intro_question','kernbotschaften','johari_quiz','johari_reflexion',
+    'morgen_reflexion','raci','gfk','steckbrief_feiern','steckbrief_grenzen','steckbrief_zumuten','ritual'];
+
+  moduleOrder.forEach(mod => {
+    const answers = data.modules[mod];
+    if (!answers || !answers.length) return;
+    const q = MODULE_QUESTIONS[mod] || mod;
+    const label = MODULE_LABELS[mod] || mod;
+    lines.push(`━━━ ${label.toUpperCase()} ━━━`);
+    lines.push(`Frage: "${q}"`);
+    lines.push(`Antworten (${answers.length}):`);
+    answers.forEach(a => {
+      lines.push(`  [${a.alias}]: ${a.content}`);
+    });
+    lines.push('');
+  });
+
+  return lines.join('\n');
+}
+
+async function generateAISummary() {
+  const modal = document.getElementById('summaryModal');
+  const body = document.getElementById('summaryBody');
+  body.className = 'summary-body loading';
+  body.innerHTML = '⏳ Lade Workshop-Daten...';
+
+  try {
+    workshopDataCache = await collectWorkshopData();
+    document.getElementById('summaryCode').textContent = workshopDataCache.workshop.code;
+
+    body.innerHTML = '🤖 KI analysiert Workshop-Daten...';
+    const prompt = buildAIPrompt(workshopDataCache);
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        system: `Du bist ein erfahrener Teamcoach und Organisationspsychologe. Du analysierst die Ergebnisse eines Workshops zum Thema "Wahrheitsfähigkeit im Team" und erstellst eine prägnante, professionelle Zusammenfassung auf Deutsch.
+
+Struktur deiner Antwort:
+1. TEAM-PROFIL (DISC-Analyse, 3-4 Sätze)
+2. WICHTIGSTE ERKENNTNISSE (Was beschäftigt das Team wirklich? Max. 5 Punkte)
+3. MUSTER & THEMEN (Welche Themen tauchen in den Antworten wiederholt auf?)
+4. STÄRKEN DES TEAMS (Was feiern sie? Was läuft gut?)
+5. ENTWICKLUNGSFELDER (Was ist schwierig? Was möchten sie verändern?)
+6. EMPFEHLUNGEN (3 konkrete Follow-up Massnahmen)
+
+Schreib direkt, konkret und respektvoll. Keine Floskeln.`,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'API-Fehler: ' + response.status);
+    }
+
+    const result = await response.json();
+    const text = result.content?.[0]?.text || 'Keine Antwort erhalten.';
+
+    body.className = 'summary-body';
+    body.innerHTML = '';
+
+    // Sections formatiert darstellen
+    const sections = text.split(/\n(?=\d\.\s+[A-ZÄÖÜ])/);
+    sections.forEach(sec => {
+      if (!sec.trim()) return;
+      const div = document.createElement('div');
+      div.className = 'summary-section';
+      const lines = sec.trim().split('\n');
+      const title = lines[0].replace(/^\d\.\s+/, '');
+      const rest = lines.slice(1).join('\n').trim();
+      div.innerHTML = `<h3>${title}</h3><div>${rest.replace(/\n/g,'<br>')}</div>`;
+      body.appendChild(div);
+    });
+
+    if (!sections.length) {
+      body.textContent = text;
+    }
+
+  } catch(e) {
+    body.className = 'summary-body';
+    body.innerHTML = `<div style="color:var(--bad)">Fehler: ${e.message}</div>
+<div style="color:var(--muted);margin-top:12px;font-size:12px">
+Tipp: Nutze "JSON Export" um die Daten zu speichern und später zu verarbeiten.
+</div>`;
+  }
+}
+
+function exportWorkshopJSON() {
+  if (!workshopDataCache) { alert('Bitte zuerst KI-Zusammenfassung öffnen (Daten werden dann geladen).'); return; }
+  const json = JSON.stringify(workshopDataCache, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `workshop_${workshopDataCache.workshop.code}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function copyToClipboard() {
+  const body = document.getElementById('summaryBody');
+  const text = body.innerText || body.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✓ Kopiert!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+function openSummaryModal() {
+  if (!onlineSession?.workshopId) { alert('Kein aktiver Workshop.'); return; }
+  const modal = document.getElementById('summaryModal');
+  modal.style.display = 'flex';
+  document.getElementById('summaryCode').textContent = onlineSession.code || '?';
+  const body = document.getElementById('summaryBody');
+  body.className = 'summary-body loading';
+  body.innerHTML = 'Klicke "🤖 Neu generieren" um die KI-Zusammenfassung zu erstellen.\nOder "⬇ JSON Export" um alle Rohdaten herunterzuladen.';
+  // Auto-collect data
+  collectWorkshopData().then(data => {
+    workshopDataCache = data;
+    body.innerHTML = `✓ Daten geladen: ${data.participants.length} Teilnehmer · ${Object.keys(data.modules).length} Module mit Antworten\n\nBereit zur Analyse — klicke "🤖 Neu generieren"`;
+  }).catch(e => {
+    body.innerHTML = 'Fehler beim Laden: ' + e.message;
+  });
+}
+
+function closeSummaryModal() {
+  document.getElementById('summaryModal').style.display = 'none';
+}
+
+// ESC zum Schliessen
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeSummaryModal();
+});
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadStored();
 renderOffline();
@@ -1169,5 +1439,24 @@ if(onlineSession?.code&&onlineSession?.adminToken){
   startAutoRefresh();
 }
 </script>
+
+<!-- KI-ZUSAMMENFASSUNG MODAL -->
+<div class="summary-modal" id="summaryModal" style="display:none">
+  <div class="summary-box">
+    <div class="summary-head">
+      <h2>🤖 KI-Zusammenfassung · Workshop <span id="summaryCode">–</span></h2>
+      <button class="btn" onclick="closeSummaryModal()">✕ Schliessen</button>
+    </div>
+    <div class="summary-body" id="summaryBody">
+      <div>Lade Daten...</div>
+    </div>
+    <div class="summary-foot">
+      <button class="btn gold" onclick="generateAISummary()">🤖 Neu generieren</button>
+      <button class="btn" onclick="exportWorkshopJSON()">⬇ JSON Export</button>
+      <button class="btn" onclick="copyToClipboard()">📋 Kopieren</button>
+      <button class="btn danger" onclick="closeSummaryModal()">Schliessen</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
