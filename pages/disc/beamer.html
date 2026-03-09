@@ -909,6 +909,11 @@ async function loadFeedResponses(mod) {
 }
 
 function addFeedResponse(row) {
+  // MC-Votes fuer Fallbeispiele: sofort Balken aktualisieren
+  if (currentModule === 'johari_fallbeispiele' && row.module && row.module.startsWith('johari_fallbeispiele_')) {
+    pollFbVotes();
+    return;
+  }
   if (row.module !== currentModule) return;
   feedResponses.unshift(row);
   renderFeed();
