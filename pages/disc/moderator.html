@@ -927,11 +927,13 @@ function renderJohariFallbeispieleSection(){
 
 async function setFbScenario(idx){
   if(!onlineSession?.workshopId||!onlineSession?.adminToken) return;
+  const fb = FB_SCENARIOS_MOD[idx];
+  if(!fb) return;
   await sb.rpc('set_workshop_module',{
     p_workshop_id:onlineSession.workshopId,
     p_admin_token:onlineSession.adminToken,
     p_module:'johari_fallbeispiele',
-    p_module_data:{scenario:idx, reveal:false}
+    p_module_data:{scenario:idx, scenarioId:fb.id, reveal:false}
   });
   // Highlight active button
   for(let i=0;i<7;i++){

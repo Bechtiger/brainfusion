@@ -963,7 +963,10 @@ let fbScenarioId = null;
 
 function showFallbeispieleVote(data) {
   const idx = data?.scenario ?? 0;
-  const fb  = FB_SCENARIOS[Math.min(idx, FB_SCENARIOS.length - 1)];
+  // Zuerst per scenarioId suchen (robust auch bei alter Cache-Version)
+  let fb = data?.scenarioId
+    ? FB_SCENARIOS.find(s => s.id === data.scenarioId) || FB_SCENARIOS[Math.min(idx, FB_SCENARIOS.length - 1)]
+    : FB_SCENARIOS[Math.min(idx, FB_SCENARIOS.length - 1)];
 
   // Neues Szenario → Antwort zurücksetzen
   if (fb.id !== fbScenarioId) {
