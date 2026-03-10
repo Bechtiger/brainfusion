@@ -349,7 +349,9 @@ const MODULE_PHASES=[
     {id:'waiting',           icon:'🕐',name:'Bereit',          sub:'Warten'},
     {id:'intro_question',    icon:'💬',name:'Einstiegsfrage',  sub:'Live-Feed'},
     {id:'johari_erklaerung', icon:'🪟',name:'Johari Fenster',  sub:'Beamer-Grafik'},
-    {id:'johari_fallbeispiele', icon:'??',name:'Fallbeispiele',  sub:'MC-Voting'},
+    {id:'johari_fallbeispiele',          icon:'??',name:'Fallbeispiele',    sub:'MC-Voting'},
+    {id:'kognitive_verzerrungen_info',  icon:'🧠',name:'Verzerrungen',     sub:'Info/Beamer'},
+    {id:'verzerrungen_quiz',            icon:'🎯',name:'Verzerr. Quiz',    sub:'MC-Voting'},
     {id:'johari_reflexion',  icon:'🔍',name:'Johari Reflexion',sub:'Live-Feed'},
   ]},
   {label:'▸ Tag 1 – DISC & Kernbotschaften',modules:[
@@ -446,7 +448,7 @@ const MODULE_DETAILS={
     dataType:'johari_static'
   },
   johari_fallbeispiele:{
-    desc:'Johari Fallbeispiele — 4 interaktive Szenarien mit Multiple Choice Abstimmung.',
+    desc:'Johari Fallbeispiele — 7 interaktive Szenarien mit Multiple Choice Abstimmung.',
     hints:['Starte mit Szenario 1 — lies die Situation vor oder lass lesen',
       'Teilnehmer w&#228;hlen auf ihrem Handy die Antwort',
       'Klicke \"Aufl&#246;sen\" um die richtige Antwort aufzudecken',
@@ -454,6 +456,24 @@ const MODULE_DETAILS={
       '&#220;berleitung: \"Warum ist das so schwer — auch bei uns im Team?\"'],
     beamer:'Beamer zeigt Szenario-Text + Live-Abstimmungsbalken',
     dataType:'johari_fallbeispiele'
+  },
+  kognitive_verzerrungen_info:{
+    desc:'Kognitive Verzerrungen — Erkl&#228;rung der 4 wichtigsten Denkmuster.',
+    hints:['Erkl&#228;re jeden Bias mit dem Johari-Quadrant: "Das friert den blinden Fleck ein"',
+      'Nutze die Beispiele auf dem Beamer — frage: "Kennt ihr das aus eurem Alltag?"',
+      'Betone: Diese Muster passieren unbewusst — niemand ist b&#246;sartig',
+      '&#220;berleitung: "Gleich testen wir: Erkennt ihr die Verzerrung im Alltag?"'],
+    beamer:'Beamer zeigt 4 Karten mit Verzerrungen + Johari-Verbindung',
+    dataType:'verzerrungen_info'
+  },
+  verzerrungen_quiz:{
+    desc:'3 Fallbeispiele — Teilnehmer erkennen die kognitive Verzerrung dahinter.',
+    hints:['Lies das Szenario vor — lass Teilnehmer auf dem Handy w&#228;hlen',
+      'Warte bis gen&#252;gend Stimmen da sind, dann KI-Analyse starten',
+      'Frage: "Was h&#228;tte hier geholfen? Wie k&#246;nnen wir das im Team verhindern?"',
+      '&#220;berleitung: "Diese Muster passieren uns allen — was hilft dagegen?"'],
+    beamer:'Beamer zeigt Szenario-Text + Live-Abstimmungsbalken',
+    dataType:'verzerrungen_quiz'
   },
   johari_quiz:{
     desc:'Teilnehmer wählen Adjektive — Basis für das Johari-Fenster.',
@@ -648,7 +668,7 @@ async function activateModule(moduleId){
     buildModuleGrid();
     respondedSet.clear();
     liveResponses=[];
-    kiLastCount=-1; kiCurrentModule=''; fbKiResult=null; // KI-State zurücksetzen
+    kiLastCount=-1; kiCurrentModule=''; fbKiResult=null; vzKiResult=null; // KI-State reset
     renderModuleContent(moduleId);
   }catch(e){alert('Fehler: '+e.message)}
 }
@@ -705,6 +725,8 @@ function renderModuleContent(moduleId){
     case'raci':      dataHTML=renderRaciSection();break;
     case'johari_static':       dataHTML=renderJohariStaticSection();break;
     case'johari_fallbeispiele':dataHTML=renderJohariFallbeispieleSection();break;
+    case'verzerrungen_quiz':   dataHTML=renderVerzerrungsQuizSection();break;
+    case'verzerrungen_info':   dataHTML=renderVerzerrungsInfoSection();break;
     case'static':    dataHTML=renderStaticSection(detail);break;
   }
 
@@ -920,6 +942,170 @@ function renderJohariFallbeispieleSection(){
     <div style="display:grid;gap:8px;margin-bottom:20px">${btns}</div>
     ${fbKiPanel}
   </div>`;
+}
+
+    ${fbKiPanel}
+  </div>`;
+}
+
+// ─── KOGNITIVE VERZERRUNGEN ───────────────────────────────────────────────────
+const VZ_SCENARIOS_MOD = [
+  {
+    id:'vz1', label:'Szenario 1: Anna',
+    scenario:'Anna, Projektmanagerin, macht bei einem wichtigen Bericht einen Zahlenfehler. Ihr Vorgesetzter korrigiert ihn &#246;ffentlich im Meeting. Von da an werden ihr keine strategisch wichtigen Aufgaben mehr &#252;bertragen — obwohl der Fehler nie wieder passiert. Im Team heisst es: \"Anna ist halt nicht so zuverl&#228;ssig.\"',
+    question:'Welche kognitive Verzerrung pr&#228;gt hier das Bild von Anna?',
+    options:[
+      {id:'A', text:'Confirmation Bias',            correct:false},
+      {id:'B', text:'Self-serving Bias',             correct:false},
+      {id:'C', text:'Horn-Effekt',                   correct:true},
+      {id:'D', text:'Fundamental Attribution Error', correct:false},
+    ]
+  },
+  {
+    id:'vz2', label:'Szenario 2: Jonas',
+    scenario:'Jonas ist neu im Team und schl&#228;gt in seinem ersten Meeting eine Idee vor. Mehrere Kollegen l&#228;cheln kurz — die Idee passte nicht zum Kontext. Danach meldet Jonas sich nie mehr zu Wort. Das Team denkt: \"Jonas hat halt keine Ideen.\" Niemand fragt ihn je direkt nach seiner Meinung.',
+    question:'Was verhindert hier, dass Jonas\' Potenzial sichtbar wird?',
+    options:[
+      {id:'A', text:'Confirmation Bias',            correct:false},
+      {id:'B', text:'Fundamental Attribution Error',correct:true},
+      {id:'C', text:'Horn-Effekt',                  correct:false},
+      {id:'D', text:'Self-serving Bias',            correct:false},
+    ]
+  },
+  {
+    id:'vz3', label:'Szenario 3: Maria',
+    scenario:'Maria leitet ein Projekt. Es l&#228;uft gut — Maria erkl&#228;rt das intern mit ihrem F&#252;hrungsstil. Als ein anderes Projekt scheitert, sagt sie: \"Das Team hat nicht mitgezogen.\" Ihr Vorgesetzter beobachtet dieses Muster seit Monaten, spricht Maria aber nie darauf an.',
+    question:'Welche Verzerrung zeigt Marias Erkl&#228;rungsmuster?',
+    options:[
+      {id:'A', text:'Horn-Effekt',                  correct:false},
+      {id:'B', text:'Confirmation Bias',            correct:false},
+      {id:'C', text:'Fundamental Attribution Error',correct:false},
+      {id:'D', text:'Self-serving Bias',            correct:true},
+    ]
+  }
+];
+
+let vzKiResult = null;
+
+function renderVerzerrungsInfoSection(){
+  const cards=[
+    {icon:'🔍', name:'Confirmation Bias', johari:'Blinder Fleck bleibt gross', color:'rgba(74,144,217,.8)',
+     example:'"Er hat uns nie etwas Wertvolles beigetragen" — man &#252;bersieht alle Gegenbeweise.'},
+    {icon:'🏷', name:'Fundamental Attribution Error', johari:'Fassade w&#228;chst / Unbekannt bleibt', color:'rgba(244,162,97,.8)',
+     example:'"Der ist halt so" — das Verhalten wird der Person, nicht der Situation zugeschrieben.'},
+    {icon:'📌', name:'Horn-Effekt', johari:'Teufelskreis: Fassade + Blinder Fleck', color:'rgba(232,74,95,.8)',
+     example:'Ein Fehler stempelt jemanden dauerhaft ab — das Bild klebt, egal was danach kommt.'},
+    {icon:'🪞', name:'Self-serving Bias', johari:'Blinder Fleck wächst unbemerkt', color:'rgba(42,157,143,.8)',
+     example:'Erfolge = mein Verdienst. Misserfolge = Schuld der anderen.'},
+  ];
+  return `<div style="display:grid;gap:10px;">
+    ${cards.map(c=>`
+      <div style="border:1px solid ${c.color};border-radius:10px;padding:12px 16px;background:rgba(255,255,255,.03);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <span style="font-size:18px;">${c.icon}</span>
+          <span style="font-weight:700;color:${c.color};font-size:14px;">${c.name}</span>
+        </div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);margin-bottom:4px;">Johari-Effekt: ${c.johari}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);font-style:italic;">${c.example}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderVerzerrungsQuizSection(){
+  const labels = VZ_SCENARIOS_MOD.map(s=>s.label);
+  const btns = labels.map((l,i)=>`
+    <button onclick="setVzScenario(${i})" style="text-align:left;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.75);font-size:13px;cursor:pointer;transition:.2s;" id="vzBtn${i}">${i+1}. ${l}</button>
+  `).join('');
+  const vzKiPanel=`<div id="vzKiPanel" style="margin-top:14px;border-radius:12px;border:1px solid rgba(74,144,217,.35);background:rgba(74,144,217,.04);overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid rgba(74,144,217,.18);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">🤖</span>
+        <span style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(74,144,217,.9);">KI-Analyse · Abstimmungsergebnisse</span>
+        <span id="vzKiDot" style="width:7px;height:7px;border-radius:50%;background:rgba(74,144,217,.35);display:inline-block;"></span>
+      </div>
+      <button onclick="analyzeCurrentVzWithKI()" style="background:rgba(74,144,217,.15);border:1px solid rgba(74,144,217,.4);color:rgba(74,144,217,.95);font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer;">🔍 Szenario analysieren</button>
+    </div>
+    <div id="vzKiContent" style="padding:12px 14px;font-size:13px;color:rgba(180,200,230,.75);min-height:42px;">
+      ${vzKiResult || '<span style="color:rgba(100,130,180,.5);font-style:italic;">Szenario ausw&#228;hlen, dann "Analysieren" klicken</span>'}
+    </div>
+  </div>`;
+  return `<div>
+    <div style="margin-bottom:12px;font-size:12px;color:rgba(255,255,255,.45);letter-spacing:1px;text-transform:uppercase;">Szenario ausw&#228;hlen</div>
+    <div style="display:grid;gap:8px;margin-bottom:14px;">${btns}</div>
+    ${vzKiPanel}
+  </div>`;
+}
+
+async function setVzScenario(idx){
+  if(!onlineSession?.workshopId||!onlineSession?.adminToken) return;
+  const vz = VZ_SCENARIOS_MOD[idx];
+  if(!vz) return;
+  vzKiResult = null;
+  await sb.rpc('set_workshop_module',{
+    p_workshop_id:onlineSession.workshopId,
+    p_admin_token:onlineSession.adminToken,
+    p_module:'verzerrungen_quiz',
+    p_module_data:{scenario:idx, scenarioId:vz.id, reveal:false}
+  });
+  for(let i=0;i<3;i++){
+    const b=document.getElementById('vzBtn'+i);
+    if(b) b.style.background = i===idx ? 'rgba(74,144,217,.25)' : 'rgba(255,255,255,.04)';
+    if(b) b.style.borderColor = i===idx ? 'rgba(74,144,217,.6)'  : 'rgba(255,255,255,.12)';
+  }
+}
+
+async function analyzeCurrentVzWithKI(){
+  const dotEl = document.getElementById('vzKiDot');
+  const contentEl = document.getElementById('vzKiContent');
+  if(!contentEl) return;
+  if(!onlineSession?.workshopId){ contentEl.innerHTML='<span style="color:rgba(255,142,142,.7)">Kein aktiver Workshop</span>'; return; }
+  initSupabase();
+  const{data:ws}=await sb.from('workshops').select('module_data').eq('id',onlineSession.workshopId).single();
+  const scenarioIdx=ws?.module_data?.scenario??0;
+  const vz=VZ_SCENARIOS_MOD[scenarioIdx];
+  if(!vz) return;
+  if(dotEl){dotEl.style.background='#f7c46c';dotEl.style.animation='pulse 0.8s infinite';}
+  contentEl.innerHTML=`<span style="color:rgba(180,200,230,.65);font-style:italic;">🤖 Analysiere f&#252;r ${vz.label}…</span>`;
+  const{data:votes}=await sb.from('exercise_responses')
+    .select('content').eq('workshop_id',onlineSession.workshopId)
+    .eq('module','verzerrungen_quiz_'+vz.id).eq('response_type','mc');
+  if(!votes||votes.length===0){
+    contentEl.innerHTML='<span style="color:rgba(170,150,100,.5);font-style:italic;">Noch keine Abstimmungen f&#252;r dieses Szenario.</span>';
+    if(dotEl){dotEl.style.background='rgba(74,144,217,.35)';dotEl.style.animation='none';}
+    return;
+  }
+  const counts={A:0,B:0,C:0,D:0};
+  votes.forEach(r=>{if(counts[r.content]!==undefined)counts[r.content]++;});
+  const total=votes.length;
+  const correctOpt=vz.options.find(o=>o.correct);
+  const correctId=correctOpt?.id||'?';
+  const pctCorrect=total>0?Math.round((counts[correctId]||0)/total*100):0;
+  const voteDesc=vz.options.map(o=>`${o.id}: ${o.text} → ${counts[o.id]||0} Stimmen (${total>0?Math.round((counts[o.id]||0)/total*100):0}%)`).join('\n');
+  const systemPrompt=`Du bist ein erfahrener Workshop-Moderator. Analysiere das Abstimmungsergebnis eines Fallbeispiels zu kognitiven Verzerrungen und gib dem Moderator kompakte Hinweise.
+
+Antworte NUR mit JSON, ohne Markdown:
+{"ergebnis":"Kurze Zusammenfassung","deutung":"Was verrät die Verteilung?","diskussion":"Konkreter Diskussionsimpuls für den Moderator"}`;
+  const userPrompt=`Fallbeispiel: ${vz.label}\nSzenario: ${vz.scenario}\nFrage: ${vz.question}\nRichtige Antwort: ${correctId} (${correctOpt?.text||'?'})\n\nAbstimmung (${total} Stimmen):\n${voteDesc}\nKorrekte Antworten: ${counts[correctId]||0}/${total} (${pctCorrect}%)`;
+  try{
+    const res=await fetch(EDGE_BASE+'/ki-analyze',{method:'POST',headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},body:JSON.stringify({system:systemPrompt,userPrompt,maxTokens:400})});
+    if(!res.ok) throw new Error('API '+res.status);
+    const data=await res.json();
+    if(data.error) throw new Error(data.error);
+    const parsed=JSON.parse(data.text.replace(/```json|```/g,'').trim());
+    const rows=[];
+    if(parsed.ergebnis) rows.push(`<div style="margin-bottom:8px;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(201,168,76,.6);margin-bottom:4px;">📊 Ergebnis</div><div style="color:rgba(220,210,170,.9);font-size:13px;">${escapeHtml(parsed.ergebnis)}</div></div>`);
+    if(parsed.deutung)  rows.push(`<div style="margin-bottom:8px;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(74,144,217,.6);margin-bottom:4px;">🔍 Deutung</div><div style="color:rgba(180,200,230,.9);font-size:13px;">${escapeHtml(parsed.deutung)}</div></div>`);
+    if(parsed.diskussion) rows.push(`<div style="background:rgba(62,207,142,.07);border-left:2px solid rgba(62,207,142,.5);padding:6px 10px;border-radius:0 6px 6px 0;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(62,207,142,.65);margin-bottom:4px;">💡 Diskussions-Tipp</div><div style="color:rgba(220,240,230,.9);font-size:13px;line-height:1.5;">${escapeHtml(parsed.diskussion)}</div></div>`);
+    const html=rows.join('')+`<div style="margin-top:8px;font-size:10px;color:rgba(130,150,180,.4);text-align:right;">${total} Stimmen · ${vz.label}</div>`;
+    vzKiResult=html;
+    const el=document.getElementById('vzKiContent'); const dot=document.getElementById('vzKiDot');
+    if(el) el.innerHTML=html; if(dot){dot.style.background='#3ecf8e';dot.style.animation='none';}
+  }catch(e){
+    const errHtml=`<span style="color:rgba(255,142,142,.7);">⚠ Analyse fehlgeschlagen: ${escapeHtml(e.message)}</span>`;
+    vzKiResult=errHtml;
+    const el=document.getElementById('vzKiContent'); const dot=document.getElementById('vzKiDot');
+    if(el) el.innerHTML=errHtml; if(dot){dot.style.background='#ff8e8e';dot.style.animation='none';}
+  }
 }
 
 async function setFbScenario(idx){
@@ -1139,7 +1325,7 @@ async function refreshOnlineWorkshop(){
     // 3. Aktuelle Modul-Antworten laden (alle interaktiven Module)
     const INTERACTIVE=['intro_question','johari_quiz','johari_reflexion','kernbotschaften',
       'morgen_reflexion','gfk','raci','steckbrief_feiern','steckbrief_grenzen',
-      'steckbrief_zumuten','ritual'];
+      'steckbrief_zumuten','ritual','verzerrungen_quiz'];
     const mod=onlineSession?.currentModule;
     if(onlineSession?.workshopId&&mod&&INTERACTIVE.includes(mod)){
       const{data:ex,error:exErr}=await sb.from('exercise_responses')

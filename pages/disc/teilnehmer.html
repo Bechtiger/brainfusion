@@ -807,9 +807,12 @@ function handleModule(mod, data) {
     case 'johari_erklaerung':
     case 'kernbotschaften_info':
     case 'raci_info':
+    case 'kognitive_verzerrungen_info':
       showBeamerMode(mod, data); break;
     case 'johari_fallbeispiele':
       showFallbeispieleVote(data); break;
+    case 'verzerrungen_quiz':
+      showVerzerrungsVote(data); break;
     default:
       if (MODULE_DEFS[mod]) showModule(mod, data);
       else showWaiting(data);
@@ -830,7 +833,8 @@ const BEAMER_META = {
   disc_map:             { icon:'🗺',  title:'Schau auf den Beamer!', desc:'Dein Profil ist jetzt auf der Live-Map sichtbar.' },
   johari_erklaerung:    { icon:'🪟',  title:'Schau auf den Beamer!', desc:'Das Johari-Fenster wird erklärt. Folge dem Moderator.' },
   kernbotschaften_info: { icon:'⚡',  title:'Schau auf den Beamer!', desc:'Der Moderator zeigt vier wichtige Sätze.' },
-  raci_info:            { icon:'📋', title:'Schau auf den Beamer!', desc:'RACI-Einführung. Bitte aufmerksam folgen.' },
+  raci_info:                   { icon:'📋', title:'Schau auf den Beamer!', desc:'RACI-Einführung. Bitte aufmerksam folgen.' },
+  kognitive_verzerrungen_info: { icon:'🧠', title:'Schau auf den Beamer!', desc:'Der Moderator erklärt 4 kognitive Verzerrungen. Folge dem Beamer.' },
 };
 function showBeamerMode(mod, data) {
   const meta = BEAMER_META[mod] || { icon:'📽', title:'Schau auf den Beamer!', desc:'Folge dem Moderator.' };
@@ -957,6 +961,102 @@ const FB_SCENARIOS = [
     ]
   }
 ];
+
+// ─── KOGNITIVE VERZERRUNGEN SZENARIEN ────────────────────────────────────────
+const VZ_SCENARIOS = [
+  {
+    id:'vz1', label:'Szenario 1 von 3',
+    scenario:'Anna, Projektmanagerin, macht bei einem wichtigen Bericht einen Zahlenfehler. Ihr Vorgesetzter korrigiert ihn öffentlich im Meeting. Von da an werden ihr keine strategisch wichtigen Aufgaben mehr übertragen — obwohl der Fehler nie wieder passiert. Im Team heisst es: "Anna ist halt nicht so zuverlässig."',
+    question:'Welche kognitive Verzerrung prägt hier das Bild von Anna?',
+    options:[
+      {id:'A', text:'Confirmation Bias'},
+      {id:'B', text:'Self-serving Bias'},
+      {id:'C', text:'Horn-Effekt'},
+      {id:'D', text:'Fundamental Attribution Error'},
+    ]
+  },
+  {
+    id:'vz2', label:'Szenario 2 von 3',
+    scenario:'Jonas ist neu im Team und schlägt in seinem ersten Meeting eine Idee vor. Mehrere Kollegen lächeln kurz — die Idee passte nicht zum Kontext. Danach meldet Jonas sich nie mehr zu Wort. Das Team denkt: "Jonas hat halt keine Ideen." Niemand fragt ihn je direkt nach seiner Meinung.',
+    question:'Was verhindert hier, dass Jonas\' Potenzial sichtbar wird?',
+    options:[
+      {id:'A', text:'Confirmation Bias'},
+      {id:'B', text:'Fundamental Attribution Error'},
+      {id:'C', text:'Horn-Effekt'},
+      {id:'D', text:'Self-serving Bias'},
+    ]
+  },
+  {
+    id:'vz3', label:'Szenario 3 von 3',
+    scenario:'Maria leitet ein Projekt. Es läuft gut — Maria erklärt das intern mit ihrem Führungsstil. Als ein anderes Projekt scheitert, sagt sie: "Das Team hat nicht mitgezogen." Ihr Vorgesetzter beobachtet dieses Muster seit Monaten, spricht Maria aber nie darauf an.',
+    question:'Welche Verzerrung zeigt Marias Erklärungsmuster?',
+    options:[
+      {id:'A', text:'Horn-Effekt'},
+      {id:'B', text:'Confirmation Bias'},
+      {id:'C', text:'Fundamental Attribution Error'},
+      {id:'D', text:'Self-serving Bias'},
+    ]
+  }
+];
+
+let vzMyAnswer   = null;
+let vzScenarioId = null;
+
+function showVerzerrungsVote(data) {
+  const idx = data?.scenario ?? 0;
+  let vz = data?.scenarioId
+    ? VZ_SCENARIOS.find(s => s.id === data.scenarioId) || VZ_SCENARIOS[Math.min(idx, VZ_SCENARIOS.length - 1)]
+    : VZ_SCENARIOS[Math.min(idx, VZ_SCENARIOS.length - 1)];
+
+  if (vz.id !== vzScenarioId) {
+    vzMyAnswer   = null;
+    vzScenarioId = vz.id;
+  }
+
+  document.getElementById('moduleContent').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:16px;padding:4px 0;">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);">${vz.label}</div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:18px 20px;font-size:15px;line-height:1.65;color:rgba(255,255,255,.8);font-style:italic;">${vz.scenario}</div>
+      <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,.65);margin-bottom:4px;">${vz.question}</div>
+      <div style="display:flex;flex-direction:column;gap:10px;" id="vzOptions">
+        ${vz.options.map(opt => {
+          const selected = vzMyAnswer === opt.id;
+          const border   = selected ? '2px solid rgba(74,144,217,.8)' : '1px solid rgba(255,255,255,.12)';
+          const bg       = selected ? 'rgba(74,144,217,.2)' : 'rgba(255,255,255,.04)';
+          const disabled = vzMyAnswer !== null ? 'opacity:.7;pointer-events:none;' : 'cursor:pointer;';
+          return `<button onclick="submitVzAnswer('${opt.id}','${vz.id}')"
+            style="text-align:left;padding:14px 18px;border-radius:10px;border:${border};background:${bg};color:rgba(255,255,255,.85);font-size:14px;${disabled}transition:.25s;">
+            <span style="font-weight:700;margin-right:10px;">${opt.id}</span>${opt.text}
+          </button>`;
+        }).join('')}
+      </div>
+      ${vzMyAnswer
+        ? `<div style="text-align:center;padding:12px;border-radius:10px;background:rgba(74,144,217,.12);border:1px solid rgba(74,144,217,.3);font-size:14px;color:rgba(74,144,217,.95);">
+            &#10003; Antwort <strong>${vzMyAnswer}</strong> abgegeben — schau auf den Beamer!
+           </div>`
+        : ''}
+    </div>`;
+  show('sModule');
+}
+
+async function submitVzAnswer(choice, scenarioId) {
+  if (!session?.workshopId || !session?.participantId) return;
+  vzMyAnswer   = choice;
+  vzScenarioId = scenarioId;
+  try {
+    await fetch(`${EDGE}/submit-exercise`, {
+      method:'POST', headers:HDR,
+      body: JSON.stringify({
+        participantId: session.participantId,
+        joinToken:     session.joinToken,
+        module:        'verzerrungen_quiz_' + scenarioId,
+        responseType:  'mc',
+        content:       choice
+      })
+    });
+  } catch(e) { console.warn('submitVzAnswer:', e); }
+  showVerzerrungsVote({ scenario: VZ_SCENARIOS.findIndex(s => s.id === scenarioId), scenarioId });
+}
 
 let fbMyAnswer   = null;
 let fbScenarioId = null;

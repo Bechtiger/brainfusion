@@ -393,6 +393,54 @@ body:hover #fsBtn{ opacity:1; }
 
     </div>
   </div>
+
+<!-- == KOGNITIVE VERZERRUNGEN INFO SCREEN == -->
+<div class="screen" id="sVerzerrungen">
+  <div style="flex:1;display:flex;flex-direction:column;padding:40px 70px 32px;background:#060610;min-height:100vh;">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:18px;">🧠 KOGNITIVE VERZERRUNGEN — DIE UNSICHTBAREN MUSTER</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;flex:1;">
+      <div style="border:1px solid rgba(74,144,217,.5);border-radius:16px;padding:28px 32px;background:rgba(74,144,217,.06);display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:32px;">🔍</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:rgba(74,144,217,.95);">Confirmation Bias</div>
+        <div style="font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:4px;">Johari → Blinder Fleck bleibt gross</div>
+        <div style="font-size:17px;color:rgba(200,220,255,.75);line-height:1.6;">"Er hat uns nie etwas Wertvolles beigetragen" — wir übersehen konsequent alle Gegenbeweise.</div>
+      </div>
+      <div style="border:1px solid rgba(244,162,97,.5);border-radius:16px;padding:28px 32px;background:rgba(244,162,97,.06);display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:32px;">🏷</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:rgba(244,162,97,.95);">Fundamental Attribution Error</div>
+        <div style="font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:4px;">Johari → Fassade wächst / Unbekannt bleibt</div>
+        <div style="font-size:17px;color:rgba(255,230,200,.75);line-height:1.6;">"Der ist halt so" — das Verhalten wird der Person zugeschrieben, nicht der Situation.</div>
+      </div>
+      <div style="border:1px solid rgba(232,74,95,.5);border-radius:16px;padding:28px 32px;background:rgba(232,74,95,.06);display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:32px;">📌</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:rgba(232,74,95,.9);">Horn-Effekt</div>
+        <div style="font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:4px;">Johari → Teufelskreis: Fassade + Blinder Fleck</div>
+        <div style="font-size:17px;color:rgba(255,200,205,.75);line-height:1.6;">Ein Fehler stempelt jemanden dauerhaft ab. Das Bild klebt, egal was danach kommt.</div>
+      </div>
+      <div style="border:1px solid rgba(42,157,143,.5);border-radius:16px;padding:28px 32px;background:rgba(42,157,143,.06);display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:32px;">🪞</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:rgba(42,157,143,.95);">Self-serving Bias</div>
+        <div style="font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.3);margin-bottom:4px;">Johari → Blinder Fleck wächst unbemerkt</div>
+        <div style="font-size:17px;color:rgba(200,240,235,.75);line-height:1.6;">Erfolge = mein Verdienst. Misserfolge = Schuld der anderen. Immer.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- == VERZERRUNGEN QUIZ SCREEN == -->
+<div class="screen" id="sVzQuiz">
+  <div style="flex:1;display:flex;flex-direction:column;padding:36px 60px 28px;background:#060610;min-height:100vh;">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:20px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:rgba(74,144,217,.5);" id="vzScenarioLabel">SZENARIO 1 VON 3</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:15px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25);">KOGNITIVE VERZERRUNGEN</div>
+      <div style="margin-left:auto;font-size:14px;color:rgba(255,255,255,.35);" id="vzVoteCount">0 Stimmen</div>
+    </div>
+    <div style="font-size:19px;line-height:1.7;color:rgba(255,255,255,.75);font-style:italic;margin-bottom:24px;max-width:900px;padding:20px 28px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;" id="vzScenarioText"></div>
+    <div style="font-size:17px;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:18px;" id="vzQuestion"></div>
+    <div style="display:flex;flex-direction:column;gap:12px;" id="vzBars"></div>
+  </div>
+</div>
+
 <div class="screen" id="sClosing">
   <div class="closing-icon">🏆</div>
   <div class="closing-title">Herzlichen Dank!</div>
@@ -436,7 +484,9 @@ const MODULE_META = {
   kernbotschaften_info: { screen:'sGeneric', icon:'⚡', title:'Kernbotschaften',    desc:'Vier Sätze, die alles sagen.' },
   kernbotschaften:      { screen:'sFeed',    icon:'⚡', label:'Kernbotschaft',      title:'Welcher Satz trifft dich?',  question:'Wähle den Satz, der dich am meisten anspricht – und erkläre warum.' },
   johari_erklaerung:       { screen:'sJohari' },
-  johari_fallbeispiele:    { screen:'sFallbeispiele' },
+  johari_fallbeispiele:          { screen:'sFallbeispiele' },
+  kognitive_verzerrungen_info:   { screen:'sVerzerrungen' },
+  verzerrungen_quiz:             { screen:'sVzQuiz' },
   johari_quiz:          { screen:'sFeed',    icon:'🪟', label:'Johari-Fenster',     title:'Johari-Quiz',                question:'Abstimmung – mehrere Antworten möglich.' },
   johari_reflexion:     { screen:'sFeed',    icon:'🔍', label:'Johari-Reflexion',   title:'Mein blinder Fleck',         question:'Was denkst du: Wo liegt dein grösster blinder Fleck?' },
   morgen_reflexion:     { screen:'sFeed',    icon:'🌅', label:'Tag 2 – Einstieg',   title:'Was hat die Nacht gebracht?', question:'Ein Satz. Was nimmst du mit in den heutigen Tag?' },
@@ -489,7 +539,9 @@ async function handleModule(mod, data) {
     case 'sMap':      showMap(); break;
     case 'sFeed':     showFeed(meta, data); startFeedPolling(mod); break;
     case 'sJohari':       showJohari(data); break;
-    case 'sFallbeispiele': showFallbeispiele(data); break;
+    case 'sFallbeispiele':  showFallbeispiele(data); break;
+    case 'sVerzerrungen':   showVerzerrungen(); break;
+    case 'sVzQuiz':         showVzQuiz(data); break;
     case 'sGeneric':  showGeneric(meta, data); break;
     case 'sClosing':  showClosing(); break;
     default:          showGeneric(meta, data);
@@ -823,6 +875,130 @@ async function pollFbVotes() {
 }
 
 /* ══════════════════════════════════════════════
+   KOGNITIVE VERZERRUNGEN INFO
+══════════════════════════════════════════════ */
+function showVerzerrungen() {
+  show('sVerzerrungen');
+}
+
+/* ══════════════════════════════════════════════
+   VERZERRUNGEN QUIZ
+══════════════════════════════════════════════ */
+const VZ_SCENARIOS_BEAMER = [
+  {
+    id:'vz1', label:'Szenario 1 von 3',
+    scenario:'Anna, Projektmanagerin, macht bei einem wichtigen Bericht einen Zahlenfehler. Ihr Vorgesetzter korrigiert ihn öffentlich im Meeting. Von da an werden ihr keine strategisch wichtigen Aufgaben mehr übertragen — obwohl der Fehler nie wieder passiert. Im Team heisst es: "Anna ist halt nicht so zuverlässig."',
+    question:'Welche kognitive Verzerrung prägt hier das Bild von Anna?',
+    options:[
+      {id:'A', text:'Confirmation Bias',            color:'rgba(74,144,217,.7)',  correct:false},
+      {id:'B', text:'Self-serving Bias',             color:'rgba(42,157,143,.7)', correct:false},
+      {id:'C', text:'Horn-Effekt',                   color:'rgba(232,74,95,.75)', correct:true},
+      {id:'D', text:'Fundamental Attribution Error', color:'rgba(244,162,97,.7)', correct:false},
+    ]
+  },
+  {
+    id:'vz2', label:'Szenario 2 von 3',
+    scenario:'Jonas ist neu im Team und schlägt in seinem ersten Meeting eine Idee vor. Mehrere Kollegen lächeln kurz — die Idee passte nicht zum Kontext. Danach meldet Jonas sich nie mehr zu Wort. Das Team denkt: "Jonas hat halt keine Ideen." Niemand fragt ihn je direkt nach seiner Meinung.',
+    question:'Was verhindert hier, dass Jonas\' Potenzial sichtbar wird?',
+    options:[
+      {id:'A', text:'Confirmation Bias',            color:'rgba(74,144,217,.7)',  correct:false},
+      {id:'B', text:'Fundamental Attribution Error',color:'rgba(244,162,97,.7)', correct:true},
+      {id:'C', text:'Horn-Effekt',                   color:'rgba(232,74,95,.75)', correct:false},
+      {id:'D', text:'Self-serving Bias',             color:'rgba(42,157,143,.7)', correct:false},
+    ]
+  },
+  {
+    id:'vz3', label:'Szenario 3 von 3',
+    scenario:'Maria leitet ein Projekt. Es läuft gut — Maria erklärt das intern mit ihrem Führungsstil. Als ein anderes Projekt scheitert, sagt sie: "Das Team hat nicht mitgezogen." Ihr Vorgesetzter beobachtet dieses Muster seit Monaten, spricht Maria aber nie darauf an.',
+    question:'Welche Verzerrung zeigt Marias Erklärungsmuster?',
+    options:[
+      {id:'A', text:'Horn-Effekt',                  color:'rgba(232,74,95,.75)', correct:false},
+      {id:'B', text:'Confirmation Bias',            color:'rgba(74,144,217,.7)', correct:false},
+      {id:'C', text:'Fundamental Attribution Error',color:'rgba(244,162,97,.7)', correct:false},
+      {id:'D', text:'Self-serving Bias',            color:'rgba(42,157,143,.7)', correct:true},
+    ]
+  }
+];
+
+let vzCurrentIdx  = 0;
+let vzPollTimer   = null;
+let vzVotes       = {};
+let vzRevealed    = false;
+
+function showVzQuiz(data) {
+  vzCurrentIdx = data?.scenario ?? 0;
+  vzRevealed   = data?.reveal  ?? false;
+  vzVotes      = {};
+  show('sVzQuiz');
+  renderVzScenario();
+  startVzPolling();
+}
+
+function renderVzScenario() {
+  const vz = VZ_SCENARIOS_BEAMER[vzCurrentIdx];
+  if (!vz) return;
+  document.getElementById('vzScenarioLabel').textContent = vz.label.toUpperCase();
+  document.getElementById('vzScenarioText').textContent  = vz.scenario;
+  document.getElementById('vzQuestion').textContent      = vz.question;
+  document.getElementById('vzVoteCount').textContent     = '0 Stimmen';
+  const barsEl = document.getElementById('vzBars');
+  barsEl.innerHTML = vz.options.map(opt => `
+    <div style="display:grid;grid-template-columns:44px 1fr 64px;align-items:center;gap:12px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:${opt.color};text-align:center;">${opt.id}</div>
+      <div style="position:relative;height:52px;">
+        <div id="vz_bar_${opt.id}" style="position:absolute;inset:0;border-radius:8px;background:${opt.color};width:0%;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;padding:0 16px;font-size:16px;color:rgba(255,255,255,.85);z-index:1;">${opt.text}</div>
+      </div>
+      <div id="vz_pct_${opt.id}" style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:rgba(255,255,255,.5);text-align:right;">—</div>
+    </div>
+  `).join('');
+}
+
+function updateVzBars() {
+  const vz = VZ_SCENARIOS_BEAMER[vzCurrentIdx];
+  if (!vz) return;
+  const total = Object.values(vzVotes).reduce((s, n) => s + n, 0);
+  document.getElementById('vzVoteCount').textContent = total === 1 ? '1 Stimme' : `${total} Stimmen`;
+  vz.options.forEach(opt => {
+    const count = vzVotes[opt.id] || 0;
+    const pct   = total > 0 ? Math.round((count / total) * 100) : 0;
+    const barEl = document.getElementById(`vz_bar_${opt.id}`);
+    const pctEl = document.getElementById(`vz_pct_${opt.id}`);
+    if (barEl) barEl.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = total > 0 ? `${pct}%` : '—';
+    if (vzRevealed && barEl) {
+      barEl.style.filter = opt.correct ? 'brightness(1.4)' : 'brightness(0.4)';
+      if (opt.correct) barEl.style.boxShadow = `0 0 20px ${opt.color}`;
+    }
+  });
+}
+
+async function startVzPolling() {
+  if (vzPollTimer) clearInterval(vzPollTimer);
+  await pollVzVotes();
+  vzPollTimer = setInterval(pollVzVotes, 2500);
+}
+
+async function pollVzVotes() {
+  if (!sb || !session?.workshopId || currentModule !== 'verzerrungen_quiz') {
+    clearInterval(vzPollTimer); return;
+  }
+  const vz = VZ_SCENARIOS_BEAMER[vzCurrentIdx];
+  if (!vz) return;
+  try {
+    const { data } = await sb.from('exercise_responses').select('content')
+      .eq('workshop_id', session.workshopId)
+      .eq('module', 'verzerrungen_quiz_' + vz.id)
+      .eq('response_type', 'mc');
+    if (!data) return;
+    const counts = {};
+    data.forEach(r => { counts[r.content] = (counts[r.content] || 0) + 1; });
+    vzVotes = counts;
+    updateVzBars();
+  } catch(e) { console.warn('vzPoll:', e.message); }
+}
+
+/* ══════════════════════════════════════════════
    JOHARI WINDOW
 ══════════════════════════════════════════════ */
 let johariTransformed = false;
@@ -947,8 +1123,10 @@ async function loadFeedResponses(mod) {
 function addFeedResponse(row) {
   // MC-Votes fuer Fallbeispiele: sofort Balken aktualisieren
   if (currentModule === 'johari_fallbeispiele' && row.module && row.module.startsWith('johari_fallbeispiele_')) {
-    pollFbVotes();
-    return;
+    pollFbVotes(); return;
+  }
+  if (currentModule === 'verzerrungen_quiz' && row.module && row.module.startsWith('verzerrungen_quiz_')) {
+    pollVzVotes(); return;
   }
   if (row.module !== currentModule) return;
   feedResponses.unshift(row);
@@ -1061,6 +1239,15 @@ function initRealtime() {
             renderFallbeispiel();
           }
           if (data.reveal !== undefined) { fbRevealed = data.reveal; updateFbBars(); }
+          return;
+        }
+        // Verzerrungen Quiz: Szenario-Wechsel live
+        if (mod === 'verzerrungen_quiz' && currentModule === 'verzerrungen_quiz') {
+          if (data.scenario !== undefined && data.scenario !== vzCurrentIdx) {
+            vzCurrentIdx = data.scenario; vzVotes = {}; vzRevealed = false;
+            renderVzScenario();
+          }
+          if (data.reveal !== undefined) { vzRevealed = data.reveal; updateVzBars(); }
           return;
         }
         handleModule(mod, data);
