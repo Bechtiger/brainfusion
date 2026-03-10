@@ -339,6 +339,7 @@ let respondedSet=new Set(); // aliases who responded to current module
 let liveResponses=[];      // exercise_responses for current module
 let kiDebounceTimer=null;  // Debounce-Timer für KI-Analyse
 let kiLastCount=-1;        // letzte analysierte Antwort-Anzahl
+let fbKiResult=null;       // letztes KI-Ergebnis für Fallbeispiele (survives re-render)
 let kiCurrentModule='';    // Modul bei letzter Analyse
 const state={anonymous:false,showRole:true,showLines:true};
 
@@ -647,7 +648,7 @@ async function activateModule(moduleId){
     buildModuleGrid();
     respondedSet.clear();
     liveResponses=[];
-    kiLastCount=-1; kiCurrentModule=''; // KI-State zurücksetzen
+    kiLastCount=-1; kiCurrentModule=''; fbKiResult=null; // KI-State zurücksetzen
     renderModuleContent(moduleId);
   }catch(e){alert('Fehler: '+e.message)}
 }
@@ -911,7 +912,7 @@ function renderJohariFallbeispieleSection(){
       <button onclick="analyzeCurrentFbWithKI()" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.35);color:rgba(201,168,76,.9);font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer;">🔍 Szenario analysieren</button>
     </div>
     <div id="fbKiContent" style="padding:12px 14px;font-size:13px;color:rgba(220,210,170,.75);min-height:42px;">
-      <span style="color:rgba(170,150,100,.5);font-style:italic;">Szenario auswählen, dann "Analysieren" klicken</span>
+      ${fbKiResult || '<span style="color:rgba(170,150,100,.5);font-style:italic;">Szenario auswählen, dann "Analysieren" klicken</span>'}
     </div>
   </div>`;
   return `<div>
@@ -1040,11 +1041,20 @@ Falsche Antworten: ${wrongCount}/${total}`;
     if(parsed.ergebnis) rows.push(`<div style="margin-bottom:8px;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(201,168,76,.6);margin-bottom:4px;">📊 Ergebnis</div><div style="color:rgba(220,210,170,.9);font-size:13px;">${escapeHtml(parsed.ergebnis)}</div></div>`);
     if(parsed.deutung) rows.push(`<div style="margin-bottom:8px;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(74,144,217,.6);margin-bottom:4px;">🔍 Deutung</div><div style="color:rgba(180,200,230,.9);font-size:13px;">${escapeHtml(parsed.deutung)}</div></div>`);
     if(parsed.diskussion) rows.push(`<div style="background:rgba(62,207,142,.07);border-left:2px solid rgba(62,207,142,.5);padding:6px 10px;border-radius:0 6px 6px 0;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(62,207,142,.65);margin-bottom:4px;">💡 Diskussions-Tipp</div><div style="color:rgba(220,240,230,.9);font-size:13px;line-height:1.5;">${escapeHtml(parsed.diskussion)}</div></div>`);
-    contentEl.innerHTML = rows.join('') + `<div style="margin-top:8px;font-size:10px;color:rgba(130,150,180,.4);text-align:right;">${total} Stimmen · ${fb.label}</div>`;
-    if(dotEl){ dotEl.style.background='#3ecf8e'; dotEl.style.animation='none'; }
+    const html = rows.join('') + `<div style="margin-top:8px;font-size:10px;color:rgba(130,150,180,.4);text-align:right;">${total} Stimmen · ${fb.label}</div>`;
+    fbKiResult = html; // Ergebnis speichern → überlebt Re-Renders
+    // Immer frisch aus DOM holen (Panel könnte zwischenzeitlich neu gerendert worden sein)
+    const el = document.getElementById('fbKiContent');
+    const dot = document.getElementById('fbKiDot');
+    if(el) el.innerHTML = html;
+    if(dot){ dot.style.background='#3ecf8e'; dot.style.animation='none'; }
   }catch(e){
-    contentEl.innerHTML=`<span style="color:rgba(255,142,142,.7);">⚠ Analyse fehlgeschlagen: ${escapeHtml(e.message)}</span>`;
-    if(dotEl){ dotEl.style.background='#ff8e8e'; dotEl.style.animation='none'; }
+    const errHtml = `<span style="color:rgba(255,142,142,.7);">⚠ Analyse fehlgeschlagen: ${escapeHtml(e.message)}</span>`;
+    fbKiResult = errHtml;
+    const el = document.getElementById('fbKiContent');
+    const dot = document.getElementById('fbKiDot');
+    if(el) el.innerHTML = errHtml;
+    if(dot){ dot.style.background='#ff8e8e'; dot.style.animation='none'; }
   }
 }
 
@@ -1172,6 +1182,7 @@ async function refreshOnlineWorkshop(){
     const feedCardsEl=document.getElementById('liveFeedCards');
     const raciDataEl=document.getElementById('raciDataWrap');
     const johariBarEl=document.getElementById('johariBarWrap');
+    const fbKiPanelEl=document.getElementById('fbKiPanel');
     if(feedCardsEl&&MODULE_DETAILS[curMod]?.dataType==='live_feed'){
       // Nur Feed-Karten updaten — KI-Panel bleibt stehen
       feedCardsEl.innerHTML=renderFeedCardsHTML();
@@ -1183,6 +1194,9 @@ async function refreshOnlineWorkshop(){
       johariBarEl.innerHTML=renderJohariBarHTML();
       const jFeed=document.getElementById('liveFeedCards');
       if(jFeed)jFeed.innerHTML=renderFeedCardsHTML();
+    }else if(fbKiPanelEl&&curMod==='johari_fallbeispiele'){
+      // Fallbeispiele: KI-Panel ist da → NICHT neu rendern, Panel bleibt stehen
+      // (Beamer zeigt die Balken, Moderator braucht nur die Buttons + KI)
     }else{
       renderModuleContent(curMod);
     }
