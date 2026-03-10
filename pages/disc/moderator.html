@@ -934,7 +934,7 @@ async function setFbScenario(idx){
     p_module_data:{scenario:idx, reveal:false}
   });
   // Highlight active button
-  for(let i=0;i<4;i++){
+  for(let i=0;i<7;i++){
     const b = document.getElementById('fbBtn'+i);
     if(b) b.style.background = i===idx ? 'rgba(42,157,143,.25)' : 'rgba(255,255,255,.04)';
   }
