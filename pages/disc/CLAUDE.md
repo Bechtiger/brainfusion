@@ -1,7 +1,7 @@
 # Wahrheitsfähigkeit im Team - Workshop-Plattform
 > Projektgedächtnis für Claude Code / Claude Chat Sessions
-> Letzte Aktualisierung: 2026-03-09
-> Status: Phase 2 vollständig abgeschlossen ✅ | Phase 3 als nächstes
+> Letzte Aktualisierung: 2026-03-10
+> Status: Phase 2 vollständig abgeschlossen ✅ + Kognitive Verzerrungen + GFK-Module hinzugefügt ✅ | Phase 3 als nächstes
 
 ---
 
@@ -64,7 +64,7 @@ E:\Programme\Homepage Brainfusion\
 
 > ⚠️ PowerShell: `&&` funktioniert NICHT → immer `;` verwenden
 > ⚠️ Git liegt unter: `C:\Program Files\Git\cmd\git.exe`
-> ⚠️ Batch-Dateien nummeriert: E:\gitpush1.bat bis E:\gitpush15.bat bereits verwendet → nächste: E:\gitpush16.bat
+> ⚠️ Batch-Dateien nummeriert: E:\gitpush1.bat bis E:\gitpush25.bat bereits verwendet → **nächste: E:\gitpush26.bat**
 
 
 ---
@@ -187,13 +187,15 @@ set_workshop_module(p_workshop_id uuid, p_admin_token uuid, p_module text, p_mod
 
 ---
 
-## 9. Modul-System - vollständige Liste (Phase 2, Stand 09.03.2026)
+## 9. Modul-System - vollständige Liste (Stand 10.03.2026)
 
 ### MODULE_PHASES (Moderator-Gruppierung)
 
 **Tag 1 – Einstieg & Johari:**
 ```
-🕐 waiting | 💬 intro_question | 🪟 johari_erklaerung | 🎯 johari_fallbeispiele | 🔍 johari_reflexion
+🕐 waiting | 💬 intro_question | 🪟 johari_erklaerung | 🎯 johari_fallbeispiele
+🧠 kognitive_verzerrungen_info | 🎯 verzerrungen_quiz | 🔍 johari_reflexion
+💪 mut_info | 🕊 gfk_info | 🎯 gfk_fallbeispiel | 🕊 gfk
 ```
 
 **Tag 1 – DISC & Kernbotschaften:**
@@ -203,7 +205,7 @@ set_workshop_module(p_workshop_id uuid, p_admin_token uuid, p_module text, p_mod
 
 **Tag 2 – Vertiefen:**
 ```
-🌅 morgen_reflexion | 📋 raci_info | 📋 raci | 🕊 gfk
+🌅 morgen_reflexion | 📋 raci_info | 📋 raci
 ```
 
 **Tag 2 – Abschluss:**
@@ -211,16 +213,21 @@ set_workshop_module(p_workshop_id uuid, p_admin_token uuid, p_module text, p_mod
 🎉 steckbrief_feiern | 🚫 steckbrief_grenzen | 💪 steckbrief_zumuten | ✍️ ritual | 🏆 closing
 ```
 
-
 ### Modul-Detailtabelle
 
 | ID | Icon | Name | TN-Typ | Beamer-Typ |
 |---|---|---|---|---|
 | `waiting` | 🕐 | Bereit | Warte-Screen | Code + URL anzeigen |
 | `intro_question` | 💬 | Einstiegsfrage | Freetext + Anonym | Live-Feed |
-| `johari_erklaerung` | 🪟 | Johari Fenster | "Schau auf Beamer" | Animiertes Johari-Fenster mit 4 Quadranten + Arena-Transformation |
+| `johari_erklaerung` | 🪟 | Johari Fenster | "Schau auf Beamer" | Animiertes Johari-Fenster |
 | `johari_fallbeispiele` | 🎯 | Fallbeispiele | MC-Voting (A/B/C/D) | Live-Balken + Auflösung |
+| `kognitive_verzerrungen_info` | 🧠 | Verzerrungen Info | "Schau auf Beamer" | 4 Karten (Confirmation Bias, FAE, Horn-Effekt, Self-serving Bias) |
+| `verzerrungen_quiz` | 🎯 | Verzerr. Quiz | MC-Voting (A/B/C/D) | Live-Balken + KI-Analyse |
 | `johari_reflexion` | 🔍 | Johari Reflexion | Freetext + Anonym | Live-Feed |
+| `mut_info` | 💪 | Mut & Offenheit | "Schau auf Beamer" | 3 Karten: Energie-Paradoxie, Johari-Brücke, Mut-Definition |
+| `gfk_info` | 🕊 | GFK Einführung | "Schau auf Beamer" | 2×2 Grid: 4 GFK-Schritte mit Farben + Beispielsätzen |
+| `gfk_fallbeispiel` | 🎯 | GFK Fallbeispiel | MC-Voting (A/B/C/D) | Live-Balken + KI-Analyse |
+| `gfk` | 🕊 | GFK | Freetext + Anonym | Live-Feed |
 | `disc_test` | 📊 | DISC-Test | 28×2 Fragen | Fortschrittsbalken |
 | `disc_map` | 🗺 | DISC Live-Map | "Schau auf Beamer" | Quadranten-Map vollbild |
 | `kernbotschaften_info` | ⚡ | Kernbtsch. Info | "Schau auf Beamer" | Statisch (4 Sätze) |
@@ -228,7 +235,6 @@ set_workshop_module(p_workshop_id uuid, p_admin_token uuid, p_module text, p_mod
 | `morgen_reflexion` | 🌅 | Morgen-Check | Freetext | Live-Feed |
 | `raci_info` | 📋 | RACI Info | "Schau auf Beamer" | Statisch |
 | `raci` | 📋 | RACI | Multi-Select | Live-Feed |
-| `gfk` | 🕊 | GFK | Freetext | Live-Feed |
 | `steckbrief_feiern` | 🎉 | Steckbrief Feiern | Freetext | Live-Feed |
 | `steckbrief_grenzen` | 🚫 | Steckbrief Grenzen | Freetext | Live-Feed |
 | `steckbrief_zumuten` | 💪 | Steckbrief Zumuten | Freetext | Live-Feed |
@@ -405,7 +411,126 @@ MODULE_META = {
 
 17. **🚨 NEU: HDR ist Pflicht bei allen fetch()-Calls**: Jeder `fetch()` zu einer Edge Function MUSS `headers: HDR` verwenden — nicht `{'Content-Type':'application/json'}`. HDR enthält den Authorization Bearer Token (Anon Key). Ohne HDR → HTTP 401 → Daten kommen nie in DB an.
 
-18. **MODULE_PHASES vs MODULE_DETAILS**: Ein Modul kann in `MODULE_DETAILS` definiert sein aber in `MODULE_PHASES` fehlen → Button ist unsichtbar. Beide Arrays immer synchron halten!
+19. **🚨 NEU: `mut_info` braucht eigenen Screen `sMutInfo`** — `sGeneric` zeigt nur ein einfaches Text-Overlay, keine eigene gestaltete Karten-Ansicht. Alle inhaltlichen Beamer-Module (Verzerrungen, GFK, Mut) brauchen dedizierte Screens.
+
+20. **🚨 NEU: Realtime-Handler im Beamer für jedes neue Quiz-Modul** — Bei `verzerrungen_quiz` und `gfk_fallbeispiel` muss der Realtime-Handler in `beamer.html` explizit eingetragen werden, damit Szenario-Wechsel live funktionieren (ohne Re-`handleModule`-Aufruf).
+
+21. **🚨 NEU: Smart-Update-Schutz** — In `refreshOnlineWorkshop()` müssen alle Quiz-Module mit KI-Panel einen Guard haben: `if (document.getElementById('xyzKiPanel') && curMod === 'xyz') { return; }` — sonst wird das KI-Panel bei jedem Auto-Refresh gelöscht.
+
+---
+
+## 12b. Session-Dokumentation 10.03.2026 — Was wurde gebaut
+
+### Neue Module (alle 3 Dateien)
+
+**Kontext:** Der pädagogische Bogen wurde erweitert von "Was schiefläuft" → "Was es braucht" → "Wie wir es tun (GFK)".
+
+#### Modul `kognitive_verzerrungen_info` + `verzerrungen_quiz`
+*(War bereits in der Session vom 09.03 entstanden, hier zur Vollständigkeit)*
+
+4 Verzerrungen als Beamer-Karten:
+- **Confirmation Bias** — Blinder Fleck bleibt gross (Farbe: rgba(74,144,217))
+- **Fundamental Attribution Error** — Fassade/Unbekannt wächst (Farbe: rgba(244,162,97))
+- **Horn-Effekt** — Teufelskreis Fassade+Blinder Fleck (Farbe: rgba(232,74,95))
+- **Self-serving Bias** — Blinder Fleck wächst unbemerkt (Farbe: rgba(42,157,143))
+
+3 Quiz-Szenarien: Anna (Horn-Effekt, korrekt: C), Jonas (FAE, korrekt: B), Maria (Self-serving, korrekt: D)
+
+---
+
+#### Modul `mut_info` 💪 — Beamer-Screen `sMutInfo`
+3 grosse Karten (volle Breite):
+1. ⚡ **Energie-Paradoxie** (gelb): Verbergen kostet mehr als Ansprechen
+2. 🪟 **Mut öffnet das Johari-Fenster** (grün): Feedback geben UND empfangen
+3. 💡 **Mut ≠ Mutlosigkeit** (blau): Trotzdem handeln, offen bleiben
+
+**Technisch:** Eigener Screen `sMutInfo` (nicht `sGeneric`!). Funktion `showMutInfo()` in beamer.html.
+
+---
+
+#### Modul `gfk_info` 🕊 — Beamer-Screen `sGfkInfo`
+2×2 Grid, 4 farbige Karten für die GFK-Schritte:
+
+| Schritt | Farbe | Beispielsatz |
+|---|---|---|
+| 1 🔭 Beobachtung | rgba(74,144,217) | "Als ich sah, dass du das Meeting verlassen hast..." |
+| 2 💙 Gefühl | rgba(232,74,95) | "...fühlte ich mich übergangen..." |
+| 3 🌱 Bedürfnis | rgba(42,157,143) | "...weil mir Verlässlichkeit wichtig ist." |
+| 4 🤝 Bitte | rgba(201,168,76) | "Kannst du mich beim nächsten Mal kurz informieren?" |
+
+**Technisch:** Screen `sGfkInfo`, Funktion `showGfkInfo()`.
+
+---
+
+#### Modul `gfk_fallbeispiel` 🎯 — MC-Voting + KI-Analyse
+
+**2 Szenarien:**
+
+| ID | Person | Situation | Korrekt | Thema |
+|---|---|---|---|---|
+| gfk1 | Tom | Kommt regelmässig 5-10 Min zu spät | B | GFK erkennen (Beobachtung+Gefühl+Bedürfnis+Bitte) |
+| gfk2 | Sarah & Jan | Entscheidung ohne Team, Jan reagiert | D | Fehlenden GFK-Schritt identifizieren (Bitte fehlt) |
+
+**KI-Analyse:** Identische Mechanik wie `johari_fallbeispiele` und `verzerrungen_quiz`:
+- State: `gfkKiResult` (survives re-render)
+- Funktion: `analyzeCurrentGfkWithKI()` in moderator.html
+- JSON-Rückgabe: `{ergebnis, deutung, diskussion}`
+
+**Technisch alle 3 Dateien:**
+- `moderator.html`: `GFK_SCENARIOS_MOD`, `renderGfkFallbeispielSection()`, `setGfkScenario()`, `analyzeCurrentGfkWithKI()`
+- `teilnehmer.html`: `GFK_SCENARIOS`, `showGfkVote()`, `submitGfkAnswer()`
+- `beamer.html`: `GFK_SCENARIOS_BEAMER`, `showGfkQuiz()`, `renderGfkScenario()`, `updateGfkBars()`, `startGfkPolling()`, `pollGfkVotes()` + Realtime-Handler
+
+---
+
+### Modul-Reihenfolge (korrekte Platzierung)
+
+Die neuen Module kommen in **Tag 1 – Einstieg & Johari**, direkt **nach `johari_reflexion`**:
+
+```
+johari_reflexion → mut_info → gfk_info → gfk_fallbeispiel → gfk
+```
+
+*(Nicht in Tag 2 — das war der initiale Bug, wurde korrigiert in gitpush25)*
+
+---
+
+### Bugfixes dieser Session
+
+| Commit | Fix |
+|---|---|
+| gitpush23 (65c6820) | Feature: Alle 4 neuen Module deployed |
+| gitpush24 (8144857) | Syntax-Fehler: doppeltes closing `}` in moderator.html |
+| gitpush25 (a319834) | Reihenfolge-Fix + sMutInfo Screen + GFK Realtime-Handler |
+
+---
+
+### KI-Panel Muster (Pattern für alle MC-Quiz-Module)
+
+Alle Quiz-Module (johari_fallbeispiele, verzerrungen_quiz, gfk_fallbeispiel) folgen demselben Muster:
+
+```javascript
+let xyzKiResult = null;  // State survives re-render
+
+function renderXyzSection() {
+  // Zeigt gfkKiResult beim Rendern direkt an (nicht leer!)
+  const kiPanel = `...${xyzKiResult || '<span>Placeholder</span>'}...`;
+  return `<div>...${kiPanel}</div>`;
+}
+
+async function analyzeCurrentXyzWithKI() {
+  // Nach API-Call: IMMER neu getElementById() — nie gecachte Referenz!
+  const el = document.getElementById('xyzKiContent');
+  if (el) el.innerHTML = html;
+}
+```
+
+**Smart-Update in `refreshOnlineWorkshop()`:** Verhindert Panel-Rerender während KI läuft:
+```javascript
+if (document.getElementById('gfkKiPanel') && curMod === 'gfk_fallbeispiel') {
+  // kein Re-Render
+} else { ... }
+```
 
 ---
 
@@ -448,16 +573,19 @@ Das Dashboard zeigt permanent die DISC-Auswertung. Für alle anderen Module fehl
 ## 15. Git-History (wichtige Commits)
 
 ```
-528d5d5  Fix: submitFbAnswer nutzt HDR+EDGE statt fehlerhafter EDGE_BASE Variable  ← LETZTER STAND
+a319834  Fix: Module-Reihenfolge nach johari_reflexion + sMutInfo Beamer-Screen + GFK Realtime-Handler  ← LETZTER STAND
+8144857  Fix: Syntax-Fehler doppeltes closing-Fragment moderator.html (GFK)
+65c6820  Feature: Mut-Info + GFK-Info + GFK-Fallbeispiel Module (2 Szenarien, MC-Voting, KI-Analyse)
+e09d6fe  Fix: Syntax-Fehler doppeltes closing-Fragment (Verzerrungen)
+23c6a60  Feature: Kognitive Verzerrungen - Info-Block + Quiz mit KI-Analyse
+400cff9  Remove: Aufdecken/Zuruecksetzen Buttons entfernt
+44fbcdb  Fix: KI-Analyse Fallbeispiele - DOM re-query + fbKiResult State
+f996f07  Fix: Fallbeispiele scenarioId in module_data + robuste ID-Suche
+531dec7  Fix: Fallbeispiele Button-Highlight fuer alle 7 Szenarien
+528d5d5  Fix: submitFbAnswer nutzt HDR+EDGE statt fehlerhafter EDGE_BASE Variable
 df41362  Fix: Fallbeispiele Balken sofort bei neuem Vote via Realtime aktualisieren
-3a8a794  Fix: johari_fallbeispiele Button in MODULE_PHASES eingefügt
 dcdbbb2  Fallbeispiele: MC-Voting komplett (Moderator+Teilnehmer+Beamer)
 308acfd  Johari Arena-Transformation + Fallbeispiele MC-Voting initial
-c387005  Johari Beamer: Inline-Styles komplett (PowerShell-Encoding-Fix)
-9379dc3  Rename: DISC Workshop -> Wahrheitsfaehigkeit im Team
-446ea20  Phase 2: beamer.html komplett neu
-e16102b  Phase 2: moderator.html - alle Module mit Phasen-Gruppierung
-fda6124  Phase 2: neue teilnehmer.html notebook-optimiert
 ```
 
 ---
