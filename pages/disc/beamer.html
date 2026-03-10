@@ -441,6 +441,49 @@ body:hover #fsBtn{ opacity:1; }
   </div>
 </div>
 
+<!-- == GFK INFO SCREEN == -->
+<div class="screen" id="sGfkInfo">
+  <div style="flex:1;display:flex;flex-direction:column;padding:40px 70px 32px;background:#060610;min-height:100vh;">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:22px;">🕊 GEWALTFREIE KOMMUNIKATION — DIE 4 SCHRITTE</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;">
+      <div style="border:1px solid rgba(74,144,217,.5);border-radius:16px;padding:28px 32px;background:rgba(74,144,217,.05);display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:14px;"><span style="font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:900;color:rgba(74,144,217,.6);">1</span><span style="font-size:28px;">🔭</span><span style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:rgba(74,144,217,.95);">Beobachtung</span></div>
+        <div style="font-size:16px;color:rgba(255,255,255,.5);margin-bottom:4px;">Was genau ist passiert — ohne Bewertung, ohne Interpretation.</div>
+        <div style="font-size:15px;color:rgba(180,210,255,.7);font-style:italic;border-left:2px solid rgba(74,144,217,.4);padding-left:14px;">"Als ich sah, dass du das Meeting ohne Ankündigung verlassen hast..."</div>
+      </div>
+      <div style="border:1px solid rgba(232,74,95,.5);border-radius:16px;padding:28px 32px;background:rgba(232,74,95,.05);display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:14px;"><span style="font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:900;color:rgba(232,74,95,.6);">2</span><span style="font-size:28px;">💙</span><span style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:rgba(232,74,95,.9);">Gefühl</span></div>
+        <div style="font-size:16px;color:rgba(255,255,255,.5);margin-bottom:4px;">Wie habe ich mich dabei gefühlt — ehrlich, konkret, ich-bezogen.</div>
+        <div style="font-size:15px;color:rgba(255,200,205,.7);font-style:italic;border-left:2px solid rgba(232,74,95,.4);padding-left:14px;">"...fühlte ich mich übergangen und unsicher..."</div>
+      </div>
+      <div style="border:1px solid rgba(42,157,143,.5);border-radius:16px;padding:28px 32px;background:rgba(42,157,143,.05);display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:14px;"><span style="font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:900;color:rgba(42,157,143,.6);">3</span><span style="font-size:28px;">🌱</span><span style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:rgba(42,157,143,.95);">Bedürfnis</span></div>
+        <div style="font-size:16px;color:rgba(255,255,255,.5);margin-bottom:4px;">Welches meiner Kernbedürfnisse wurde nicht erfüllt?</div>
+        <div style="font-size:15px;color:rgba(200,240,235,.7);font-style:italic;border-left:2px solid rgba(42,157,143,.4);padding-left:14px;">"...weil mir Verlässlichkeit und gegenseitiger Respekt wichtig sind."</div>
+      </div>
+      <div style="border:1px solid rgba(201,168,76,.5);border-radius:16px;padding:28px 32px;background:rgba(201,168,76,.05);display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:14px;"><span style="font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:900;color:rgba(201,168,76,.6);">4</span><span style="font-size:28px;">🤝</span><span style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:rgba(201,168,76,.95);">Bitte</span></div>
+        <div style="font-size:16px;color:rgba(255,255,255,.5);margin-bottom:4px;">Eine konkrete, erfüllbare Bitte — kein Befehl, keine Forderung.</div>
+        <div style="font-size:15px;color:rgba(255,240,190,.7);font-style:italic;border-left:2px solid rgba(201,168,76,.4);padding-left:14px;">"Kannst du mich beim nächsten Mal kurz informieren, wenn du gehen musst?"</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- == GFK QUIZ SCREEN == -->
+<div class="screen" id="sGfkQuiz">
+  <div style="flex:1;display:flex;flex-direction:column;padding:36px 60px 28px;background:#060610;min-height:100vh;">
+    <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:16px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:rgba(42,157,143,.5);" id="gfkScenarioLabel">SZENARIO 1 VON 2</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:15px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);">GEWALTFREIE KOMMUNIKATION</div>
+      <div style="margin-left:auto;font-size:14px;color:rgba(255,255,255,.35);" id="gfkVoteCount">0 Stimmen</div>
+    </div>
+    <div style="font-size:16px;line-height:1.7;color:rgba(255,255,255,.7);font-style:italic;margin-bottom:18px;max-width:900px;padding:18px 24px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;" id="gfkScenarioText"></div>
+    <div style="font-size:17px;font-weight:600;color:rgba(255,255,255,.6);margin-bottom:16px;" id="gfkQuestion"></div>
+    <div style="display:flex;flex-direction:column;gap:11px;" id="gfkBars"></div>
+  </div>
+</div>
+
 <div class="screen" id="sClosing">
   <div class="closing-icon">🏆</div>
   <div class="closing-title">Herzlichen Dank!</div>
@@ -487,6 +530,9 @@ const MODULE_META = {
   johari_fallbeispiele:          { screen:'sFallbeispiele' },
   kognitive_verzerrungen_info:   { screen:'sVerzerrungen' },
   verzerrungen_quiz:             { screen:'sVzQuiz' },
+  mut_info:                      { screen:'sGeneric', icon:'💪', title:'Mut &amp; Offenheit', desc:'Die Brücke zur Arena — was es braucht.' },
+  gfk_info:                      { screen:'sGfkInfo' },
+  gfk_fallbeispiel:              { screen:'sGfkQuiz' },
   johari_quiz:          { screen:'sFeed',    icon:'🪟', label:'Johari-Fenster',     title:'Johari-Quiz',                question:'Abstimmung – mehrere Antworten möglich.' },
   johari_reflexion:     { screen:'sFeed',    icon:'🔍', label:'Johari-Reflexion',   title:'Mein blinder Fleck',         question:'Was denkst du: Wo liegt dein grösster blinder Fleck?' },
   morgen_reflexion:     { screen:'sFeed',    icon:'🌅', label:'Tag 2 – Einstieg',   title:'Was hat die Nacht gebracht?', question:'Ein Satz. Was nimmst du mit in den heutigen Tag?' },
@@ -542,6 +588,8 @@ async function handleModule(mod, data) {
     case 'sFallbeispiele':  showFallbeispiele(data); break;
     case 'sVerzerrungen':   showVerzerrungen(); break;
     case 'sVzQuiz':         showVzQuiz(data); break;
+    case 'sGfkInfo':        showGfkInfo(); break;
+    case 'sGfkQuiz':        showGfkQuiz(data); break;
     case 'sGeneric':  showGeneric(meta, data); break;
     case 'sClosing':  showClosing(); break;
     default:          showGeneric(meta, data);
@@ -999,6 +1047,102 @@ async function pollVzVotes() {
 }
 
 /* ══════════════════════════════════════════════
+   MUT INFO
+══════════════════════════════════════════════ */
+function showGfkInfo() { show('sGfkInfo'); }
+
+/* ══════════════════════════════════════════════
+   GFK QUIZ
+══════════════════════════════════════════════ */
+const GFK_SCENARIOS_BEAMER = [
+  {
+    id:'gfk1', label:'Szenario 1 von 2',
+    context:'Tom kommt regelmässig 5–10 Minuten zu spät zu Teammeetings. Sein Kollege Markus ist frustriert. Wie sollte Markus das ansprechen?',
+    question:'Welche Aussage folgt der GFK-Struktur?',
+    options:[
+      {id:'A', text:'"Du bist respektlos und nimmst keine Rücksicht!"', color:'rgba(232,74,95,.7)', correct:false},
+      {id:'B', text:'"Wenn du zu spät kommst, fühle ich mich nicht wertgeschätzt. Kannst du mir Bescheid geben?"', color:'rgba(42,157,143,.7)', correct:true},
+      {id:'C', text:'"Das stört mich — du machst das immer!"', color:'rgba(244,162,97,.7)', correct:false},
+      {id:'D', text:'"Ich sage nichts, aber es nervt mich wirklich."', color:'rgba(100,100,160,.7)', correct:false},
+    ]
+  },
+  {
+    id:'gfk2', label:'Szenario 2 von 2',
+    context:'Sarah hat eine Entscheidung getroffen, ohne ihr Team zu informieren. Jan erfährt es erst nachher.\nJan sagt: "Sarah, das hätte ich gerne vorher gewusst. Ich brauche das Gefühl, einbezogen zu werden."',
+    question:'Welcher GFK-Schritt fehlt in Jans Aussage?',
+    options:[
+      {id:'A', text:'Die Beobachtung — was genau passiert ist', color:'rgba(74,144,217,.7)', correct:false},
+      {id:'B', text:'Das Gefühl — wie Jan sich fühlt',           color:'rgba(232,74,95,.7)',  correct:false},
+      {id:'C', text:'Das Bedürfnis — was Jan braucht',           color:'rgba(42,157,143,.7)', correct:false},
+      {id:'D', text:'Die Bitte — was Sarah konkret tun soll',    color:'rgba(201,168,76,.8)', correct:true},
+    ]
+  }
+];
+
+let gfkCurrentIdx = 0;
+let gfkPollTimer  = null;
+let gfkVotes      = {};
+let gfkRevealed   = false;
+
+function showGfkQuiz(data) {
+  gfkCurrentIdx = data?.scenario ?? 0;
+  gfkRevealed   = data?.reveal  ?? false;
+  gfkVotes      = {};
+  show('sGfkQuiz');
+  renderGfkScenario();
+  startGfkPolling();
+}
+
+function renderGfkScenario() {
+  const sc = GFK_SCENARIOS_BEAMER[gfkCurrentIdx]; if (!sc) return;
+  document.getElementById('gfkScenarioLabel').textContent = sc.label.toUpperCase();
+  document.getElementById('gfkScenarioText').innerHTML    = sc.context.replace(/\n/g,'<br>');
+  document.getElementById('gfkQuestion').textContent      = sc.question;
+  document.getElementById('gfkVoteCount').textContent     = '0 Stimmen';
+  document.getElementById('gfkBars').innerHTML = sc.options.map(opt => `
+    <div style="display:grid;grid-template-columns:44px 1fr 64px;align-items:center;gap:12px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:${opt.color};text-align:center;">${opt.id}</div>
+      <div style="position:relative;height:52px;">
+        <div id="gfk_bar_${opt.id}" style="position:absolute;inset:0;border-radius:8px;background:${opt.color};width:0%;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;padding:0 16px;font-size:15px;color:rgba(255,255,255,.85);z-index:1;">${opt.text}</div>
+      </div>
+      <div id="gfk_pct_${opt.id}" style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:rgba(255,255,255,.5);text-align:right;">—</div>
+    </div>`).join('');
+}
+
+function updateGfkBars() {
+  const sc = GFK_SCENARIOS_BEAMER[gfkCurrentIdx]; if (!sc) return;
+  const total = Object.values(gfkVotes).reduce((s,n)=>s+n,0);
+  document.getElementById('gfkVoteCount').textContent = total===1?'1 Stimme':`${total} Stimmen`;
+  sc.options.forEach(opt => {
+    const pct = total>0 ? Math.round(((gfkVotes[opt.id]||0)/total)*100) : 0;
+    const bar = document.getElementById(`gfk_bar_${opt.id}`);
+    const pctEl = document.getElementById(`gfk_pct_${opt.id}`);
+    if(bar) bar.style.width = pct+'%';
+    if(pctEl) pctEl.textContent = total>0?`${pct}%`:'—';
+    if(gfkRevealed&&bar){ bar.style.filter=opt.correct?'brightness(1.4)':'brightness(0.4)'; if(opt.correct) bar.style.boxShadow=`0 0 20px ${opt.color}`; }
+  });
+}
+
+async function startGfkPolling() {
+  if(gfkPollTimer) clearInterval(gfkPollTimer);
+  await pollGfkVotes();
+  gfkPollTimer = setInterval(pollGfkVotes, 2500);
+}
+
+async function pollGfkVotes() {
+  if(!sb||!session?.workshopId||currentModule!=='gfk_fallbeispiel'){clearInterval(gfkPollTimer);return;}
+  const sc=GFK_SCENARIOS_BEAMER[gfkCurrentIdx]; if(!sc) return;
+  try{
+    const{data}=await sb.from('exercise_responses').select('content')
+      .eq('workshop_id',session.workshopId).eq('module','gfk_fallbeispiel_'+sc.id).eq('response_type','mc');
+    if(!data) return;
+    const counts={}; data.forEach(r=>{counts[r.content]=(counts[r.content]||0)+1;});
+    gfkVotes=counts; updateGfkBars();
+  }catch(e){console.warn('gfkPoll:',e.message);}
+}
+
+/* ══════════════════════════════════════════════
    JOHARI WINDOW
 ══════════════════════════════════════════════ */
 let johariTransformed = false;
@@ -1127,6 +1271,9 @@ function addFeedResponse(row) {
   }
   if (currentModule === 'verzerrungen_quiz' && row.module && row.module.startsWith('verzerrungen_quiz_')) {
     pollVzVotes(); return;
+  }
+  if (currentModule === 'gfk_fallbeispiel' && row.module && row.module.startsWith('gfk_fallbeispiel_')) {
+    pollGfkVotes(); return;
   }
   if (row.module !== currentModule) return;
   feedResponses.unshift(row);

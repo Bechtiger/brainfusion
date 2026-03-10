@@ -808,11 +808,15 @@ function handleModule(mod, data) {
     case 'kernbotschaften_info':
     case 'raci_info':
     case 'kognitive_verzerrungen_info':
+    case 'mut_info':
+    case 'gfk_info':
       showBeamerMode(mod, data); break;
     case 'johari_fallbeispiele':
       showFallbeispieleVote(data); break;
     case 'verzerrungen_quiz':
       showVerzerrungsVote(data); break;
+    case 'gfk_fallbeispiel':
+      showGfkVote(data); break;
     default:
       if (MODULE_DEFS[mod]) showModule(mod, data);
       else showWaiting(data);
@@ -835,6 +839,8 @@ const BEAMER_META = {
   kernbotschaften_info: { icon:'⚡',  title:'Schau auf den Beamer!', desc:'Der Moderator zeigt vier wichtige Sätze.' },
   raci_info:                   { icon:'📋', title:'Schau auf den Beamer!', desc:'RACI-Einführung. Bitte aufmerksam folgen.' },
   kognitive_verzerrungen_info: { icon:'🧠', title:'Schau auf den Beamer!', desc:'Der Moderator erklärt 4 kognitive Verzerrungen. Folge dem Beamer.' },
+  mut_info:                    { icon:'💪', title:'Schau auf den Beamer!', desc:'Mut & Offenheit — warum die Arena wächst. Folge dem Moderator.' },
+  gfk_info:                    { icon:'🕊', title:'Schau auf den Beamer!', desc:'Die 4 Schritte der Gewaltfreien Kommunikation werden erklärt.' },
 };
 function showBeamerMode(mod, data) {
   const meta = BEAMER_META[mod] || { icon:'📽', title:'Schau auf den Beamer!', desc:'Folge dem Moderator.' };
@@ -1056,6 +1062,74 @@ async function submitVzAnswer(choice, scenarioId) {
     });
   } catch(e) { console.warn('submitVzAnswer:', e); }
   showVerzerrungsVote({ scenario: VZ_SCENARIOS.findIndex(s => s.id === scenarioId), scenarioId });
+}
+
+// ─── GFK FALLBEISPIEL ────────────────────────────────────────────────────────
+const GFK_SCENARIOS = [
+  {
+    id:'gfk1', label:'Szenario 1 von 2',
+    context:'Tom kommt regelmässig 5–10 Minuten zu spät zu Teammeetings. Sein Kollege Markus ist frustriert. Wie sollte Markus das ansprechen?',
+    question:'Welche Aussage folgt der GFK-Struktur?',
+    options:[
+      {id:'A', text:'"Du bist respektlos und nimmst keine Rücksicht!"'},
+      {id:'B', text:'"Wenn du zu spät kommst, fühle ich mich nicht wertgeschätzt. Kannst du mir Bescheid geben?"'},
+      {id:'C', text:'"Das stört mich — du machst das immer!"'},
+      {id:'D', text:'"Ich sage nichts, aber es nervt mich wirklich."'},
+    ]
+  },
+  {
+    id:'gfk2', label:'Szenario 2 von 2',
+    context:'Sarah hat eine Entscheidung getroffen, ohne ihr Team zu informieren. Jan erfährt es erst nachher.\nJan sagt: "Sarah, das hätte ich gerne vorher gewusst. Ich brauche das Gefühl, einbezogen zu werden."',
+    question:'Welcher GFK-Schritt fehlt in Jans Aussage?',
+    options:[
+      {id:'A', text:'Die Beobachtung — was genau passiert ist'},
+      {id:'B', text:'Das Gefühl — wie Jan sich fühlt'},
+      {id:'C', text:'Das Bedürfnis — was Jan braucht'},
+      {id:'D', text:'Die Bitte — was Sarah konkret tun soll'},
+    ]
+  }
+];
+
+let gfkMyAnswer   = null;
+let gfkScenarioId = null;
+
+function showGfkVote(data) {
+  const idx = data?.scenario ?? 0;
+  let sc = data?.scenarioId
+    ? GFK_SCENARIOS.find(s => s.id === data.scenarioId) || GFK_SCENARIOS[Math.min(idx, GFK_SCENARIOS.length - 1)]
+    : GFK_SCENARIOS[Math.min(idx, GFK_SCENARIOS.length - 1)];
+  if (sc.id !== gfkScenarioId) { gfkMyAnswer = null; gfkScenarioId = sc.id; }
+
+  document.getElementById('moduleContent').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:16px;padding:4px 0;">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);">${sc.label} · GFK</div>
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.65;color:rgba(255,255,255,.75);font-style:italic;">${sc.context.replace(/\n/g,'<br>')}</div>
+      <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,.65);">${sc.question}</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${sc.options.map(opt => {
+          const sel = gfkMyAnswer === opt.id;
+          return `<button onclick="submitGfkAnswer('${opt.id}','${sc.id}')"
+            style="text-align:left;padding:14px 18px;border-radius:10px;border:${sel?'2px solid rgba(42,157,143,.8)':'1px solid rgba(255,255,255,.12)'};background:${sel?'rgba(42,157,143,.2)':'rgba(255,255,255,.04)'};color:rgba(255,255,255,.85);font-size:13px;${gfkMyAnswer!==null?'opacity:.7;pointer-events:none;':'cursor:pointer;'}transition:.25s;line-height:1.5;">
+            <span style="font-weight:700;margin-right:10px;">${opt.id}</span>${opt.text}
+          </button>`;
+        }).join('')}
+      </div>
+      ${gfkMyAnswer ? `<div style="text-align:center;padding:12px;border-radius:10px;background:rgba(42,157,143,.12);border:1px solid rgba(42,157,143,.3);font-size:14px;color:rgba(42,157,143,.9);">&#10003; Antwort <strong>${gfkMyAnswer}</strong> abgegeben — schau auf den Beamer!</div>` : ''}
+    </div>`;
+  show('sModule');
+}
+
+async function submitGfkAnswer(choice, scenarioId) {
+  if (!session?.workshopId || !session?.participantId) return;
+  gfkMyAnswer = choice; gfkScenarioId = scenarioId;
+  try {
+    await fetch(`${EDGE}/submit-exercise`, {
+      method:'POST', headers:HDR,
+      body: JSON.stringify({ participantId:session.participantId, joinToken:session.joinToken,
+        module:'gfk_fallbeispiel_'+scenarioId, responseType:'mc', content:choice })
+    });
+  } catch(e) { console.warn('submitGfkAnswer:', e); }
+  showGfkVote({ scenario: GFK_SCENARIOS.findIndex(s => s.id === scenarioId), scenarioId });
 }
 
 let fbMyAnswer   = null;

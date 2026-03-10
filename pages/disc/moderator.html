@@ -361,10 +361,13 @@ const MODULE_PHASES=[
     {id:'kernbotschaften',     icon:'⚡',name:'Kernbotschaft',  sub:'Live-Feed'},
   ]},
   {label:'▸ Tag 2 – Vertiefen',modules:[
-    {id:'morgen_reflexion',icon:'🌅',name:'Morgen-Check',  sub:'Live-Feed'},
-    {id:'raci_info',       icon:'📋',name:'RACI Info',     sub:'Beamer'},
-    {id:'raci',            icon:'📋',name:'RACI',          sub:'Auswahl'},
-    {id:'gfk',             icon:'🕊',name:'GFK',           sub:'Live-Feed'},
+    {id:'morgen_reflexion',    icon:'🌅',name:'Morgen-Check',   sub:'Live-Feed'},
+    {id:'raci_info',           icon:'📋',name:'RACI Info',      sub:'Beamer'},
+    {id:'raci',                icon:'📋',name:'RACI',           sub:'Auswahl'},
+    {id:'mut_info',            icon:'💪',name:'Mut & Offenheit',sub:'Beamer'},
+    {id:'gfk_info',            icon:'🕊',name:'GFK Einführung', sub:'Beamer'},
+    {id:'gfk_fallbeispiel',    icon:'🎯',name:'GFK Fallbsp.',   sub:'MC-Voting'},
+    {id:'gfk',                 icon:'🕊',name:'GFK',            sub:'Live-Feed'},
   ]},
   {label:'▸ Tag 2 – Abschluss',modules:[
     {id:'steckbrief_feiern', icon:'🎉',name:'Steckbrief',sub:'Feiern'},
@@ -527,6 +530,33 @@ const MODULE_DETAILS={
     beamer:'Beamer zeigt RACI-Auswertung als Balkendiagramm',
     dataType:'raci'
   },
+  mut_info:{
+    desc:'Die Br&#252;cke: Warum Mut & Offenheit die Arena vergr&#246;ssern.',
+    hints:['Starte mit der Energie-Paradoxie: "Was kostet mehr — Verbergen oder Ansprechen?"',
+      'Lass die Gruppe kurz innehalten: "Woran merkt ihr den Aufwand des Verbergens?"',
+      'Betone: Mut hei&#223;t nicht Mut-IG sein — es hei&#223;t, trotz Angst zu handeln',
+      '&#220;berleitung: "Und wie spricht man etwas an, ohne jemanden zu verletzen? → GFK"'],
+    beamer:'Beamer zeigt Energie-Paradoxie + 3 Dimensionen des Muts',
+    dataType:'mut_info'
+  },
+  gfk_info:{
+    desc:'Gew&#228;ltfreie Kommunikation — Die 4 Schritte als visuelles Tool.',
+    hints:['Erkl&#228;re jeden Schritt mit einem konkreten Teambeispiel',
+      'Beobachtung: "Was genau ist passiert — ohne Bewertung?"',
+      'Bitte am Ende betonen: konkret, erf&#252;llbar, kein Befehl',
+      '&#220;berleitung: "Gleich testen wir das an einem echten Szenario"'],
+    beamer:'Beamer zeigt die 4 GFK-Schritte mit Struktur und Beispielen',
+    dataType:'gfk_info'
+  },
+  gfk_fallbeispiel:{
+    desc:'2 Szenarien: Teilnehmer erkennen GFK-konforme vs. verletzende Kommunikation.',
+    hints:['Lies das Szenario vor — lass Teilnehmer w&#228;hlen',
+      'Nach Abstimmung: Erkl&#228;re warum Option B GFK ist (Struktur durchgehen)',
+      'Frage: "Was w&#228;re anders gelaufen mit dieser Formulierung?"',
+      '&#220;berleitung: "Jetzt euer eigener Versuch — aus eurem Alltag"'],
+    beamer:'Beamer zeigt Szenario + Live-Abstimmungsbalken',
+    dataType:'gfk_fallbeispiel'
+  },
   gfk:{
     desc:'Teilnehmer formulieren eine GFK-Aussage (Beobachtung/Gefühl/Bedürfnis/Bitte).',
     hints:['Struktur: Beobachtung → Gefühl → Bedürfnis → Bitte',
@@ -668,7 +698,7 @@ async function activateModule(moduleId){
     buildModuleGrid();
     respondedSet.clear();
     liveResponses=[];
-    kiLastCount=-1; kiCurrentModule=''; fbKiResult=null; vzKiResult=null; // KI-State reset
+    kiLastCount=-1; kiCurrentModule=''; fbKiResult=null; vzKiResult=null; gfkKiResult=null; // KI-State reset
     renderModuleContent(moduleId);
   }catch(e){alert('Fehler: '+e.message)}
 }
@@ -727,6 +757,9 @@ function renderModuleContent(moduleId){
     case'johari_fallbeispiele':dataHTML=renderJohariFallbeispieleSection();break;
     case'verzerrungen_quiz':   dataHTML=renderVerzerrungsQuizSection();break;
     case'verzerrungen_info':   dataHTML=renderVerzerrungsInfoSection();break;
+    case'mut_info':            dataHTML=renderMutInfoSection();break;
+    case'gfk_info':            dataHTML=renderGfkInfoSection();break;
+    case'gfk_fallbeispiel':    dataHTML=renderGfkFallbeispielSection();break;
     case'static':    dataHTML=renderStaticSection(detail);break;
   }
 
@@ -1047,6 +1080,175 @@ async function setVzScenario(idx){
     const b=document.getElementById('vzBtn'+i);
     if(b) b.style.background = i===idx ? 'rgba(74,144,217,.25)' : 'rgba(255,255,255,.04)';
     if(b) b.style.borderColor = i===idx ? 'rgba(74,144,217,.6)'  : 'rgba(255,255,255,.12)';
+  }
+}
+
+  }
+}
+
+// ─── MUT & GFK ────────────────────────────────────────────────────────────────
+function renderMutInfoSection(){
+  const items=[
+    {icon:'⚡',color:'rgba(247,196,108,.85)',title:'Die Energie-Paradoxie',
+     text:'Es kostet mehr Energie, etwas zu <strong>verbergen</strong>, als es anzusprechen. Wer mit Verbergen beschäftigt ist, hat keine Kapazität für das Unbekannte — das brachliegende Potenzial.'},
+    {icon:'🪟',color:'rgba(42,157,143,.85)',title:'Mut öffnet das Johari-Fenster',
+     text:'Nur wer nicht ständig seine Fassade aufrechterhalten muss, kann Feedback geben <em>und</em> empfangen. Die Arena wächst durch Mut auf beiden Seiten.'},
+    {icon:'💡',color:'rgba(74,144,217,.85)',title:'Mut ist nicht Mut-losigkeit',
+     text:'Mut bedeutet nicht das Fehlen von Angst. Es bedeutet: trotzdem handeln. Etwas ansprechen, obwohl es unangenehm ist. Und: offen sein für das, was man noch nicht kennt.'},
+  ];
+  return`<div style="display:grid;gap:10px;">
+    ${items.map(c=>`<div style="border:1px solid ${c.color};border-radius:10px;padding:14px 18px;background:rgba(255,255,255,.03);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <span style="font-size:20px;">${c.icon}</span>
+        <span style="font-weight:700;color:${c.color};font-size:14px;">${c.title}</span>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6;">${c.text}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderGfkInfoSection(){
+  const steps=[
+    {nr:'1',icon:'🔭',color:'rgba(74,144,217,.85)',name:'Beobachtung',
+     desc:'Was genau ist passiert — ohne Bewertung, ohne Interpretation.',
+     ex:'"Als ich sah, dass du das Meeting ohne Ankündigung verlassen hast..."'},
+    {nr:'2',icon:'💙',color:'rgba(232,74,95,.8)',name:'Gefühl',
+     desc:'Wie habe ich mich dabei gefühlt — ehrlich, konkret, ich-bezogen.',
+     ex:'"...fühlte ich mich übergangen und unsicher..."'},
+    {nr:'3',icon:'🌱',color:'rgba(42,157,143,.85)',name:'Bedürfnis',
+     desc:'Welches meiner Kernbedürfnisse wurde nicht erfüllt?',
+     ex:'"...weil mir Verlässlichkeit und gegenseitiger Respekt wichtig sind."'},
+    {nr:'4',icon:'🤝',color:'rgba(201,168,76,.9)',name:'Bitte',
+     desc:'Eine konkrete, erfüllbare Bitte — kein Befehl, keine Forderung.',
+     ex:'"Kannst du mich beim nächsten Mal kurz informieren, wenn du gehen musst?"'},
+  ];
+  return`<div style="display:grid;gap:8px;">
+    ${steps.map(s=>`<div style="display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start;border:1px solid ${s.color};border-radius:10px;padding:12px 16px;background:rgba(255,255,255,.03);">
+      <div style="font-family:monospace;font-size:22px;font-weight:900;color:${s.color};text-align:center;margin-top:2px;">${s.nr}</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span>${s.icon}</span>
+          <span style="font-weight:700;color:${s.color};font-size:14px;">${s.name}</span>
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">${s.desc}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.35);font-style:italic;">${s.ex}</div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+const GFK_SCENARIOS_MOD=[
+  {
+    id:'gfk1', label:'Szenario 1 von 2',
+    context:'Tom kommt regelmässig 5–10 Minuten zu spät zu Teammeetings. Sein Kollege Markus ist frustriert. Wie sollte Markus das ansprechen?',
+    question:'Welche Aussage folgt der GFK-Struktur?',
+    options:[
+      {id:'A', text:'"Du bist respektlos und nimmst keine Rücksicht auf andere!"', correct:false},
+      {id:'B', text:'"Wenn du zu spät kommst, fühle ich mich nicht wertgeschätzt, weil mir Verlässlichkeit wichtig ist. Kannst du mir kurz Bescheid geben, wenn du dich verspätest?"', correct:true},
+      {id:'C', text:'"Das stört mich total — du machst das immer!"', correct:false},
+      {id:'D', text:'"Ich sage nichts, aber es nervt mich wirklich sehr."', correct:false},
+    ]
+  },
+  {
+    id:'gfk2', label:'Szenario 2 von 2',
+    context:'Sarah hat in einem Projekt eine Entscheidung getroffen, ohne ihr Team zu informieren. Ihr Kollege Jan erfährt es erst nachher und ist irritiert.',
+    question:'Welcher GFK-Schritt fehlt in Jans Antwort?\n"Sarah, das hätte ich gerne vorher gewusst. Ich brauche das Gefühl, einbezogen zu werden."',
+    options:[
+      {id:'A', text:'Die Beobachtung — was genau ist passiert?', correct:false},
+      {id:'B', text:'Das Gefühl — wie fühlt sich Jan?', correct:false},
+      {id:'C', text:'Das Bedürfnis — was braucht Jan?', correct:false},
+      {id:'D', text:'Die Bitte — was soll Sarah konkret tun?', correct:true},
+    ]
+  }
+];
+
+let gfkKiResult=null;
+
+function renderGfkFallbeispielSection(){
+  const labels=GFK_SCENARIOS_MOD.map(s=>s.label);
+  const btns=labels.map((l,i)=>`
+    <button onclick="setGfkScenario(${i})" id="gfkBtn${i}" style="text-align:left;padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(255,255,255,.75);font-size:13px;cursor:pointer;transition:.2s;">${i+1}. ${l}</button>
+  `).join('');
+  const gfkKiPanel=`<div id="gfkKiPanel" style="margin-top:14px;border-radius:12px;border:1px solid rgba(42,157,143,.35);background:rgba(42,157,143,.04);overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid rgba(42,157,143,.18);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">🤖</span>
+        <span style="font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(42,157,143,.9);">KI-Analyse · Abstimmungsergebnisse</span>
+        <span id="gfkKiDot" style="width:7px;height:7px;border-radius:50%;background:rgba(42,157,143,.35);display:inline-block;"></span>
+      </div>
+      <button onclick="analyzeCurrentGfkWithKI()" style="background:rgba(42,157,143,.15);border:1px solid rgba(42,157,143,.4);color:rgba(42,157,143,.95);font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer;">🔍 Szenario analysieren</button>
+    </div>
+    <div id="gfkKiContent" style="padding:12px 14px;font-size:13px;color:rgba(180,230,220,.75);min-height:42px;">
+      ${gfkKiResult||'<span style="color:rgba(80,160,140,.5);font-style:italic;">Szenario ausw&#228;hlen, dann "Analysieren" klicken</span>'}
+    </div>
+  </div>`;
+  return`<div>
+    <div style="margin-bottom:12px;font-size:12px;color:rgba(255,255,255,.45);letter-spacing:1px;text-transform:uppercase;">Szenario ausw&#228;hlen</div>
+    <div style="display:grid;gap:8px;margin-bottom:14px;">${btns}</div>
+    ${gfkKiPanel}
+  </div>`;
+}
+
+async function setGfkScenario(idx){
+  if(!onlineSession?.workshopId||!onlineSession?.adminToken) return;
+  const sc=GFK_SCENARIOS_MOD[idx]; if(!sc) return;
+  gfkKiResult=null;
+  await sb.rpc('set_workshop_module',{
+    p_workshop_id:onlineSession.workshopId,
+    p_admin_token:onlineSession.adminToken,
+    p_module:'gfk_fallbeispiel',
+    p_module_data:{scenario:idx,scenarioId:sc.id,reveal:false}
+  });
+  for(let i=0;i<2;i++){
+    const b=document.getElementById('gfkBtn'+i);
+    if(b){b.style.background=i===idx?'rgba(42,157,143,.25)':'rgba(255,255,255,.04)';
+         b.style.borderColor=i===idx?'rgba(42,157,143,.6)':'rgba(255,255,255,.12)';}
+  }
+}
+
+async function analyzeCurrentGfkWithKI(){
+  const contentEl=document.getElementById('gfkKiContent');
+  const dotEl=document.getElementById('gfkKiDot');
+  if(!contentEl||!onlineSession?.workshopId) return;
+  initSupabase();
+  const{data:ws}=await sb.from('workshops').select('module_data').eq('id',onlineSession.workshopId).single();
+  const idx=ws?.module_data?.scenario??0;
+  const sc=GFK_SCENARIOS_MOD[idx]; if(!sc) return;
+  if(dotEl){dotEl.style.background='#f7c46c';dotEl.style.animation='pulse 0.8s infinite';}
+  contentEl.innerHTML=`<span style="color:rgba(180,230,220,.65);font-style:italic;">🤖 Analysiere GFK-Abstimmung für ${sc.label}…</span>`;
+  const{data:votes}=await sb.from('exercise_responses').select('content')
+    .eq('workshop_id',onlineSession.workshopId).eq('module','gfk_fallbeispiel_'+sc.id).eq('response_type','mc');
+  if(!votes||votes.length===0){
+    contentEl.innerHTML='<span style="color:rgba(80,160,140,.4);font-style:italic;">Noch keine Abstimmungen.</span>';
+    if(dotEl){dotEl.style.background='rgba(42,157,143,.35)';dotEl.style.animation='none';}
+    return;
+  }
+  const counts={A:0,B:0,C:0,D:0};
+  votes.forEach(r=>{if(counts[r.content]!==undefined)counts[r.content]++;});
+  const total=votes.length;
+  const correct=sc.options.find(o=>o.correct);
+  const pct=total>0?Math.round((counts[correct?.id||'?']||0)/total*100):0;
+  const voteDesc=sc.options.map(o=>`${o.id}: "${o.text.substring(0,60)}..." → ${counts[o.id]||0} (${total>0?Math.round((counts[o.id]||0)/total*100):0}%)`).join('\n');
+  const systemPrompt=`Du bist ein erfahrener GFK-Workshop-Moderator. Analysiere das Abstimmungsergebnis eines GFK-Fallbeispiels und gib dem Moderator kompakte Hinweise für die Diskussion.\n\nAntworte NUR mit JSON:\n{"ergebnis":"Kurze Zusammenfassung","deutung":"Was verrät die Verteilung über das GFK-Verständnis?","diskussion":"Konkreter Diskussionsimpuls"}`;
+  const userPrompt=`Szenario: ${sc.context}\nFrage: ${sc.question}\nRichtige Antwort: ${correct?.id} ("${correct?.text}")\n\nAbstimmung (${total} Stimmen):\n${voteDesc}\nKorrekte: ${pct}%`;
+  try{
+    const res=await fetch(EDGE_BASE+'/ki-analyze',{method:'POST',headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},body:JSON.stringify({system:systemPrompt,userPrompt,maxTokens:400})});
+    if(!res.ok) throw new Error('API '+res.status);
+    const data=await res.json(); if(data.error) throw new Error(data.error);
+    const parsed=JSON.parse(data.text.replace(/```json|```/g,'').trim());
+    const rows=[];
+    if(parsed.ergebnis) rows.push(`<div style="margin-bottom:8px;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(201,168,76,.6);margin-bottom:4px;">📊 Ergebnis</div><div style="color:rgba(220,210,170,.9);font-size:13px;">${escapeHtml(parsed.ergebnis)}</div></div>`);
+    if(parsed.deutung)  rows.push(`<div style="margin-bottom:8px;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(42,157,143,.7);margin-bottom:4px;">🔍 Deutung</div><div style="color:rgba(180,230,220,.9);font-size:13px;">${escapeHtml(parsed.deutung)}</div></div>`);
+    if(parsed.diskussion) rows.push(`<div style="background:rgba(62,207,142,.07);border-left:2px solid rgba(62,207,142,.5);padding:6px 10px;border-radius:0 6px 6px 0;"><div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(62,207,142,.65);margin-bottom:4px;">💡 Diskussions-Tipp</div><div style="color:rgba(220,240,230,.9);font-size:13px;line-height:1.5;">${escapeHtml(parsed.diskussion)}</div></div>`);
+    const html=rows.join('')+`<div style="margin-top:8px;font-size:10px;color:rgba(130,150,180,.4);text-align:right;">${total} Stimmen · ${sc.label}</div>`;
+    gfkKiResult=html;
+    const el=document.getElementById('gfkKiContent'); if(el) el.innerHTML=html;
+    const dot=document.getElementById('gfkKiDot'); if(dot){dot.style.background='#3ecf8e';dot.style.animation='none';}
+  }catch(e){
+    const errHtml=`<span style="color:rgba(255,142,142,.7);">⚠ ${escapeHtml(e.message)}</span>`;
+    gfkKiResult=errHtml;
+    const el=document.getElementById('gfkKiContent'); if(el) el.innerHTML=errHtml;
+    const dot=document.getElementById('gfkKiDot'); if(dot){dot.style.background='#ff8e8e';dot.style.animation='none';}
   }
 }
 
@@ -1373,8 +1575,9 @@ async function refreshOnlineWorkshop(){
       const jFeed=document.getElementById('liveFeedCards');
       if(jFeed)jFeed.innerHTML=renderFeedCardsHTML();
     }else if(fbKiPanelEl&&curMod==='johari_fallbeispiele'){
-      // Fallbeispiele: KI-Panel ist da → NICHT neu rendern, Panel bleibt stehen
-      // (Beamer zeigt die Balken, Moderator braucht nur die Buttons + KI)
+      // Fallbeispiele: KI-Panel ist da → nicht neu rendern
+    }else if(document.getElementById('gfkKiPanel')&&curMod==='gfk_fallbeispiel'){
+      // GFK Fallbeispiel: KI-Panel bleibt stehen
     }else{
       renderModuleContent(curMod);
     }
