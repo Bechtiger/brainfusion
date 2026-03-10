@@ -918,10 +918,6 @@ function renderJohariFallbeispieleSection(){
   return `<div>
     <div style="margin-bottom:12px;font-size:12px;color:rgba(255,255,255,.45);letter-spacing:1px;text-transform:uppercase;">Szenario ausw&#228;hlen</div>
     <div style="display:grid;gap:8px;margin-bottom:20px">${btns}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <button onclick="revealFbAnswer(true)" class="action-btn" style="background:rgba(42,157,143,.2);border-color:rgba(42,157,143,.5);">&#10003; Antwort aufdecken</button>
-      <button onclick="revealFbAnswer(false)" class="action-btn" style="background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);">&#8635; Zur&#252;cksetzen</button>
-    </div>
     ${fbKiPanel}
   </div>`;
 }
