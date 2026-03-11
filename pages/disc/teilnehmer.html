@@ -335,26 +335,46 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
   font-size: 10px; color: var(--dim);
   letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px;
 }
-.q-text { font-size: 15px; line-height: 1.6; margin-bottom: 18px; }
-.scale-row { display: flex; align-items: center; gap: 12px; }
-.scale-end { font-size: 12px; color: var(--muted); flex-shrink: 0; width: 90px; }
-.scale-end:last-child { text-align: right; }
-.scale-opts { display: flex; gap: 8px; flex: 1; justify-content: center; }
-.scale-opt { position: relative; }
-.scale-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
-.scale-opt label {
-  display: flex; align-items: center; justify-content: center;
-  width: 46px; height: 46px; border-radius: 10px;
-  background: var(--surf2); border: 1px solid var(--border);
-  cursor: pointer;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 14px; font-weight: 500; color: var(--muted);
-  transition: all .15s ease; user-select: none;
+.q-hint {
+  font-size: 12px; color: var(--muted); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
 }
-.scale-opt label:hover { background: var(--border2); color: var(--text); }
-.scale-opt input:checked + label {
-  background: var(--D); border-color: var(--D); color: #fff;
-  box-shadow: 0 2px 12px rgba(230,57,70,.4);
+.fc-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.fc-word {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 14px 10px; border-radius: 12px;
+  background: transparent; cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: all .15s ease; user-select: none;
+  min-height: 64px;
+}
+.fc-word:hover { opacity: 1 !important; transform: scale(1.02); }
+.fc-dim-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 4px; opacity: .7;
+}
+.fc-word-text {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  text-align: center; line-height: 1.2;
+}
+.fc-badge {
+  position: absolute; top: 6px; right: 8px;
+  font-size: 13px; font-weight: 700;
+}
+.fc-badge.most  { color: #ffd700; }
+.fc-badge.least { color: var(--D); }
+.fc-status {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; border-radius: 8px; margin-bottom: 10px;
+  background: var(--surf2); border: 1px solid var(--border);
+  font-size: 12px; font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 1px;
 }
 .q-nav {
   display: flex; justify-content: space-between; align-items: center;
@@ -522,7 +542,6 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
 </style>
 </head>
 <body>
-
 <!-- ─── Fixed header (outside max-width container so it spans full width) ─── -->
 <div style="position:sticky;top:0;z-index:100;background:rgba(8,8,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid #1e1e38;">
   <div style="max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 28px;">
@@ -530,9 +549,7 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
     <div id="headerStatus"></div>
   </div>
 </div>
-
 <div id="app">
-
   <!-- ══════════════════════════════════════════════
        SCREEN: JOIN
   ══════════════════════════════════════════════ -->
@@ -564,10 +581,10 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
       <button class="btn btn-primary" id="joinBtn" onclick="doJoin()">Workshop beitreten →</button>
     </div>
   </div>
-
   <!-- ══════════════════════════════════════════════
        SCREEN: WAITING
   ══════════════════════════════════════════════ -->
+��══════════════ -->
   <div id="sWaiting" class="screen">
     <div class="center">
       <div style="font-size:72px;margin-bottom:28px;">⏳</div>
@@ -609,24 +626,35 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
       </div>
       <p class="label" style="margin-bottom:12px;">Persönlichkeitsanalyse</p>
       <div class="display" style="margin-bottom:16px;">Dein DISC-Profil</div>
-      <p class="body-text" style="max-width:420px;margin-bottom:36px;">
-        Du durchläufst den Test <strong style="color:var(--text)">zweimal</strong>: zuerst dein
-        <strong style="color:var(--S)">natürliches Profil</strong>, dann dein
-        <strong style="color:var(--C)">Rollenprofil</strong> bei der Arbeit.
+      <p class="body-text" style="max-width:440px;margin-bottom:36px;">
+        Du siehst <strong style="color:var(--text)">28 Blöcke</strong> mit je 4 Adjektiven.
+        Wähle pro Block das Wort, das dich <strong style="color:var(--gold)">am meisten</strong> beschreibt
+        — und das, das dich <strong style="color:var(--D)">am wenigsten</strong> beschreibt.
       </p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:360px;margin-bottom:40px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%;max-width:420px;margin-bottom:40px;">
         <div class="card" style="text-align:center;">
-          <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;margin-bottom:6px;">~10 Min</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;margin-bottom:6px;">~8 Min</div>
           <div class="label">Dauer</div>
         </div>
         <div class="card" style="text-align:center;">
-          <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;margin-bottom:6px;">28 × 2</div>
-          <div class="label">Aussagen</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;margin-bottom:6px;">28</div>
+          <div class="label">Blöcke</div>
         </div>
+        <div class="card" style="text-align:center;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;margin-bottom:6px;">3</div>
+          <div class="label">Profile</div>
+        </div>
+      </div>
+      <div class="card" style="max-width:440px;margin-bottom:36px;text-align:left;border-left:3px solid var(--gold);">
+        <p style="font-size:14px;color:var(--muted);line-height:1.7;">
+          Du erhältst drei Sichtweisen: <strong style="color:var(--gold)">Maske</strong> (wie du dich zeigst),
+          <strong style="color:var(--S)">Kern</strong> (wer du wirklich bist) und
+          <strong style="color:var(--C)">Komposit</strong> (dein stabilstes Profil).
+        </p>
       </div>
     </div>
     <div style="padding:0 28px 40px;max-width:480px;margin:0 auto;width:100%;">
-      <button class="btn btn-primary" onclick="startDiscPhase('nat')">Test starten →</button>
+      <button class="btn btn-primary" onclick="startDiscTest()">Test starten →</button>
     </div>
   </div>
 
@@ -656,20 +684,13 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
   <div id="sDiscTransition" class="screen">
     <div class="center">
       <div class="success-icon">✓</div>
-      <div class="display sm" style="margin-bottom:16px;">Natürliches Profil<br>abgeschlossen</div>
+      <div class="display sm" style="margin-bottom:16px;">Seite abgeschlossen!</div>
       <p class="body-text" style="max-width:400px;margin-bottom:28px;">
-        Gut gemacht. Jetzt der zweite Durchgang — dieselben Aussagen, aber aus deiner
-        <strong style="color:var(--C)">beruflichen Rolle</strong> heraus.
+        Gut gemacht. Gleich siehst du dein Ergebnis.
       </p>
-      <div class="card" style="text-align:left;max-width:420px;margin-bottom:36px;">
-        <p style="font-size:15px;color:var(--muted);line-height:1.7;">
-          Stell dir einen typischen Arbeitstag vor: Meetings, Deadlines, Teamgespräche. Wie reagierst du
-          <em style="color:var(--text)">dort</em> — ehrlich?
-        </p>
-      </div>
     </div>
     <div style="padding:0 28px 40px;max-width:480px;margin:0 auto;width:100%;">
-      <button class="btn btn-accent" onclick="startDiscPhase('role')">Rollenprofil starten →</button>
+      <button class="btn btn-primary" onclick="buildDiscResults()">Auswertung anzeigen →</button>
     </div>
   </div>
 
@@ -837,10 +858,10 @@ const BEAMER_META = {
   disc_map:             { icon:'🗺',  title:'Schau auf den Beamer!', desc:'Dein Profil ist jetzt auf der Live-Map sichtbar.' },
   johari_erklaerung:    { icon:'🪟',  title:'Schau auf den Beamer!', desc:'Das Johari-Fenster wird erklärt. Folge dem Moderator.' },
   kernbotschaften_info: { icon:'⚡',  title:'Schau auf den Beamer!', desc:'Der Moderator zeigt vier wichtige Sätze.' },
-  raci_info:                   { icon:'📋', title:'Schau auf den Beamer!', desc:'RACI-Einführung. Bitte aufmerksam folgen.' },
+  raci_info:                  { icon:'📋�', title:'Schau auf den Beamer!', desc:'RACI-Einführung. Bitte aufmerksam folgen.' },
   kognitive_verzerrungen_info: { icon:'🧠', title:'Schau auf den Beamer!', desc:'Der Moderator erklärt 4 kognitive Verzerrungen. Folge dem Beamer.' },
-  mut_info:                    { icon:'💪', title:'Schau auf den Beamer!', desc:'Mut & Offenheit — warum die Arena wächst. Folge dem Moderator.' },
-  gfk_info:                    { icon:'🕊', title:'Schau auf den Beamer!', desc:'Die 4 Schritte der Gewaltfreien Kommunikation werden erklärt.' },
+  mut_info:                   { icon:'💪', title:'Schau auf den Beamer!', desc:'Mut & Offenheit — warum die Arena wächst. Folge dem Moderator.' },
+  gfk_info:                   { icon:'🕊', title:'Schau auf den Beamer!', desc:'Die 4 Schritte der Gewaltfreien Kommunikation werden erklärt.' },
 };
 function showBeamerMode(mod, data) {
   const meta = BEAMER_META[mod] || { icon:'📽', title:'Schau auf den Beamer!', desc:'Folge dem Moderator.' };
@@ -856,12 +877,12 @@ function showBeamerMode(mod, data) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   MODULE DEFINITIONS
+   MODULE DENINITIONS
 ═══════════════════════════════════════════════════════ */
 const MODULE_DEFS = {
   intro_question:      { type:'freetext',  icon:'💬', title:'Einstiegsfrage',           allowAnon:true,  maxLen:300, question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?', placeholder:'Deine ehrliche Antwort…' },
   johari_quiz:         { type:'multiple_choice', icon:'🪟', title:'Johari-Fenster' },
-  johari_reflexion:    { type:'freetext',  icon:'🔍', title:'Johari-Reflexion',         allowAnon:true,  maxLen:300, question:'Was denkst du: Wo liegt dein grösster blinder Fleck?', placeholder:'Sei ehrlich mit dir selbst…' },
+  johari_reflexion:    { type:'freetext',  icon'🔍', title:'Johari-Reflexion',         allowAnon:true,  maxLen:300, question:'Was denkst du: Wo liegt dein grösster blinder Fleck?', placeholder:'Sei ehrlich mit dir selbst…' },
   kernbotschaften:     { type:'freetext',  icon:'⚡', title:'Kernbotschaft',             allowAnon:true,  maxLen:400, question:'Welcher der vier Sätze trifft dich am meisten — und warum?', placeholder:'Deine Gedanken dazu…' },
   morgen_reflexion:    { type:'freetext',  icon:'🌅', title:'Was die Nacht gebracht hat', allowAnon:false, maxLen:200, question:'Ein Satz. Was hat die Nacht dir gebracht?', placeholder:'Mein Satz für heute Morgen…' },
   gfk:                 { type:'freetext',  icon:'🕊', title:'Gewaltfreie Kommunikation', allowAnon:false, maxLen:400, placeholder:'Deine GFK-Formulierung…' },
@@ -875,7 +896,7 @@ const MODULE_DEFS = {
     ], multi:true },
   steckbrief_feiern:   { type:'freetext',  icon:'🎉', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was feiern wir als Team? Was läuft richtig gut?',                       placeholder:'Unsere Stärke, die wir feiern…' },
   steckbrief_grenzen:  { type:'freetext',  icon:'🚫', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was akzeptieren wir nicht? Welches Verhalten geht gar nicht?',            placeholder:'Das akzeptieren wir als Team nicht…' },
-  steckbrief_zumuten:  { type:'freetext',  icon:'💪', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was dürfen wir uns zumuten? Wo können wir unbequem ehrlich sein?',        placeholder:'Das können wir uns gegenseitig zumuten…' },
+  steckbrief_zumuten:  { type:'freetext',  icon:'💪', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was dürfen wir Uns zumuten? Wo können wir unbequem ehrlich sein?',        placeholder:'Das können wir uns gegenseitig zumuten…' },
   ritual:              { type:'ritual',    icon:'✍️', title:'Dein Versprechen', maxLen:250, question:'Was trägst du zum Team bei? Schreib deinen persönlichen Satz und unterschreibe.', placeholder:'Ich verpflichte mich, in diesem Team…' },
   closing:             { type:'beamer_static', icon:'🏆', title:'Abschluss',         desc:'Der Workshop nähert sich dem Ende. Schau auf den Beamer.' },
   closed:              { type:'beamer_static', icon:'🔒', title:'Workshop beendet',   desc:'Herzlichen Dank für deine Teilnahme!' },
@@ -936,7 +957,7 @@ const FB_SCENARIOS = [
   {
     id:'fb5', label:'Szenario 5 von 7',
     scenario:'"Kevin ist seit Jahren im Team — zuverlässig, strukturiert, unauffällig. Als das Team in eine Projektkrise gerät, übernimmt er spontan die Gesamtkoordination. Alle staunen: Er führt klar, behält den Überblick, motiviert. Kevin selbst: \'Ich hab keine Ahnung, wo das herkam.\'"',
-    question:'Welcher Quadrant beschreibt Kevins Führungsstärke?',
+    question:'Welcher Quadrant beschreibt Kevins Führungststärke?',
     options:[
       {id:'A', text:'Arena — er hat das schon lange bewiesen'},
       {id:'B', text:'Fassade — er hat es bisher versteckt'},
@@ -968,11 +989,11 @@ const FB_SCENARIOS = [
   }
 ];
 
-// ─── KOGNITIVE VERZERRUNGEN SZENARIEN ────────────────────────────────────────
+// ─── KOGNITIVE VERZERRUNGENSZENARIOS ────────────────────────────────────────
 const VZ_SCENARIOS = [
   {
     id:'vz1', label:'Szenario 1 von 3',
-    scenario:'Anna, Projektmanagerin, macht bei einem wichtigen Bericht einen Zahlenfehler. Ihr Vorgesetzter korrigiert ihn öffentlich im Meeting. Von da an werden ihr keine strategisch wichtigen Aufgaben mehr übertragen — obwohl der Fehler nie wieder passiert. Im Team heisst es: "Anna ist halt nicht so zuverlässig."',
+    scenario:'Anna, Projektmanagerin, macht bei einem wichtigen Bericht einen Zahlenfehler. Ihr Vorgesetzter korrigiert ihn öffentlich im Meeting. Von da an werden ihn keine strategisch wichtigen Aufgaben mehr übertragen — obwohl der Fehler nie wieder passiert. Im Team heisst es: "Anna ist halt nicht so zuverlässig."',
     question:'Welche kognitive Verzerrung prägt hier das Bild von Anna?',
     options:[
       {id:'A', text:'Confirmation Bias'},
@@ -1354,7 +1375,7 @@ async function submitMC(mod, qi, qEnc) {
   } catch(e) { document.getElementById('modErr').textContent='Fehler: '+e.message; btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Absenden →'; }
 }
 
-/* ─── SELECTION (RACI) ─────────────────────────────── */
+/* ─── SELECTION (RACI) ────────────────────────────── */
 let selectedItems = new Set();
 function renderSelection(el, mod, cfg) {
   selectedItems.clear();
@@ -1486,264 +1507,445 @@ function renderBeamerStatic(el, cfg) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   DISC TEST
+   DISC TEST — FORCED-CHOICE MOST/LEAST (v2)
 ═══════════════════════════════════════════════════════ */
-const QUESTIONS = [
-  {id:'D1',d:'D',t:'Ich übernehme gerne die Kontrolle über Situationen und Aufgaben.'},
-  {id:'D2',d:'D',t:'Ich treffe Entscheidungen schnell, auch wenn nicht alle Informationen vorliegen.'},
-  {id:'D3',d:'D',t:'Ich spreche Probleme direkt an und gehe Konflikten eher nicht aus dem Weg.'},
-  {id:'D4',d:'D',t:'Ich setze mir ehrgeizige Ziele und fordere auch andere dazu heraus.'},
-  {id:'D5',d:'D',t:'Ich kann mich gut durchsetzen, auch wenn andere anderer Meinung sind.'},
-  {id:'D6',d:'D',t:'Ich mag Wettbewerb und messe mich gerne mit anderen.'},
-  {id:'D7',d:'D',t:'Ich übernehme Verantwortung, auch wenn es riskant ist.'},
-  {id:'D8',d:'D',reverse:true,t:'Ich lasse lieber andere entscheiden, um Konflikte zu vermeiden.'},
-  {id:'I1',d:'I',t:'Ich knüpfe leicht Kontakte und gehe offen auf Menschen zu.'},
-  {id:'I2',d:'I',t:'Ich motiviere andere gerne durch Begeisterung und positive Energie.'},
-  {id:'I3',d:'I',t:'Ich rede gerne und erzähle Geschichten, um andere mitzunehmen.'},
-  {id:'I4',d:'I',t:'Ich suche aktiv Anerkennung und Feedback von meinem Umfeld.'},
-  {id:'I5',d:'I',t:'Ich fühle mich in Gruppen wohl und bringe mich gerne ein.'},
-  {id:'I6',d:'I',t:'Ich überzeuge andere oft durch Charme und Optimismus.'},
-  {id:'I7',d:'I',t:'Ich handle manchmal spontan, wenn mich etwas begeistert.'},
-  {id:'I8',d:'I',reverse:true,t:'In Gruppen halte ich mich meistens im Hintergrund und bleibe lieber still.'},
-  {id:'S1',d:'S',t:'Ich bin geduldig und bleibe auch in stressigen Situationen ruhig.'},
-  {id:'S2',d:'S',t:'Ich arbeite gerne in einem stabilen, harmonischen Umfeld.'},
-  {id:'S3',d:'S',t:'Ich bin zuverlässig und halte meine Zusagen ein.'},
-  {id:'S4',d:'S',t:'Ich unterstütze andere gerne und helfe, wo ich kann.'},
-  {id:'S5',d:'S',t:'Ich bevorzuge klare Abläufe und Routinen.'},
-  {id:'S6',d:'S',t:'Ich bin ein guter Zuhörer und nehme mir Zeit für andere.'},
-  {id:'S7',d:'S',t:'Ich vermeide plötzliche Veränderungen, wenn es nicht nötig ist.'},
-  {id:'S8',d:'S',reverse:true,t:'Ich werde schnell ungeduldig, wenn Dinge langsam oder gleichförmig laufen.'},
-  {id:'C1',d:'C',t:'Ich achte auf Details und arbeite sehr genau.'},
-  {id:'C2',d:'C',t:'Ich plane gründlich, bevor ich eine Aufgabe beginne.'},
-  {id:'C3',d:'C',t:'Ich halte mich gerne an Regeln und Standards.'},
-  {id:'C4',d:'C',t:'Ich überprüfe meine Arbeit lieber zweimal, um Fehler zu vermeiden.'},
-  {id:'C5',d:'C',t:'Ich analysiere Probleme systematisch und methodisch, bevor ich handle.'},
-  {id:'C6',d:'C',t:'Ich fühle mich unwohl, wenn ich ohne ausreichende Vorbereitung improvisieren muss.'},
-  {id:'C7',d:'C',t:'Ich dokumentiere meine Arbeit sorgfältig und detailliert.'},
-  {id:'C8',d:'C',reverse:true,t:'Details sind mir oft egal – Hauptsache, es geht schnell vorwärts.'},
+const DISC_BLOCKS = [
+  {id:1,  D:'Entschlossen',        I:'Begeisternd',        S:'Standhaft',         C:'Gründlich'},
+  {id:2,  D:'Direkt',              I:'Gesellig',           S:'Verlässlich',       C:'Analytisch'},
+  {id:3,  D:'Zielstrebig',         I:'Optimistisch',       S:'Loyal',             C:'Präzise'},
+  {id:4,  D:'Tatkräftig',          I:'Mitreißend',         S:'Beständig',         C:'Systematisch'},
+  {id:5,  D:'Durchsetzungsstark',  I:'Kontaktfreudig',     S:'Ruhig',             C:'Sorgfältig'},
+  {id:6,  D:'Mutig',               I:'Überzeugend',        S:'Harmonisch',        C:'Methodisch'},
+  {id:7,  D:'Willensstark',        I:'Herzlich',           S:'Unterstützend',     C:'Qualitätsbewusst'},
+  {id:8,  D:'Führungsstark',       I:'Inspirierend',       S:'Ausgeglichen',      C:'Strukturiert'},
+  {id:9,  D:'Konsequent',          I:'Kommunikativ',       S:'Fürsorglich',       C:'Genau'},
+  {id:10, D:'Ehrgeizig',           I:'Lebhaft',            S:'Kooperativ',        C:'Faktenorientiert'},
+  {id:11, D:'Ergebnisorientiert',  I:'Spontan',            S:'Zuverlässig',       C:'Detailgenau'},
+  {id:12, D:'Selbstsicher',        I:'Warmherzig',         S:'Bodenständig',      C:'Diszipliniert'},
+  {id:13, D:'Dynamisch',           I:'Aufgeschlossen',     S:'Konstant',          C:'Umsichtig'},
+  {id:14, D:'Initiativ',           I:'Charmant',           S:'Einfühlsam',        C:'Planvoll'},
+  {id:15, D:'Pragmatisch',         I:'Motivierend',        S:'Besonnen',          C:'Objektiv'},
+  {id:16, D:'Unerschrocken',       I:'Enthusiastisch',     S:'Stabil',            C:'Gewissenhaft'},
+  {id:17, D:'Fokussiert',          I:'Zugänglich',         S:'Aufmerksam',        C:'Akkurat'},
+  {id:18, D:'Bestimmt',            I:'Einnehmend',         S:'Sanftmütig',        C:'Logisch'},
+  {id:19, D:'Kraftvoll',           I:'Ausdrucksstark',     S:'Konsistent',        C:'Bedacht'},
+  {id:20, D:'Entschieden',         I:'Offen',              S:'Vertrauensvoll',    C:'Durchdacht'},
+  {id:21, D:'Leistungsstark',      I:'Lebensfroh',         S:'Hingebungsvoll',    C:'Sachlich'},
+  {id:22, D:'Zupackend',           I:'Verbindend',         S:'Hilfsbereit',       C:'Vorausschauend'},
+  {id:23, D:'Energiegeladen',      I:'Sozial',             S:'Friedlich',         C:'Ordentlich'},
+  {id:24, D:'Wagemutig',           I:'Einladend',          S:'Geduldig',          C:'Regelkonform'},
+  {id:25, D:'Risikobereit',        I:'Strahlend',          S:'Ausgleichend',      C:'Wohlüberlegt'},
+  {id:26, D:'Energisch',           I:'Kontaktstark',       S:'Menschlich',        C:'Solide'},
+  {id:27, D:'Durchgreifend',       I:'Umgänglich',         S:'Verbindlich',       C:'Reflektiert'},
+  {id:28, D:'Wettbewerbsorientiert',I:'Anregend',          S:'Bedachtsam',        C:'Regelorientiert'},
 ];
 
+const DIM_COLORS = {D:'#e63946', I:'#f4a261', S:'#2a9d8f', C:'#4a90d9'};
+const DIM_NAMES  = {D:'Dominanz', I:'Initiative', S:'Stetigkeit', C:'Gewissenhaftigkeit'};
+
 const TYPE_INFO = {
-  D:{name:'Der Macher',    sub:'Dominant · Ergebnisorientiert · Direkt',  hex:'#e63946',
+  D:{name:'Der Macher',        sub:'Dominant · Ergebnisorientiert · Direkt',    hex:'#e63946',
     strengths:['Entscheidungsfreudig','Zielorientiert','Direkt und klar','Treibt Veränderung an'],
     challenges:['Wirkt ungeduldig','Wenig Fokus auf Details','Überhört manchmal andere','Geht Risiken ein'],
     motivation:'Resultate, Kontrolle, Einfluss', fear:'Kontrollverlust, Scheitern',
     teamrole:'Antreiber — setzt Impulse und bricht Stagnation auf',
     communication:'Direkt, knapp, resultatorientiert'},
-  I:{name:'Der Inspirator', sub:'Einflussreich · Enthusiastisch · Sozial',  hex:'#f4a261',
+  I:{name:'Der Inspirator',    sub:'Einflussreich · Enthusiastisch · Sozial',   hex:'#f4a261',
     strengths:['Begeisterungsfähig','Motiviert andere','Kreativ und offen','Starker Netzwerker'],
     challenges:['Wenig strukturiert','Schnell abgelenkt','Vermeidet manchmal Konflikte','Überschätzt gelegentlich'],
     motivation:'Anerkennung, Kreativität, Spass', fear:'Ablehnung, Isolation, Langeweile',
     teamrole:'Energiegeber — Begeisterung und sozialer Zusammenhalt',
     communication:'Offen, persönlich, emotional'},
-  S:{name:'Der Stabilisierer',sub:'Stetig · Zuverlässig · Harmonisch',    hex:'#2a9d8f',
-    strengths:['Verlässlich und beständig','Aufmerksamer Zuhörer','Loyal','Hält Team zusammen'],
+  S:{name:'Der Stabilisierer', sub:'Stetig · Zuverlåssig · Harmonisch',         hex:'#2a9d8f',
+    strengths:['Verlåsslich und beständig','Aufmerksamer Zuhörer','Loyal','Hält Team zusammen'],
     challenges:['Vermeidet Konflikte aktiv','Schwer bei Veränderung','Sagt selten Nein','Entscheide dauern lang'],
     motivation:'Stabilität, Harmonie, Sicherheit', fear:'Konflikte, plötzliche Veränderungen',
     teamrole:'Anker — Verlässlichkeit und sozialer Kitt',
     communication:'Geduldig, freundlich, indirekt'},
-  C:{name:'Der Analytiker', sub:'Gewissenhaft · Präzise · Systematisch',   hex:'#4a90d9',
-    strengths:['Hohe Qualitätsstandards','Analytisch und gründlich','Strukturiert','Präzise in Details'],
+  C:{name:'Der Analytiker',    sub:'Gewissenhaft · Pråzise · Systematisch',     hex:'#4a90d9',
+    strengths:['Hohe Qualitätsstandards','Analytisch und gründlich','Strukturiert','Pråzise in Details'],
     challenges:['Kann überanalysieren','Perfektionistisch','Vorsichtig bei Entscheiden','Wenig spontan'],
     motivation:'Qualität, Genauigkeit, Korrektheit', fear:'Fehler, Kritik, Unordnung',
     teamrole:'Qualitätshüter — hält Standards und erkennt Risiken',
-    communication:'Faktenbasiert, präzise, schriftlich bevorzugt'},
+    communication:'Faktenbasiert, pråzise, schriftlich bevorzugt'},
 };
-const DIM_NAMES = {D:'Dominanz',I:'Initiative',S:'Stetigkeit',C:'Gewissenhaftigkeit'};
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; }
-const SHUFFLED  = shuffle([...QUESTIONS]);
-const PAGE_SIZE = 8;
-const PAGES     = Array.from({length:Math.ceil(SHUFFLED.length/PAGE_SIZE)},(_,i)=>SHUFFLED.slice(i*PAGE_SIZE,(i+1)*PAGE_SIZE));
 
-let discPhase='nat', discPage=0;
-const discAnswers = {nat:{},role:{}};
+// Shuffle block order AND adjective order within each block (eliminates position bias)
+const SHUFFLED_BLOCKS = shuffle([...DISC_BLOCKS]).map(b => {
+  const dims = shuffle(['D','I','S','C']);
+  return { id: b.id, dims, words: dims.map(d => ({ dim: d, word: b[d] })) };
+});
+
+const BLOCK_PAGE_SIZE = 7;
+const BLOCK_PAGES = Array.from(
+  { length: Math.ceil(SHUFFLED_BLOCKS.length / BLOCK_PAGE_SIZE) },
+  (_, i) => SHUFFLED_BLOCKS.slice(i * BLOCK_PAGE_SIZE, (i + 1) * BLOCK_PAGE_SIZE)
+);
+
+let mostPicks  = {}; // blockId → dim
+let leastPicks = {}; // blockId → dim
+let discPage   = 0;
 
 function showDiscTest() {
-  if (Object.keys(discAnswers.role).length === QUESTIONS.length) { buildDiscResults(); return; }
-  if (Object.keys(discAnswers.nat).length === QUESTIONS.length && discPhase==='nat') { show('sDiscTransition'); return; }
+  const done = SHUFFLED_BLOCKS.every(b => mostPicks[b.id] && leastPicks[b.id]);
+  if (done) { buildDiscResults(); return; }
   show('sDiscIntro');
 }
 
-function startDiscPhase(ph) { discPhase=ph; discPage=0; renderDiscPage(); show('sDiscQuestions'); }
+function startDiscTest() {
+  discPage = 0;
+  mostPicks = {};
+  leastPicks = {};
+  renderDiscPage();
+  show('sDiscQuestions');
+}
 
+/* ─── RENDER PAGE ─────────────────────────────────── */
 function renderDiscPage() {
-  const qs   = PAGES[discPage];
-  const ans  = discAnswers[discPhase];
-  const isNat= discPhase==='nat';
-  const base = discPage * PAGE_SIZE;
+  const blocks  = BLOCK_PAGES[discPage];
+  const total   = DISC_BLOCKS.length;
+  const done    = SHUFFLED_BLOCKS.filter(b => mostPicks[b.id] && leastPicks[b.id]).length;
+  const pageMax = (discPage + 1) * BLOCK_PAGE_SIZE;
 
-  document.getElementById('pgLabel').textContent = `SEITE ${discPage+1} VON ${PAGES.length}`;
-  document.getElementById('pgCount').textContent = `${Object.keys(ans).length} / ${QUESTIONS.length}`;
-  document.getElementById('pgBar').style.width   = `${(discPage+1)*25}%`;
-  document.getElementById('btnBack').style.display = discPage>0 ? 'inline-flex':'none';
-  document.getElementById('btnNext').textContent = discPage===PAGES.length-1 ? 'Auswertung →':'Weiter →';
-  document.getElementById('warnMsg').style.display = 'none';
+  document.getElementById('pgLabel').textContent = `SEITE ${discPage+1} VON ${BLOCK_PAGES.length}`;
+  document.getElementById('pgCount').textContent  = `${done} / ${total}`;
+  document.getElementById('pgBar').style.width    = `${((discPage+1) / BLOCK_PAGES.length) * 100}%`;
+  document.getElementById('btnBack').style.display  = discPage > 0 ? 'inline-flex' : 'none';
+  document.getElementById('btnNext').textContent   = discPage === BLOCK_PAGES.length - 1 ? 'Auswertung →' : 'Weiter →';
+  document.getElementById('warnMsg').style.display  = 'none';
 
   document.getElementById('phaseHead').innerHTML = `
-    <div class="phase-tag ${isNat?'nat':'role'}">
-      <span>${isNat?'◉':'◎'}</span><span>${isNat?'Natürliches Profil':'Rollenprofil'}</span>
-    </div>
-    <div style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;margin-bottom:6px;">
-      ${isNat?'Wie bist du wirklich?':'Wie bist du bei der Arbeit?'}
-    </div>
-    <div style="font-size:14px;color:var(--muted);margin-bottom:8px;">
-      ${isNat?'Antworte so, wie du dich im privaten Alltag verhältst.':'Dieselben Aussagen aus deiner beruflichen Rolle heraus.'}
+    <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px;">Pro Block: ★ am meisten &amp; ✕ am wenigsten</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:10px;">
+      Tippe auf ein Adjektiv: erster Tipp = <span style="color:#ffd700;font-weight:600;">★ Meistens</span> &nbsp;·&nbsp; zweiter Tipp = <span style="color:#e63946;font-weight:600;">✕ Wenigstens</span>
     </div>`;
 
-  document.getElementById('qContainer').innerHTML = qs.map((q,i) => {
-    const saved = ans[q.id] || null;
-    return `<div class="q-block" id="qb-${q.id}">
-      <div class="q-num">AUSSAGE ${base+i+1} / ${QUESTIONS.length}</div>
-      <div class="q-text">${q.t}</div>
-      <div class="scale-row">
-        <div class="scale-end">Trifft nicht zu</div>
-        <div class="scale-opts">
-          ${[1,2,3,4,5].map(v=>`
-            <div class="scale-opt">
-              <input type="radio" name="${discPhase}_${q.id}" id="r_${discPhase}_${q.id}_${v}" value="${v}" ${saved===v?'checked':''}>
-              <label for="r_${discPhase}_${q.id}_${v}">${v}</label>
-            </div>`).join('')}
+  document.getElementById('qContainer').innerHTML = blocks.map(b => renderBlock(b, false)).join('');
+}
+
+function renderBlock(b, returnOnly) {
+  const mostDim  = mostPicks[b.id]  || null;
+  const leastDim = leastPicks[b.id] || null;
+  const blockNum = SHUFFLED_BLOCKS.indexOf(b) + 1;
+  const bothDone = mostDim && leastDim;
+
+  let statusHTML = '';
+  if (!mostDim && !leastDim) {
+    statusHTML = `<div class="fc-status"><span>Tippe das Adjektiv das dich <strong style="color:#ffd700">am meisten</strong> beschreibt</span><span style="color:var(--dim)">0/2</span></div>`;
+  } else if (mostDim && !leastDim) {
+    statusHTML = `<div class="fc-status" style="border-color:rgba(255,215,0,.3)"><span>★ <strong style="color:#ffd700">${DISC_BLOCKS.find(x=>x.id===b.id)[mostDim]}</strong> &nbsp;·&nbsp; Jetzt <strong style="color:#e63946">✕ am wenigsten</strong> wählen</span><span style="color:#ffd700">1/2</span></div>`;
+  } else {
+    statusHTML = `<div class="fc-status" style="border-color:rgba(42,157,143,.3);background:rgba(42,157,143,.06)"><span>★ <strong style="color:#ffd700">${DISC_BLOCKS.find(x=>x.id===b.id)[mostDim]}</strong> &nbsp;·&nbsp; ✕ <strong style="color:#e63946">${DISC_BLOCKS.find(x=>x.id===b.id)[leastDim]}</strong></span><span style="color:var(--S)">✓</span></div>`;
+  }
+
+  const wordsHTML = b.words.map(w => {
+    const isMost  = mostDim  === w.dim;
+    const isLeast = leastDim === w.dim;
+    const col = DIM_COLORS[w.dim];
+    let style, badge = '';
+    if (isMost) {
+      style = `border:2px solid #ffd700;background:rgba(255,215,0,.12);opacity:1;`;
+      badge = `<span class="fc-badge most">★</span>`;
+    } else if (isLeast) {
+      style = `border:2px solid #e63946;background:rgba(230,57,70,.12);opacity:1;`;
+      badge = `<span class="fc-badge least">✕</span>`;
+    } else {
+      const baseOpacity = bothDone ? '0.35' : (mostDim || leastDim) ? '0.5' : '0.75';
+      style = `border:2px solid ${col};opacity:${baseOpacity};`;
+    }
+    return `<button class="fc-word" onclick="fcClick(${b.id},'${w.dim}')" style="${style}">
+      ${badge}
+      <span class="fc-dim-label" style="color:${col}">${w.dim}</span>
+      <span class="fc-word-text">${w.word}</span>
+    </button>`;
+  }).join('');
+
+  const html = `<div class="q-block ${bothDone?'':''}${!mostDim&&!leastDim?'':''}" id="qb-${b.id}" style="${bothDone?'border-color:rgba(42,157,143,.35);':''}">
+    <div class="q-num">BLOCK ${blockNum} / ${DISC_BLOCKS.length}</div>
+    ${statusHTML}
+    <div class="fc-grid">${wordsHTML}</div>
+  </div>`;
+
+  if (returnOnly === false) return html;
+
+  // Re-render in place
+  const el = document.getElementById('qb-' + b.id);
+  if (el) el.outerHTML = html;
+}
+
+/* ─── CLICK HANDLER ───────────────────────────────── */
+function fcClick(blockId, dim) {
+  const most  = mostPicks[blockId]  || null;
+  const least = leastPicks[blockId] || null;
+
+  if (dim === most) {
+    delete mostPicks[blockId];
+  } else if (dim === least) {
+    delete leastPicks[blockId];
+  } else if (!most) {
+    mostPicks[blockId] = dim;
+  } else if (!least) {
+    leastPicks[blockId] = dim;
+  } else {
+    // Both set → replace most (keep least unless conflict)
+    mostPicks[blockId] = dim;
+  }
+
+  // Update progress counter
+  const done = SHUFFLED_BLOCKS.filter(b => mostPicks[b.id] && leastPicks[b.id]).length;
+  document.getElementById('pgCount').textContent = `${done} / ${DISC_BLOCKS.length}`;
+
+  // Re-render block in place
+  const b = SHUFFLED_BLOCKS.find(x => x.id === blockId);
+  if (b) {
+    const el = document.getElementById('qb-' + blockId);
+    if (el) el.outerHTML = renderBlock(b, false);
+  }
+}
+
+/* ─── NAVIGATION ──────────────────────────────────── */
+function discNextPage() {
+  const blocks  = BLOCK_PAGES[discPage];
+  const missing = blocks.filter(b => !mostPicks[b.id] || !leastPicks[b.id]);
+  if (missing.length) {
+    document.getElementById('warnMsg').style.display = 'block';
+    document.getElementById('warnMsg').textContent = `⚠ Noch ${missing.length} Block${missing.length>1?'s':''} unvollständig`;
+    const first = document.getElementById('qb-' + missing[0].id);
+    if (first) first.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+  if (discPage < BLOCK_PAGES.length - 1) {
+    discPage++;
+    renderDiscPage();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  } else {
+    buildDiscResults();
+  }
+}
+
+function discPrevPage() {
+  if (discPage > 0) { discPage--; renderDiscPage(); window.scrollTo({ top:0 }); }
+}
+
+/* ─── SCORING ─────────────────────────────────────── */
+function calcDiscScores() {
+  const most  = { D:0, I:0, S:0, C:0 };
+  const least = { D:0, I:0, S:0, C:0 };
+  SHUFFLED_BLOCKS.forEach(b => {
+    if (mostPicks[b.id])  most[mostPicks[b.id]]++;
+    if (leastPicks[b.id]) least[leastPicks[b.id]]++;
+  });
+  const N = 28;
+  const adapted   = {}; // Maske: how you present yourself
+  const natural   = {}; // Kern: who you really are
+  const composite = {}; // Most reliable: average of both
+  ['D','I','S','C'].forEach(d => {
+    adapted[d]   = Math.round(most[d]  / N * 100);
+    natural[d]   = Math.round((N - least[d]) / N * 100);
+    composite[d] = Math.round((adapted[d] + natural[d]) / 2);
+  });
+  const stress = Math.round(['D','I','S','C'].reduce((s,d) => s + Math.abs(adapted[d] - natural[d]), 0) / 4);
+  return { adapted, natural, composite, stress, mostCounts:most, leastCounts:least };
+}
+
+function domType(p) {
+  return Object.entries(p).sort((a,b) => b[1]-a[1])[0][0];
+}
+
+/* ─── RESULTS ─────────────────────────────────────── */
+function buildDiscResults() {
+  const sc = calcDiscScores();
+  const { adapted, natural, composite, stress } = sc;
+  const aT = domType(adapted), nT = domType(natural), cT = domType(composite);
+
+  // Stress interpretation
+  let stressLabel, stressColor, stressDesc;
+  if (stress < 15)      { stressLabel='Niedrig';   stressColor='var(--S)';  stressDesc='Du kannst im Berufsalltag weitgehend du selbst sein.'; }
+  else if (stress < 30) { stressLabel='Mittel';    stressColor='var(--I)';  stressDesc='Du passt dich an — das kostet manchmal Energie.'; }
+  else                  { stressLabel='Hoch';      stressColor='var(--D)';  stressDesc='Zwischen Maske und Kern besteht eine spürbare Spannung.'; }
+
+  const dimBars = ['D','I','S','C'].map(d => {
+    const col = DIM_COLORS[d];
+    return `<div class="dim-row">
+      <div class="dim-labels">
+        <div class="dim-letter" style="color:${col}">${d}</div>
+        <div class="dim-name">${DIM_NAMES[d]}</div>
+        <div class="dim-scores" style="font-size:11px;">
+          <span style="color:#ffd700">${adapted[d]}</span>
+          <span style="opacity:.4"> / </span>
+          <span style="color:${col};opacity:.7">${natural[d]}</span>
+          <span style="opacity:.4"> / </span>
+          <span style="opacity:.6">${composite[d]}</span>
         </div>
-        <div class="scale-end" style="text-align:right;">Trifft voll zu</div>
+      </div>
+      <div class="dual-track" style="display:flex;flex-direction:column;gap:3px;padding-left:28px;">
+        <div class="bar-track"><div class="bar-fill" style="background:#ffd700;opacity:.85;width:0%" data-w="${adapted[d]}"></div></div>
+        <div class="bar-track"><div class="bar-fill" style="background:${col};opacity:.6;width:0%" data-w="${natural[d]}"></div></div>
+        <div class="bar-track"><div class="bar-fill" style="background:${col};width:0%" data-w="${composite[d]}"></div></div>
       </div>
     </div>`;
   }).join('');
 
-  qs.forEach(q => {
-    for(let v=1;v<=5;v++){
-      const r = document.getElementById(`r_${discPhase}_${q.id}_${v}`);
-      if(r) r.addEventListener('change',()=>{
-        discAnswers[discPhase][q.id]=v;
-        document.getElementById(`qb-${q.id}`).classList.remove('error');
-        document.getElementById('pgCount').textContent=`${Object.keys(discAnswers[discPhase]).length} / 28`;
-      });
-    }
-  });
-}
-
-function discNextPage() {
-  const qs = PAGES[discPage];
-  const missing = qs.filter(q => !discAnswers[discPhase][q.id]);
-  if (missing.length) {
-    document.getElementById('warnMsg').style.display='block';
-    missing.forEach(q=>document.getElementById(`qb-${q.id}`).classList.add('error'));
-    document.getElementById(`qb-${missing[0].id}`).scrollIntoView({behavior:'smooth',block:'center'});
-    return;
-  }
-  if (discPage < PAGES.length-1) { discPage++; renderDiscPage(); window.scrollTo({top:0}); }
-  else { discPhase==='nat' ? show('sDiscTransition') : buildDiscResults(); }
-}
-function discPrevPage() { if(discPage>0){ discPage--; renderDiscPage(); window.scrollTo({top:0}); } }
-
-function calcScores(ph) {
-  const raw={D:0,I:0,S:0,C:0}, n={D:0,I:0,S:0,C:0};
-  QUESTIONS.forEach(q => { let v=discAnswers[ph][q.id]; if(v){ if(q.reverse)v=6-v; raw[q.d]+=v; n[q.d]++; } });
-  const pct={};
-  ['D','I','S','C'].forEach(d=>{ pct[d]=n[d]?Math.round((raw[d]/(n[d]*5))*100):0; });
-  return {pct,raw,n};
-}
-function domType(p){ return Object.entries(p).sort((a,b)=>b[1]-a[1])[0][0]; }
-
-function buildDiscResults() {
-  const ns=calcScores('nat'), rs=calcScores('role');
-  const nT=domType(ns.pct), rT=domType(rs.pct);
-  const nI=TYPE_INFO[nT], rI=TYPE_INFO[rT];
-  const tensions=['D','I','S','C'].map(d=>({d,delta:rs.pct[d]-ns.pct[d]})).filter(t=>Math.abs(t.delta)>=15);
-
-  const bars = ['D','I','S','C'].map(d=>`
-    <div class="dim-row">
-      <div class="dim-labels">
-        <div class="dim-letter" style="color:${TYPE_INFO[d].hex}">${d}</div>
-        <div class="dim-name">${DIM_NAMES[d]}</div>
-        <div class="dim-scores">${ns.pct[d]}<span style="opacity:.4"> / ${rs.pct[d]}</span></div>
-      </div>
-      <div class="dual-track">
-        <div class="bar-track"><div class="bar-fill" style="background:${TYPE_INFO[d].hex};width:0%" data-w="${ns.pct[d]}"></div></div>
-        <div class="bar-track"><div class="bar-fill" style="background:${TYPE_INFO[d].hex};opacity:.4;width:0%" data-w="${rs.pct[d]}"></div></div>
-      </div>
-    </div>`).join('');
-
-  const tensHTML = tensions.length
-    ? `<div class="tension-card"><h3>⚡ Rollenaufwand</h3>${tensions.map(t=>`<div class="tension-item"><strong style="color:${TYPE_INFO[t.d].hex}">${t.d} – ${DIM_NAMES[t.d]}</strong>: ${t.delta>0?`In der Rolle <strong>+${t.delta}%</strong> höher`:`In der Rolle <strong>${t.delta}%</strong> tiefer`} — das kostet Energie.</div>`).join('')}</div>`
-    : `<div class="card" style="margin-bottom:12px;"><p style="font-size:15px;color:var(--muted);">✓ Deine Profile sind konsistent — du kannst bei der Arbeit weitgehend du selbst sein.</p></div>`;
+  const cInfo = TYPE_INFO[cT], aInfo = TYPE_INFO[aT], nInfo = TYPE_INFO[nT];
 
   document.getElementById('resultsContent').innerHTML = `
     <div style="max-width:640px;">
-      <div class="profile-card"><div class="pc-label" style="color:var(--S);">◉ Natürliches Profil</div>
-        <div class="pc-main"><div class="pc-ball" style="background:${nI.hex}">${nT}</div>
-          <div><div class="pc-name">${nI.name}</div><div class="pc-sub">${nI.sub}</div></div></div></div>
-      <div class="profile-card"><div class="pc-label" style="color:var(--C);">◎ Rollenprofil</div>
-        <div class="pc-main"><div class="pc-ball" style="background:${rI.hex};opacity:.8">${rT}</div>
-          <div><div class="pc-name">${rI.name}</div><div class="pc-sub">${rI.sub}</div></div></div></div>
+
+      <!-- Three profile cards -->
+      <div class="profile-card" style="border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.04);">
+        <div class="pc-label" style="color:#ffd700;">★ MASKE — Wie du dich zeigst</div>
+        <div class="pc-main">
+          <div class="pc-ball" style="background:${aInfo.hex};">${aT}</div>
+          <div><div class="pc-name">${aInfo.name}</div><div class="pc-sub">${aInfo.sub}</div></div>
+        </div>
+      </div>
+
+      <div class="profile-card" style="border-color:rgba(42,157,143,.35);">
+        <div class="pc-label" style="color:var(--S);">◉ KERN — Wer du wirklich bist</div>
+        <div class="pc-main">
+          <div class="pc-ball" style="background:${nInfo.hex};opacity:.85;">${nT}</div>
+          <div><div class="pc-name">${nInfo.name}</div><div class="pc-sub">${nInfo.sub}</div></div>
+        </div>
+      </div>
+
+      <div class="profile-card" style="border-color:rgba(74,144,217,.35);">
+        <div class="pc-label" style="color:var(--C);">◎ KOMPOSIT — Stabilstes Profil</div>
+        <div class="pc-main">
+          <div class="pc-ball" style="background:${cInfo.hex};">${cT}</div>
+          <div><div class="pc-name">${cInfo.name}</div><div class="pc-sub">${cInfo.sub}</div></div>
+        </div>
+      </div>
+
+      <!-- Bars -->
       <div class="bar-card">
         <div class="bar-title">Profil-Vergleich</div>
         <div class="bar-legend">
-          <div class="leg-item"><div class="leg-dot" style="background:var(--S)"></div>Natürlich</div>
-          <div class="leg-item"><div class="leg-dot" style="background:var(--muted);opacity:.5"></div>Rolle</div>
-        </div>${bars}</div>
-      ${tensHTML}
-      <div class="detail-card">
-        <h2 style="color:${nI.hex}">Dein natürlicher Stil: ${nI.name}</h2>
-        <div class="trait-grid">
-          <div class="trait-card"><div class="trait-lbl">Stärken</div><ul>${nI.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div>
-          <div class="trait-card"><div class="trait-lbl">Herausforderungen</div><ul>${nI.challenges.map(c=>`<li>${c}</li>`).join('')}</ul></div>
+          <div class="leg-item"><div class="leg-dot" style="background:#ffd700;opacity:.85;"></div>Maske</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--S);opacity:.6;"></div>Kern</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--C);"></div>Komposit</div>
         </div>
-        <div class="info-row"><div class="ir-lbl">Motivation</div><p>${nI.motivation}</p></div>
-        <div class="info-row"><div class="ir-lbl">Grundangst</div><p>${nI.fear}</p></div>
-        <div class="info-row"><div class="ir-lbl">Kommunikation</div><p>${nI.communication}</p></div>
-        <div class="info-row"><div class="ir-lbl">Teamrolle</div><p>${nI.teamrole}</p></div>
+        ${dimBars}
       </div>
-      ${nT!==rT?`<div class="detail-card"><h2 style="color:${rI.hex}">Dein Rollenstil: ${rI.name}</h2>
-        <p style="font-size:15px;color:var(--muted);margin-bottom:16px;">Bei der Arbeit verhältst du dich anders als in deinem natürlichen Profil.</p>
+
+      <!-- Stress card -->
+      <div class="tension-card">
+        <h3>⚡ Rollenaufwand (Masken-Stress)</h3>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:700;color:${stressColor};">${stress}%</div>
+          <div>
+            <div style="font-size:15px;font-weight:600;color:${stressColor};">${stressLabel}</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:3px;">${stressDesc}</div>
+          </div>
+        </div>
+        ${stress >= 15 ? `<div style="font-size:13px;color:var(--muted);">Dimensionen mit grösster Spannung: ${
+          ['D','I','S','C']
+            .map(d => ({d, delta: Math.abs(adapted[d]-natural[d])}))
+            .filter(x => x.delta >= 15)
+            .sort((a,b)=>b.delta-a.delta)
+            .map(x=>`<strong style="color:${DIM_COLORS[x.d]}">${x.d}</strong> (${x.delta}%)`)
+            .join(' · ')
+        }</div>` : ''}
+      </div>
+
+      <!-- Detail: Composite type -->
+      <div class="detail-card">
+        <h2 style="color:${cInfo.hex}">Dein Komposit-Profil: ${cInfo.name}</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Das statistisch zuverlässigste Profil — bereinigt von sozialem Druck.</p>
         <div class="trait-grid">
-          <div class="trait-card"><div class="trait-lbl">In der Rolle stark</div><ul>${rI.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div>
-          <div class="trait-card"><div class="trait-lbl">Reibungspunkte</div><ul>${rI.challenges.map(c=>`<li>${c}</li>`).join('')}</ul></div>
-        </div></div>`:''}
+          <div class="trait-card"><div class="trait-lbl">Stärken</div><ul>${cInfo.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+          <div class="trait-card"><div class="trait-lbl">Herausforderungen</div><ul>${cInfo.challenges.map(c=>`<li>${c}</li>`).join('')}</ul></div>
+        </div>
+        <div class="info-row"><div class="ir-lbl">Motivation</div><p>${cInfo.motivation}</p></div>
+        <div class="info-row"><div class="ir-lbl">Grundangst</div><p>${cInfo.fear}</p></div>
+        <div class="info-row"><div class="ir-lbl">Kommunikation</div><p>${cInfo.communication}</p></div>
+        <div class="info-row"><div class="ir-lbl">Teamrolle</div><p>${cInfo.teamrole}</p></div>
+      </div>
+
+      ${aT !== nT ? `<div class="detail-card" style="border-color:rgba(255,215,0,.2);">
+        <h2 style="color:#ffd700">Maske vs. Kern</h2>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+          Du zeigst nach aussen <strong style="color:${aInfo.hex}">${aInfo.name}</strong> — 
+          im Inneren bist du <strong style="color:${nInfo.hex}">${nInfo.name}</strong>. 
+          Diese Spannung ist das Herzstück der heutigen Reflexion.
+        </p>
+      </div>` : `<div class="card" style="margin-bottom:12px;">
+        <p style="font-size:14px;color:var(--muted);line-height:1.6;">✓ Maske und Kern sind deckungsgleich — du kannst in deinem Alltag authentisch sein.</p>
+      </div>`}
+
+      <!-- Raw scores -->
       <div class="bar-card">
-        <div class="bar-title">Rohwerte</div>
+        <div class="bar-title">Rohwerte (Picks)</div>
         <div class="scores-grid">
           ${['D','I','S','C'].map(d=>`<div class="score-cell">
-            <div class="score-val" style="color:${TYPE_INFO[d].hex}">${ns.pct[d]}</div>
-            <div class="score-role-val" style="color:${TYPE_INFO[d].hex}">${rs.pct[d]}</div>
-            <div class="score-dim">${d}</div></div>`).join('')}
+            <div class="score-val" style="color:${DIM_COLORS[d]}">${composite[d]}</div>
+            <div class="score-dim">${d}</div>
+            <div style="font-size:10px;color:var(--dim);margin-top:2px;">${sc.mostCounts[d]}M / ${sc.leastCounts[d]}L</div>
+          </div>`).join('')}
         </div>
       </div>
+
       <div style="margin-top:16px;padding-bottom:32px;">
         <button class="btn btn-ghost" onclick="window.print()" style="margin-bottom:10px;">PDF speichern</button>
       </div>
     </div>`;
 
   show('sDiscResults');
-  setTimeout(()=>{ document.querySelectorAll('.bar-fill[data-w]').forEach(el=>{ el.style.width=el.getAttribute('data-w')+'%'; }); }, 150);
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill[data-w]').forEach(el => {
+      el.style.width = el.getAttribute('data-w') + '%';
+    });
+  }, 150);
 }
 
+/* ─── PAYLOAD for sendDiscResult ─────────────────── */
 function getDiscPayload() {
-  const ns=calcScores('nat'), rs=calcScores('role');
-  const natural=ns.pct, role=rs.pct;
-  const deltas={};
-  ['D','I','S','C'].forEach(d=>deltas[d]=role[d]-natural[d]);
-  const stress=['D','I','S','C'].reduce((a,d)=>a+Math.abs(deltas[d]),0);
-  return { natural, role, naturalType:domType(natural), roleType:domType(role), raw:{natural:ns.raw,role:rs.raw}, deltas, stress,
-    map:{ natural:{x:natural.D-natural.S,y:natural.I-natural.C}, role:{x:role.D-role.S,y:role.I-role.C} } };
+  const sc = calcDiscScores();
+  const { adapted, natural, composite, stress } = sc;
+  return {
+    natural:   natural,   // Kern (backward compat: was 'natural profile')
+    role:      adapted,   // Maske (backward compat: was 'role profile')
+    raw: { adapted: sc.mostCounts, natural: sc.leastCounts },
+    computed: {
+      adaptedType:   domType(adapted),
+      naturalType:   domType(natural),
+      compositeType: domType(composite),
+      composite,
+      stress,
+      map: {
+        natural: { x: natural.D  - natural.S,  y: natural.I  - natural.C  },
+        role:    { x: adapted.D  - adapted.S,  y: adapted.I  - adapted.C  },
+        composite:{ x: composite.D - composite.S, y: composite.I - composite.C },
+      }
+    }
+  };
 }
 
 async function sendDiscResult() {
   const btn = document.getElementById('sendBtn');
-  btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
+  btn.disabled = true; btn.classList.add('loading'); btn.textContent = '';
   try {
-    const p = getDiscPayload();
-    const res = await fetch(EDGE+'/submit-result', { method:'POST', headers:HDR,
-      body: JSON.stringify({ participantId:session.participantId, joinToken:session.joinToken, alias:session.alias,
-        natural:p.natural, role:p.role, raw:p.raw,
-        computed:{ deltas:p.deltas, stress:p.stress, map:p.map, naturalType:p.naturalType, roleType:p.roleType } }) });
+    const p   = getDiscPayload();
+    const res = await fetch(EDGE + '/submit-result', { method:'POST', headers:HDR,
+      body: JSON.stringify({
+        participantId: session.participantId,
+        joinToken:     session.joinToken,
+        alias:         session.alias,
+        natural:       p.natural,
+        role:          p.role,
+        raw:           p.raw,
+        computed:      p.computed
+      })
+    });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error||'Fehler');
-    btn.textContent='Gesendet ✓'; btn.style.background='linear-gradient(135deg,#1a5c53,var(--S))';
-    toast('Profil erfolgreich gesendet ✓','success');
+    if (!res.ok) throw new Error(data.error || 'Fehler');
+    btn.textContent = 'Gesendet ✓';
+    btn.style.background = 'linear-gradient(135deg,#1a5c53,var(--S))';
+    toast('Profil erfolgreich gesendet ✓', 'success');
   } catch(e) {
-    toast('Fehler: '+e.message,'error');
-    btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Profil senden';
+    toast('Fehler: ' + e.message, 'error');
+    btn.disabled = false; btn.classList.remove('loading'); btn.textContent = 'Profil senden';
   }
 }
 
