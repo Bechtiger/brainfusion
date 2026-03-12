@@ -857,7 +857,7 @@ const BEAMER_META = {
   disc_map:             { icon:'🗺',  title:'Schau auf den Beamer!', desc:'Dein Profil ist jetzt auf der Live-Map sichtbar.' },
   johari_erklaerung:    { icon:'🪟',  title:'Schau auf den Beamer!', desc:'Das Johari-Fenster wird erklärt. Folge dem Moderator.' },
   kernbotschaften_info: { icon:'⚡',  title:'Schau auf den Beamer!', desc:'Der Moderator zeigt vier wichtige Sätze.' },
-  raci_info:                  { icon:'📋�', title:'Schau auf den Beamer!', desc:'RACI-Einführung. Bitte aufmerksam folgen.' },
+  raci_info:                  { icon:'📋�', title:'Schau auf den Beamer!', desc:'RACI-Einführung. Bitte aufmerksam folgen.' },
   kognitive_verzerrungen_info: { icon:'🧠', title:'Schau auf den Beamer!', desc:'Der Moderator erklärt 4 kognitive Verzerrungen. Folge dem Beamer.' },
   mut_info:                   { icon:'💪', title:'Schau auf den Beamer!', desc:'Mut & Offenheit — warum die Arena wächst. Folge dem Moderator.' },
   gfk_info:                   { icon:'🕊', title:'Schau auf den Beamer!', desc:'Die 4 Schritte der Gewaltfreien Kommunikation werden erklärt.' },
@@ -1684,6 +1684,7 @@ function fcClick(blockId, dim) {
   } else if (dim === least) {
     delete leastPicks[blockId];
   } else if (!most) {
+    if (dim === least) return; // conflict guard: most darf nicht gleich least sein
     mostPicks[blockId] = dim;
   } else if (!least) {
     leastPicks[blockId] = dim;
