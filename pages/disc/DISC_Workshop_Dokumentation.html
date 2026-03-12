@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DISC Workshop – Technische Dokumentation & Ablauf</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  
+  :root {
+    --bg: #0b1020; --surf: #141b2d; --surf2: #1c2740; --surf3: #101726;
+    --border: #2b3657; --text: #ecf1ff; --muted: #9ca9cc;
+    --D: #e84a5f; --I: #f4a261; --S: #2a9d8f; --C: #4a90d9;
+    --gold: #c9a84c; --green: #3ddc84; --red: #e84a5f;
+    --accent: #2a9d8f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; line-height: 1.6; }
+  
+  /* NAV */
+  nav { background: var(--surf3); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; gap: 4px; position: sticky; top: 0; z-index: 100; }
+  nav button { background: none; border: none; color: var(--muted); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; padding: 14px 16px; cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+  
+  /* HEADER */
+  .page-header { background: linear-gradient(135deg, #0b1020 0%, #141b2d 100%); border-bottom: 1px solid var(--border); padding: 32px 40px; }
+  .page-header h1 { font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .page-header p { color: var(--muted); font-size: 13px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; vertical-align: middle; }
+  .badge.green { background: rgba(61,220,132,.15); color: var(--green); border: 1px solid rgba(61,220,132,.3); }
+  .badge.red { background: rgba(232,74,95,.15); color: var(--red); border: 1px solid rgba(232,74,95,.3); }
+  .badge.yellow { background: rgba(201,168,76,.15); color: var(--gold); border: 1px solid rgba(201,168,76,.3); }
+
+  /* SECTIONS */
+  .section { display: none; padding: 32px 40px; max-width: 1200px; }
+  .section.active { display: block; }
+  
+  h2 { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 16px; margin-top: 32px; }
+  h2:first-child { margin-top: 0; }
+  h3 { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; margin-top: 24px; }
+  
+  /* CARDS */
+  .card { background: var(--surf); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 12px; }
+  .card-title { font-weight: 600; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .card p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  
+  /* STATUS TABLE */
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .status-item { background: var(--surf); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .status-item .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+  .status-item .value { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text); word-break: break-all; }
+  
+  /* BUG LIST */
+  .bug { background: var(--surf); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 14px 16px; margin-bottom: 10px; }
+  .bug.warning { border-left-color: var(--gold); }
+  .bug.fixed { border-left-color: var(--green); opacity: .7; }
+  .bug .bug-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .bug p { font-size: 12px; color: var(--muted); }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: var(--surf2); padding: 1px 5px; border-radius: 3px; color: var(--accent); }
+  
+  /* FLOW STEPS */
+  .flow-step { background: var(--surf); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+  .flow-step-header { background: var(--surf2); padding: 16px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+  .step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--surf3); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 15px; color: var(--muted); flex-shrink: 0; }
+  .flow-step.active-step .step-num { border-color: var(--accent); color: var(--accent); background: rgba(42,157,143,.1); }
+  .step-title { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; flex: 1; }
+  .step-module { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); background: var(--surf3); padding: 3px 8px; border-radius: 4px; }
+  .chevron { color: var(--muted); transition: transform .2s; font-size: 16px; }
+  .flow-step.open .chevron { transform: rotate(90deg); }
+  
+  .flow-step-body { display: none; padding: 0; }
+  .flow-step.open .flow-step-body { display: block; }
+  
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--border); }
+  .col { background: var(--surf); padding: 16px 18px; }
+  .col-header { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .col-header .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-mod { background: var(--gold); }
+  .dot-beam { background: #7b61ff; }
+  .dot-tn { background: var(--C); }
+  
+  .action-list { list-style: none; }
+  .action-list li { font-size: 12px; color: var(--muted); padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.04); display: flex; gap: 8px; }
+  .action-list li:last-child { border-bottom: none; }
+  .action-list li::before { content: '→'; color: var(--accent); flex-shrink: 0; }
+  .action-list li.trigger::before { content: '⚡'; color: var(--gold); }
+  .action-list li.see::before { content: '👁'; }
+  .action-list li.warn::before { content: '⚠️'; }
+  
+  .note { background: rgba(201,168,76,.08); border: 1px solid rgba(201,168,76,.2); border-radius: 6px; padding: 10px 12px; margin-top: 10px; font-size: 12px; color: var(--gold); }
+  .note-bug { background: rgba(232,74,95,.08); border-color: rgba(232,74,95,.2); color: var(--red); }
+  
+  /* MODULES TABLE */
+  .mod-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mod-table th { text-align: left; padding: 8px 12px; background: var(--surf2); color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+  .mod-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .mod-table tr:hover td { background: rgba(255,255,255,.02); }
+  .mod-key { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--accent); }
+  .done { color: var(--green); }
+  .todo { color: var(--gold); }
+  .open { color: var(--red); }
+  
+  /* PITFALLS */
+  .pitfall { background: var(--surf); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; font-size: 12px; display: flex; gap: 10px; }
+  .pitfall-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .pitfall-text { color: var(--muted); line-height: 1.5; }
+  .pitfall-text strong { color: var(--text); font-weight: 600; }
+  
+  hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+  
+  .tag-d { color: var(--D); } .tag-i { color: var(--I); }
+  .tag-s { color: var(--S); } .tag-c { color: var(--C); }
+  
+  .phase-label { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 28px 0 10px; padding: 6px 12px; background: var(--surf2); border-radius: 6px; display: inline-block; }
+  
+  @media (max-width: 768px) {
+    .three-col { grid-template-columns: 1fr; }
+    .section { padding: 20px; }
+    .page-header { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>DISC Workshop Platform <span class="badge green">Live</span> <span class="badge yellow">Bug offen</span></h1>
+  <p>Wahrheitsfähigkeit im Team · Technische Dokumentation & Workshop-Ablauf · Stand März 2026</p>
+</div>
+
+<nav>
+  <button class="active" onclick="show('status')">⚙️ Tech-Status</button>
+  <button onclick="show('flow')">🎬 Workshop-Ablauf</button>
+  <button onclick="show('modules')">📦 Module</button>
+  <button onclick="show('pitfalls')">⚠️ Fallen</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 1: TECH STATUS
+══════════════════════════════════════════════════ -->
+<div id="tab-status" class="section active">
+  
+  <h2>Infrastruktur</h2>
+  <div class="status-grid">
+    <div class="status-item"><div class="label">Hosting</div><div class="value">Vercel (Auto-Deploy)</div></div>
+    <div class="status-item"><div class="label">Supabase Project ID</div><div class="value">dnoecftuybkoqvrkfvei</div></div>
+    <div class="status-item"><div class="label">Beamer URL</div><div class="value">brainfusion.app/pages/disc/beamer.html</div></div>
+    <div class="status-item"><div class="label">Moderator URL</div><div class="value">brainfusion.app/pages/disc/moderator.html</div></div>
+    <div class="status-item"><div class="label">Teilnehmer URL</div><div class="value">brainfusion.app/pages/disc/teilnehmer.html</div></div>
+    <div class="status-item"><div class="label">Edge Function</div><div class="value">submit-exercise / list-workshop-results</div></div>
+    <div class="status-item"><div class="label">Deploy-Zeit</div><div class="value">~1–2 Min nach git push</div></div>
+    <div class="status-item"><div class="label">Realtime</div><div class="value">Supabase WebSocket + Polling 5s</div></div>
+  </div>
+
+  <h2>Bekannte Bugs & Status</h2>
+
+  <div class="bug">
+    <div class="bug-title">🔴 OPEN — Beamer zeigt "Frage 0" statt Warte-Screen mit URL+Code</div>
+    <p>Beim Öffnen der Beamer-Seite erscheint nicht der Warte-Screen mit URL und Code, sondern ein Fragescreen. Ursache vermutlich: Beamer wird direkt geöffnet (nicht vom Dashboard), kein <code>?module=waiting&code=XXX</code> URL-Param → DB liest alten Zustand. Fix in Arbeit.</p>
+  </div>
+
+  <div class="bug warning">
+    <div class="bug-title">🟡 PENDING — Streaming-Lösung (unabhängig von Teams)</div>
+    <p>Beamer-Fenster wird als chromeloses Popup geöffnet (<code>menubar=no, toolbar=no</code>). Fullscreen via <code>F</code>-Taste. Für dauerhaftes unabhängiges Streamen empfohlen: OBS Studio (Fenster-Quelle "BeamerFenster").</p>
+  </div>
+
+  <div class="bug fixed">
+    <div class="bug-title">✅ FIXED — <code>supabase</code> Variablenkonflikt → umbenannt zu <code>sb</code></div>
+    <p>CDN-Library registriert sich als <code>window.supabase</code> → Namenskonflikt behoben.</p>
+  </div>
+
+  <div class="bug fixed">
+    <div class="bug-title">✅ FIXED — UTF-8 Encoding-Korruption durch PowerShell</div>
+    <p>Alle File-Operationen ab sofort via Python (<code>encoding='utf-8'</code>). PowerShell <code>Get-Content | Set-Content</code> verboten.</p>
+  </div>
+
+  <div class="bug fixed">
+    <div class="bug-title">✅ FIXED — Alte Teilnehmer bleiben sichtbar → 8h-Filter</div>
+    <p>Participants-Tabelle ist persistent. 8h-Filter in <code>renderParticipantPanel()</code>.</p>
+  </div>
+
+  <h2>Deployment-Workflow</h2>
+  <div class="card">
+    <div class="card-title">PowerShell Commands</div>
+    <p style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent);">
+      cd "E:\Programme\Homepage Brainfusion"<br>
+      git add pages/disc/moderator.html pages/disc/teilnehmer.html pages/disc/beamer.html<br>
+      git commit -m "Beschreibung"<br>
+      git push
+    </p>
+    <div class="note">⚠️ PowerShell <code>&&</code> geht nicht → <code>;</code> verwenden<br>
+    ⚠️ Nach Deploy: Hard-Refresh im Browser: <strong>Ctrl+Shift+R</strong></div>
+  </div>
+
+  <h2>DB-Schema (Kurzreferenz)</h2>
+  <div class="card">
+    <div class="card-title">Tabellen</div>
+    <p style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.9; color: var(--muted);">
+      <span style="color:var(--C)">workshops</span>: id, code, title, admin_token, <strong style="color:var(--text)">current_module</strong>, <strong style="color:var(--text)">module_data</strong>, created_at<br>
+      <span style="color:var(--C)">participants</span>: id, workshop_id, alias, join_token, joined_at<br>
+      <span style="color:var(--C)">results</span>: id, workshop_id, participant_id, alias, natural{D,I,S,C}, role{D,I,S,C}, computed<br>
+      <span style="color:var(--C)">exercise_responses</span>: id, workshop_id, participant_id, alias, module, response_type, content<br>
+      <span style="color:var(--red)">⚠️ KEIN anonymous-Feld!</span> Anonym = <code>alias === null</code>
+    </p>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 2: WORKSHOP ABLAUF
+══════════════════════════════════════════════════ -->
+<div id="tab-flow" class="section">
+
+  <p style="color:var(--muted); margin-bottom: 24px; font-size: 13px;">Kompletter Ablauf von Klick 1 bis Ende. Jeder Schritt zeigt: was der <span style="color:var(--gold)">Moderator</span> tut, was der <span style="color:#7b61ff">Beamer</span> zeigt, und was die <span style="color:var(--C)">Teilnehmer</span> sehen.</p>
+
+  <div class="phase-label">Phase 0 · Vorbereitung</div>
+
+  <!-- STEP 0 -->
+  <div class="flow-step" id="step0">
+    <div class="flow-step-header" onclick="toggleStep('step0')">
+      <div class="step-num">0</div>
+      <div class="step-title">Workshop anlegen & Beamer starten</div>
+      <div class="step-module">Vor dem Workshop</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator (Dashboard)</div>
+          <ul class="action-list">
+            <li class="trigger">brainfusion.app/pages/disc/moderator.html öffnen</li>
+            <li>Neuen Workshop anlegen → Code wird generiert (6-stellig)</li>
+            <li>Workshop-Name eingeben</li>
+            <li class="trigger">🎬 Beamer-Button klicken → Popup öffnet sich</li>
+            <li>Popup auf Beamer-Monitor verschieben oder OBS starten</li>
+          </ul>
+          <div class="note">Admin-Token wird in localStorage gespeichert → gleicher Browser nötig!</div>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Warte-Screen erscheint (sWaiting)</li>
+            <li class="see">Titel: "Wahrheitsfähigkeit im Team"</li>
+            <li class="see">Grosser 6-stelliger Code (z.B. 33A214) <span class="badge red">BUG OFFEN</span></li>
+            <li class="see">URL: brainfusion.app/pages/disc/teilnehmer.html?code=...</li>
+            <li class="see">Animierte D · I · S · C Badges</li>
+            <li>F-Taste → Vollbild</li>
+          </ul>
+          <div class="note note-bug">🐛 Beamer zeigt aktuell noch "Frage 0" statt Warte-Screen. Fix ausstehend.</div>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li>Noch nichts — warten auf Beamer-Anzeige</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 1 · Einstieg & Anmeldung</div>
+
+  <!-- STEP 1 -->
+  <div class="flow-step" id="step1">
+    <div class="flow-step-header" onclick="toggleStep('step1')">
+      <div class="step-num">1</div>
+      <div class="step-title">Alle melden sich an</div>
+      <div class="step-module">waiting</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="see">Teilnehmerliste füllt sich in Echtzeit</li>
+            <li class="see">Chip für jeden beigetretenen TN (Name + Beitrittszeit)</li>
+            <li>Warten bis alle ~16 Personen erscheinen</li>
+            <li class="trigger">Wenn alle da: → Weiter zu Schritt 2</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Code + URL gross sichtbar</li>
+            <li class="see">Zähler: "X von 16 beigetreten"</li>
+            <li class="see">Live-Chip pulsiert</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li class="trigger">Browser öffnen → URL eingeben oder QR scannen</li>
+            <li>Code eingeben (z.B. 33A214)</li>
+            <li>Eigenen Namen eingeben</li>
+            <li class="see">Wartescreen: "Workshop beginnt gleich..."</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="flow-step active-step" id="step2">
+    <div class="flow-step-header" onclick="toggleStep('step2')">
+      <div class="step-num">2</div>
+      <div class="step-title">Einstiegsfrage — CEO & Hosenschlitz</div>
+      <div class="step-module">intro_question</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Modul "Einstiegsfrage" aktivieren</li>
+            <li class="see">Live-Feed: Antworten erscheinen mit Namen in Echtzeit</li>
+            <li class="see">Sortiert nach Eingang</li>
+            <li>Mündlich kommentieren, Reaktionen einladen</li>
+            <li class="trigger">Wenn genug Antworten: → DISC Test starten</li>
+          </ul>
+          <div class="note">Antworten werden MIT Namen abgeholt (kein Anonym-Toggle hier)</div>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Frage gross im Zentrum: "Was würdet ihr tun, wenn an einem Meeting der CEO reinkommt und ihr sieht, dass sein Hosenschlitz offen ist?"</li>
+            <li class="see">Antworten erscheinen als Karten-Feed (mit Namen)</li>
+            <li class="see">Neue Antworten kommen von unten rein</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li class="see">Frage wird gross angezeigt</li>
+            <li>Freitextfeld: eigene Antwort eingeben</li>
+            <li>Absenden → Name wird mitgeschickt</li>
+            <li class="see">Bestätigung: "Antwort eingegangen ✓"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 2 · DISC Test</div>
+
+  <!-- STEP 3 -->
+  <div class="flow-step" id="step3">
+    <div class="flow-step-header" onclick="toggleStep('step3')">
+      <div class="step-num">3</div>
+      <div class="step-title">DISC Persönlichkeitstest</div>
+      <div class="step-module">disc_test</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">DISC Test aktivieren</li>
+            <li class="see">Fortschrittsbalken: X von 16 fertig</li>
+            <li class="see">Wer hat noch nicht abgeschlossen?</li>
+            <li>Kurz erklären: "Keine falschen Antworten — wählt die ehrlichste Option"</li>
+            <li class="trigger">Wenn alle fertig → DISC Map aktivieren</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Grosser Fortschrittsbalken</li>
+            <li class="see">"X von 16 Personen abgeschlossen"</li>
+            <li class="see">Füllt sich in Echtzeit</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li class="see">28 Fragen, je 4 Optionen (A/B/C/D)</li>
+            <li>Für jede Frage: "Am meisten" + "Am wenigsten" auswählen</li>
+            <li>Kein Zurück möglich</li>
+            <li class="see">Nach Abschluss: Eigenes DISC-Profil sichtbar</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="flow-step" id="step4">
+    <div class="flow-step-header" onclick="toggleStep('step4')">
+      <div class="step-num">4</div>
+      <div class="step-title">DISC Teamkarte (Live Map)</div>
+      <div class="step-module">disc_map</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">DISC Map aktivieren</li>
+            <li class="see">Live-Canvas mit allen Teilnehmern</li>
+            <li>Erklären: Quadranten D/I/S/C, Bedeutung der Positionen</li>
+            <li>Auf Cluster und Ausreisser hinweisen</li>
+            <li class="trigger">→ Weiter zu Kernbotschaften</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Volle Canvas-Ansicht: Alle Avatare auf der DISC-Map</li>
+            <li class="see">Farben: <span class="tag-d">■ D</span> <span class="tag-i">■ I</span> <span class="tag-s">■ S</span> <span class="tag-c">■ C</span></li>
+            <li class="see">Namen sichtbar</li>
+            <li class="see">Animiertes Einblenden</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li class="see">Eigenes Profil-Detail: Natural vs. Role</li>
+            <li class="see">Stress-Indikator</li>
+            <li>Beamer schauen</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 3 · Kernbotschaften</div>
+
+  <!-- STEP 5 -->
+  <div class="flow-step" id="step5">
+    <div class="flow-step-header" onclick="toggleStep('step5')">
+      <div class="step-num">5</div>
+      <div class="step-title">Kernbotschaften — Info</div>
+      <div class="step-module">kernbotschaften_info</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Modul aktivieren</li>
+            <li>Info-Text erklären (was sind Kernbotschaften)</li>
+            <li class="trigger">→ Kernbotschaften-Eingabe starten</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Statische Infokarten: Was ist eine Kernbotschaft?</li>
+            <li class="see">Beispiele und Erklärung</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li class="see">Gleiche Infokarten</li>
+            <li>Lesen, zuhören</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="flow-step" id="step6">
+    <div class="flow-step-header" onclick="toggleStep('step6')">
+      <div class="step-num">6</div>
+      <div class="step-title">Kernbotschaften — Eingabe</div>
+      <div class="step-module">kernbotschaften</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Modul aktivieren</li>
+            <li class="see">Live-Feed: Antworten strömen rein</li>
+            <li>Optional: einzelne Antworten vorlesen / kommentieren</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Frage angezeigt</li>
+            <li class="see">Anonym-Feed: Karten ohne Namen</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li>Freitext: eigene Kernbotschaft eingeben</li>
+            <li>Anonym-Toggle optional</li>
+            <li class="see">Bestätigung nach Absenden</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 4 · Johari-Fenster</div>
+
+  <!-- STEP 7 -->
+  <div class="flow-step" id="step7">
+    <div class="flow-step-header" onclick="toggleStep('step7')">
+      <div class="step-num">7</div>
+      <div class="step-title">Johari Quiz — Fremdwahrnehmung</div>
+      <div class="step-module">johari_quiz</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Johari Quiz aktivieren</li>
+            <li class="see">Adjektiv-Balken: welche Eigenschaften wurden wie oft gewählt</li>
+            <li>Erklären: Eigenwahrnehmung vs. Fremdwahrnehmung</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Adjektiv-Balkendiagramm (live aktualisierend)</li>
+            <li class="see">Sortiert nach Häufigkeit</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li class="see">56 Johari-Adjektive als Checkboxen</li>
+            <li>Mehrfachauswahl: "Diese Eigenschaften beschreiben das Team"</li>
+            <li>Absenden</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 8 -->
+  <div class="flow-step" id="step8">
+    <div class="flow-step-header" onclick="toggleStep('step8')">
+      <div class="step-num">8</div>
+      <div class="step-title">Johari Reflexion</div>
+      <div class="step-module">johari_reflexion</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Reflexions-Modul aktivieren</li>
+            <li class="see">Live-Feed: Reflexions-Antworten</li>
+            <li>Diskussion anleiten: "Was überrascht euch?"</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Reflexionsfrage</li>
+            <li class="see">Anonym-Feed</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li>Freitext: Was nehmt ihr aus dem Johari-Fenster mit?</li>
+            <li>Anonym möglich</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 5 · Tag 2 · Morgenreflexion</div>
+
+  <!-- STEP 9 -->
+  <div class="flow-step" id="step9">
+    <div class="flow-step-header" onclick="toggleStep('step9')">
+      <div class="step-num">9</div>
+      <div class="step-title">Morgen-Reflexion (Tag 2)</div>
+      <div class="step-module">morgen_reflexion</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Modul aktivieren → Start Tag 2</li>
+            <li class="see">Feed: Was hat jeder über Nacht gedacht?</li>
+            <li>Runde zum Einchecken</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Frage + Live-Feed</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li>Freitext: Morgengedanke / Check-in</li>
+            <li>MIT Namen</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 6 · RACI</div>
+
+  <!-- STEP 10 -->
+  <div class="flow-step" id="step10">
+    <div class="flow-step-header" onclick="toggleStep('step10')">
+      <div class="step-num">10</div>
+      <div class="step-title">RACI Info</div>
+      <div class="step-module">raci_info</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Modul aktivieren</li>
+            <li>RACI-Modell erklären</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Infokarten: R / A / C / I erklärt</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list"><li>Lesen, zuhören</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 11 -->
+  <div class="flow-step" id="step11">
+    <div class="flow-step-header" onclick="toggleStep('step11')">
+      <div class="step-num">11</div>
+      <div class="step-title">RACI Auswertung</div>
+      <div class="step-module">raci</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">RACI Modul aktivieren</li>
+            <li class="see">Balkendiagramm: R/A/C/I Verteilung</li>
+            <li>Auffälligkeiten diskutieren</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">RACI Balkendiagramm (live)</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li>Multi-Selektion: Wo seht ihr euch? (R / A / C / I)</li>
+            <li>Mehrfachauswahl möglich</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 7 · GFK & Steckbrief</div>
+
+  <!-- STEP 12 -->
+  <div class="flow-step" id="step12">
+    <div class="flow-step-header" onclick="toggleStep('step12')">
+      <div class="step-num">12</div>
+      <div class="step-title">GFK — Gewaltfreie Kommunikation</div>
+      <div class="step-module">gfk</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">GFK Modul aktivieren</li>
+            <li class="see">Feed: GFK-Statements</li>
+            <li>Struktur erklären: Beobachtung / Gefühl / Bedürfnis / Bitte</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Frage + Live-Feed</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li>Freitext: GFK-Statement formulieren</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 13 -->
+  <div class="flow-step" id="step13">
+    <div class="flow-step-header" onclick="toggleStep('step13')">
+      <div class="step-num">13</div>
+      <div class="step-title">Steckbriefe — Feiern / Grenzen / Zumuten</div>
+      <div class="step-module">steckbrief_feiern / grenzen / zumuten</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Nacheinander 3 Module aktivieren</li>
+            <li class="see">Je einen Live-Feed pro Frage</li>
+            <li>Reflexion: Was feiern wir? Wo sind Grenzen? Was zumuten wir einander?</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Frage + Feed</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li>Freitext pro Frage</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-label">Phase 8 · Abschluss</div>
+
+  <!-- STEP 14 -->
+  <div class="flow-step" id="step14">
+    <div class="flow-step-header" onclick="toggleStep('step14')">
+      <div class="step-num">14</div>
+      <div class="step-title">Ritual — Versprechen & Unterschrift</div>
+      <div class="step-module">ritual</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Ritual Modul aktivieren</li>
+            <li class="see">Versprechen + Signaturen aller TN</li>
+            <li>Feierlicher Rahmen: "Ihr unterschreibt eueren Commitment"</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Ritual-Wall: alle Versprechen + Unterschriften</li>
+            <li class="see">Füllt sich live</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li>Textarea: persönliches Versprechen eingeben</li>
+            <li>Canvas-Unterschrift (Touch / Maus)</li>
+            <li>Absenden → erscheint auf Beamer</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 15 -->
+  <div class="flow-step" id="step15">
+    <div class="flow-step-header" onclick="toggleStep('step15')">
+      <div class="step-num">15</div>
+      <div class="step-title">Abschluss & Verabschiedung</div>
+      <div class="step-module">closing / closed</div>
+      <div class="chevron">›</div>
+    </div>
+    <div class="flow-step-body">
+      <div class="three-col">
+        <div class="col">
+          <div class="col-header"><div class="dot dot-mod"></div>Moderator</div>
+          <ul class="action-list">
+            <li class="trigger">Closing Modul aktivieren</li>
+            <li>Abschlussworte</li>
+            <li class="trigger">→ Workshop auf "closed" setzen</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-beam"></div>Beamer</div>
+          <ul class="action-list">
+            <li class="see">Abschluss-Screen</li>
+            <li class="see">Danke + Logo</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="col-header"><div class="dot dot-tn"></div>Teilnehmer</div>
+          <ul class="action-list">
+            <li class="see">Abschluss-Screen</li>
+            <li class="see">Download-Option für eigenes Profil (geplant)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 3: MODULE
+══════════════════════════════════════════════════ -->
+<div id="tab-modules" class="section">
+  <h2>Alle 16 Module</h2>
+  <table class="mod-table">
+    <thead>
+      <tr><th>#</th><th>Modul-Key</th><th>Typ</th><th>Beamer</th><th>TN-Input</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0</td><td class="mod-key">waiting</td><td>Warte-Screen</td><td>URL + Code + Zähler</td><td>—</td><td><span class="badge red">Bug: Code fehlt</span></td></tr>
+      <tr><td>1</td><td class="mod-key">intro_question</td><td>Freetext + Namen</td><td>Frage + Live-Feed (mit Namen)</td><td>Freitext, Name pflicht</td><td><span class="badge yellow">Zu bauen</span></td></tr>
+      <tr><td>2</td><td class="mod-key">disc_test</td><td>DISC-Flow</td><td>Fortschrittsbalken</td><td>28 Fragen</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>3</td><td class="mod-key">disc_map</td><td>Beamer-Canvas</td><td>Live-Map alle TN</td><td>—</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>4</td><td class="mod-key">kernbotschaften_info</td><td>Static</td><td>Infokarten</td><td>—</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>5</td><td class="mod-key">kernbotschaften</td><td>Freetext + Anonym</td><td>Anonym-Feed</td><td>Freitext, Anonym-Toggle</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>6</td><td class="mod-key">johari_quiz</td><td>Multiple Choice</td><td>Adjektiv-Balken</td><td>56 Checkboxen</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>7</td><td class="mod-key">johari_reflexion</td><td>Freetext + Anonym</td><td>Anonym-Feed</td><td>Freitext</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>8</td><td class="mod-key">morgen_reflexion</td><td>Freetext</td><td>Live-Feed</td><td>Freitext, MIT Namen</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>9</td><td class="mod-key">raci_info</td><td>Static</td><td>Infokarten</td><td>—</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>10</td><td class="mod-key">raci</td><td>Multi-Select</td><td>R/A/C/I Balken</td><td>Checkboxen R/A/C/I</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>11</td><td class="mod-key">gfk</td><td>Freetext</td><td>Live-Feed</td><td>Freitext</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>12</td><td class="mod-key">steckbrief_feiern</td><td>Freetext</td><td>Live-Feed</td><td>Freitext</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>13</td><td class="mod-key">steckbrief_grenzen</td><td>Freetext</td><td>Live-Feed</td><td>Freitext</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>14</td><td class="mod-key">steckbrief_zumuten</td><td>Freetext</td><td>Live-Feed</td><td>Freitext</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>15</td><td class="mod-key">ritual</td><td>Textarea + Canvas</td><td>Ritual-Wall</td><td>Textarea + Unterschrift</td><td><span class="badge green">Live</span></td></tr>
+      <tr><td>16</td><td class="mod-key">closing / closed</td><td>Static</td><td>Abschluss-Screen</td><td>—</td><td><span class="badge green">Live</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TAB 4: FALLEN
+══════════════════════════════════════════════════ -->
+<div id="tab-pitfalls" class="section">
+  <h2>Bekannte Fallen & Regeln</h2>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">🐍</div>
+    <div class="pitfall-text"><strong>PowerShell & UTF-8</strong><br>
+    <code>Get-Content | Set-Content</code> liest als Windows-1252 und schreibt kaputt. Immer Python verwenden: <code>open(path, encoding='utf-8')</code></div>
+  </div>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">🔑</div>
+    <div class="pitfall-text"><strong>Supabase API Key</strong><br>
+    Neuer publishable Key (<code>sb_publishable_...</code>) liefert 401 bei Edge Functions. Nur den Legacy JWT Anon Key verwenden!</div>
+  </div>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">💥</div>
+    <div class="pitfall-text"><strong>Variable <code>supabase</code></strong><br>
+    CDN registriert sich als <code>window.supabase</code>. Eigene Variable heisst immer <code>sb</code>.</div>
+  </div>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">🗄️</div>
+    <div class="pitfall-text"><strong>Kein <code>anonymous</code>-Feld</strong><br>
+    In <code>exercise_responses</code> gibt es keine <code>anonymous</code>-Spalte! Anonym = <code>alias === null</code>. Sonst HTTP 400.</div>
+  </div>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">⚡</div>
+    <div class="pitfall-text"><strong>PowerShell <code>&&</code></strong><br>
+    Geht nicht. Befehle mit <code>;</code> trennen.</div>
+  </div>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">📁</div>
+    <div class="pitfall-text"><strong>Filesystem write_file → EPERM</strong><br>
+    Auf Windows EPERM beim direkten Schreiben. Python-Skript nach <code>E:\fix_xxx.py</code> schreiben und via Shell ausführen.</div>
+  </div>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">🔄</div>
+    <div class="pitfall-text"><strong>Vercel Cache</strong><br>
+    Nach Deploy immer Hard-Refresh: <strong>Ctrl+Shift+R</strong>. Oder Vercel No-Cache Header (jetzt in vercel.json gesetzt).</div>
+  </div>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">🖥️</div>
+    <div class="pitfall-text"><strong>Beamer braucht gleichen Browser</strong><br>
+    Session-Info liegt in <code>localStorage</code> des Browsers. Beamer muss im selben Browser geöffnet werden wie das Dashboard. Kein Inkognito!</div>
+  </div>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">⏱️</div>
+    <div class="pitfall-text"><strong>Deploy-Zeit</strong><br>
+    Vercel braucht ~1–2 Min nach <code>git push</code>. Nicht sofort testen.</div>
+  </div>
+
+  <div class="pitfall">
+    <div class="pitfall-icon">🔁</div>
+    <div class="pitfall-text"><strong>409 = OK</strong><br>
+    HTTP 409 von <code>submit-exercise</code> = idempotent (doppelter Submit). Als Erfolg behandeln, nicht als Fehler.</div>
+  </div>
+
+</div>
+
+<script>
+function show(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function toggleStep(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// Open first two steps by default
+document.getElementById('step0').classList.add('open');
+document.getElementById('step2').classList.add('open');
+</script>
+
+</body>
+</html>
