@@ -408,6 +408,24 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
 }
 .pc-name { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; line-height: 1.1; }
 .pc-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+/* Radar */
+.radar-card {
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:16px;padding:20px 24px;margin-bottom:12px;
+}
+.radar-title {
+  font-size:12px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:14px;font-family:'IBM Plex Mono',monospace;
+}
+.radar-wrap {
+  display:flex;align-items:center;gap:20px;
+}
+.radar-legend {
+  display:flex;flex-direction:column;gap:8px;font-size:12px;
+}
+.radar-leg-item { display:flex;align-items:center;gap:7px; }
+.radar-leg-dot  { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+
 .bar-card { background: var(--surf); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
 .bar-title { font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 600; margin-bottom: 16px; }
 .dim-row { margin-bottom: 14px; }
@@ -1750,6 +1768,64 @@ function calcDiscScores() {
   return { adapted, natural, composite, stress, mostCounts:most, leastCounts:least };
 }
 
+/* ─── RADAR CHART ────────────────────────────── */
+function buildRadar(adapted, natural, composite) {
+  const cx = 90, cy = 90, r = 72;
+  const dims = ['D','I','S','C'];
+  // Angles: D=top, I=right, S=bottom, C=left
+  const angles = [-90, 0, 90, 180].map(a => a * Math.PI / 180);
+  const colors = { D:'#e63946', I:'#f4a261', S:'#2a9d8f', C:'#4a90d9' };
+  const labels = { D:'D', I:'I', S:'S', C:'C' };
+
+  function pt(val, idx) {
+    const v = Math.max(0, Math.min(100, val)) / 100;
+    return {
+      x: cx + r * v * Math.cos(angles[idx]),
+      y: cy + r * v * Math.sin(angles[idx])
+    };
+  }
+  function poly(profile, opacity, color) {
+    const pts = dims.map((d, i) => pt(profile[d] || 0, i));
+    const d = pts.map((p, i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
+    return `<path d="${d}" fill="${color}" fill-opacity="${opacity}" stroke="${color}" stroke-width="1.5" stroke-opacity="${opacity + 0.3}"/>`;
+  }
+
+  // Grid rings
+  const rings = [25,50,75,100].map(v => {
+    const pts = dims.map((d, i) => pt(v, i));
+    const d = pts.map((p, i) => `${i===0?'M':'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
+    return `<path d="${d}" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"/>`;
+  }).join('');
+
+  // Axis lines
+  const axes = dims.map((d, i) => {
+    const end = pt(100, i);
+    return `<line x1="${cx}" y1="${cy}" x2="${end.x.toFixed(1)}" y2="${end.y.toFixed(1)}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+  }).join('');
+
+  // Axis labels
+  const axisLabels = dims.map((d, i) => {
+    const lp = pt(118, i);
+    return `<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle"
+      font-family="Rajdhani,sans-serif" font-size="15" font-weight="700" fill="${colors[d]}">${labels[d]}</text>`;
+  }).join('');
+
+  // Value dots on composite
+  const dots = dims.map((d, i) => {
+    const p = pt(composite[d] || 0, i);
+    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="${colors[d]}" opacity=".9"/>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 180 180" width="180" height="180" xmlns="http://www.w3.org/2000/svg">
+    ${rings}${axes}
+    ${poly(natural,   0.18, '#2a9d8f')}
+    ${poly(adapted,   0.18, '#ffd700')}
+    ${poly(composite, 0.28, '#4a90d9')}
+    ${dots}
+    ${axisLabels}
+  </svg>`;
+}
+
 function domType(p) {
   return Object.entries(p).sort((a,b) => b[1]-a[1])[0][0];
 }
@@ -1815,6 +1891,22 @@ function buildDiscResults() {
         <div class="pc-main">
           <div class="pc-ball" style="background:${cInfo.hex};">${cT}</div>
           <div><div class="pc-name">${cInfo.name}</div><div class="pc-sub">${cInfo.sub}</div></div>
+        </div>
+      </div>
+
+      <!-- Radar Chart -->
+      <div class="radar-card">
+        <div class="radar-title">Radar — Alle drei Profile</div>
+        <div class="radar-wrap">
+          ${buildRadar(adapted, natural, composite)}
+          <div class="radar-legend">
+            <div class="radar-leg-item"><div class="radar-leg-dot" style="background:#ffd700;"></div><span style="color:var(--muted);">Maske (gezeigt)</span></div>
+            <div class="radar-leg-item"><div class="radar-leg-dot" style="background:#2a9d8f;"></div><span style="color:var(--muted);">Kern (natürlich)</span></div>
+            <div class="radar-leg-item"><div class="radar-leg-dot" style="background:#4a90d9;"></div><span style="color:var(--muted);">Komposit</span></div>
+            <div style="margin-top:10px;font-size:11px;color:var(--dim);line-height:1.5;">
+              Gleicher Typ,<br>verschiedene Intensität<br>= mögliche Spannung
+            </div>
+          </div>
         </div>
       </div>
 
