@@ -1803,7 +1803,7 @@ function buildDiscResults() {
       </div>
 
       <div class="profile-card" style="border-color:rgba(42,157,143,.35);">
-        <div class="pc-label" style="color:var(--S);">◉ KERN — Wer du wirklich bist</div>
+        <div class="pc-label" style="color:var(--S);">◉ KERN — Dein natürlicher Stil</div>
         <div class="pc-main">
           <div class="pc-ball" style="background:${nInfo.hex};opacity:.85;">${nT}</div>
           <div><div class="pc-name">${nInfo.name}</div><div class="pc-sub">${nInfo.sub}</div></div>
@@ -1811,7 +1811,7 @@ function buildDiscResults() {
       </div>
 
       <div class="profile-card" style="border-color:rgba(74,144,217,.35);">
-        <div class="pc-label" style="color:var(--C);">◎ KOMPOSIT — Stabilstes Profil</div>
+        <div class="pc-label" style="color:var(--C);">◎ KOMPOSIT — Orientierungsprofil</div>
         <div class="pc-main">
           <div class="pc-ball" style="background:${cInfo.hex};">${cT}</div>
           <div><div class="pc-name">${cInfo.name}</div><div class="pc-sub">${cInfo.sub}</div></div>
@@ -1852,7 +1852,7 @@ function buildDiscResults() {
       <!-- Detail: Composite type -->
       <div class="detail-card">
         <h2 style="color:${cInfo.hex}">Dein Komposit-Profil: ${cInfo.name}</h2>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Das statistisch zuverlässigste Profil — bereinigt von sozialem Druck.</p>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Kombination aus gezeigtem und natürlichem Stil — als Orientierung für die Reflexion.</p>
         <div class="trait-grid">
           <div class="trait-card"><div class="trait-lbl">Stärken</div><ul>${cInfo.strengths.map(s=>`<li>${s}</li>`).join('')}</ul></div>
           <div class="trait-card"><div class="trait-lbl">Herausforderungen</div><ul>${cInfo.challenges.map(c=>`<li>${c}</li>`).join('')}</ul></div>
@@ -1867,7 +1867,7 @@ function buildDiscResults() {
         <h2 style="color:#ffd700">Maske vs. Kern</h2>
         <p style="font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6;">
           Du zeigst nach aussen <strong style="color:${aInfo.hex}">${aInfo.name}</strong> — 
-          im Inneren bist du <strong style="color:${nInfo.hex}">${nInfo.name}</strong>. 
+          dein natürlicher Stil tendiert zu <strong style="color:${nInfo.hex}">${nInfo.name}</strong>. 
           Diese Spannung ist das Herzstück der heutigen Reflexion.
         </p>
       </div>` : `<div class="card" style="margin-bottom:12px;">
@@ -1887,6 +1887,9 @@ function buildDiscResults() {
       </div>
 
       <div style="margin-top:16px;padding-bottom:32px;">
+        <div style="font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:14px;padding:8px 12px;border-left:2px solid rgba(255,255,255,.1);">
+          ℹ️ Dieses Reflexionsinstrument dient der Workshop-Selbstreflexion und ersetzt keine validierte psychometrische Diagnostik.
+        </div>
         <button class="btn btn-ghost" onclick="window.print()" style="margin-bottom:10px;">PDF speichern</button>
       </div>
     </div>`;
