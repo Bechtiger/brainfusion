@@ -2023,6 +2023,13 @@ function buildDiscResults() {
       el.style.width = el.getAttribute('data-w') + '%';
     });
   }, 150);
+  // Typ für Pairing-Karten in Session speichern (überlebt Reload)
+  try {
+    const stored = JSON.parse(sessionStorage.getItem('disc_session') || '{}');
+    stored.naturalType = domType(sc.natural);
+    stored.teamTypes   = null; // wird später vom Moderator gesetzt
+    sessionStorage.setItem('disc_session', JSON.stringify(stored));
+  } catch(e) {}
   // Pairing-Karten werden NICHT automatisch generiert
   // → erst wenn Moderator das Modul 'pairing_karten' aktiviert
 }
@@ -2034,33 +2041,46 @@ let pairingData = null;
 
 /* ─── PAIRING KARTEN (Modul-gesteuert) ──────────── */
 function showPairingKarten(data) {
-  // Eigenes Profil aus letztem Test-Ergebnis holen
-  const sc = calcDiscScores();
-  if (!sc) { showWaiting(data); return; }
-  const myType = domType(sc.natural);
-
-  // Team-Typen aus module_data (vom Moderator gesetzt)
-  // Format: { teamTypes: ['D','D','S','C','I'] }
   const teamTypes = data?.teamTypes || ['D','I','S','C'];
   const uniqueTypes = [...new Set(teamTypes)].filter(t => ['D','I','S','C'].includes(t));
 
-  // Screen aufbauen
-  const el = document.getElementById('sDiscResults');
-  // Pairing-Sektion sichtbar machen und scrollen
-  const pairingSection = document.getElementById('pairingSection');
-  if (pairingSection) {
-    pairingSection.style.display = 'block';
-    setTimeout(() => pairingSection.scrollIntoView({ behavior:'smooth', block:'start' }), 200);
-    // Karten nur generieren wenn noch nicht vorhanden
-    if (!pairingData) buildPairingCards(sc, uniqueTypes);
-  } else {
-    // Falls noch kein Ergebnis-Screen — erst Test machen
-    showWaiting({ title:'Fast geschafft!', desc:'Schliesse zuerst den DISC-Test ab, dann erscheinen deine Pairing-Karten.' });
+  // Eigenen Typ ermitteln: erst frischer Score, dann Session-Speicher
+  let myType = null;
+  try {
+    const sc = calcDiscScores();
+    const total = Object.values(sc.mostCounts).reduce((s,v)=>s+v,0);
+    if (total > 0) myType = domType(sc.natural);
+  } catch(e) {}
+
+  if (!myType) {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem('disc_session') || '{}');
+      myType = stored.naturalType || null;
+    } catch(e) {}
   }
+
+  if (!myType) {
+    // Test noch nicht gemacht
+    showWaiting({ title:'Fast geschafft!', desc:'Schliesse zuerst den DISC-Test ab, dann erscheinen deine Pairing-Karten.' });
+    return;
+  }
+
+  // Falls Ergebnis-Screen noch nicht aufgebaut — jetzt aufbauen
+  const pairingSection = document.getElementById('pairingSection');
+  if (!pairingSection) {
+    // Resultate neu aufbauen (passiert wenn Seite neu geladen wurde)
+    buildDiscResults();
+    setTimeout(() => showPairingKarten(data), 500);
+    return;
+  }
+
+  pairingSection.style.display = 'block';
+  setTimeout(() => pairingSection.scrollIntoView({ behavior:'smooth', block:'start' }), 200);
+  if (!pairingData) buildPairingCards({ natural: {D:0,I:0,S:0,C:0}, mostCounts:{D:0,I:0,S:0,C:0} }, uniqueTypes, myType);
 }
 
-async function buildPairingCards(sc, teamTypes) {
-  const myType = domType(sc.natural);
+async function buildPairingCards(sc, teamTypes, myTypeOverride) {
+  const myType = myTypeOverride || domType(sc.natural);
   const el = document.getElementById('pairingCards');
   if (!el) return;
 
