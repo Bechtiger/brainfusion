@@ -1702,31 +1702,34 @@ function dominantType(s) {
 /* ═══════════════════════════════════════════════════════
    DATA REFRESH
 ═══════════════════════════════════════════════════════ */
+function mapResultRow(r) {
+  // Unterstützt sowohl flat-columns (natural_d etc.) als auch JSON-Format
+  const natural = r.natural || {D:r.natural_d||0,I:r.natural_i||0,S:r.natural_s||0,C:r.natural_c||0};
+  const role    = r.role    || {D:r.role_d||0,   I:r.role_i||0,   S:r.role_s||0,   C:r.role_c||0};
+  const cj      = r.computed_json || r.computed || {};
+  return {
+    alias:       r.alias || r.participants?.alias || '?',
+    naturalType: r.natural_primary || cj.naturalType || dominantType(natural),
+    roleType:    r.role_primary    || cj.roleType    || dominantType(role),
+    natural, role,
+    stress: cj.stress || r.stress_index || 0,
+    map:    cj.map || null,
+  };
+}
+
 async function refreshData() {
-  if (!session?.code || !session?.adminToken) return;
+  if (!session?.workshopId) return;
   try {
-    // DISC results
-    const res = await fetch(EDGE+'/list-workshop-results', {
-      method:'POST', headers:HDR,
-      body: JSON.stringify({ workshopCode:session.code, adminToken:session.adminToken })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      participants = (data.results||[]).map(r => ({
-        alias: r.alias||'?',
-        naturalType: dominantType(r.natural||{}),
-        roleType:    dominantType(r.role||{}),
-        natural: r.natural||{D:50,I:50,S:50,C:50},
-        role:    r.role||{D:50,I:50,S:50,C:50},
-        stress:  r.computed?.stress||0,
-        map:     r.computed?.map||null,
-      }));
+    // Direkt aus Supabase REST (kein Edge Function nötig)
+    const url = SB_URL + '/rest/v1/results?select=*,participants!inner(alias)&workshop_id=eq.' + session.workshopId;
+    const res = await fetch(url, { headers: HDR });
+    const rows = await res.json();
+    if (Array.isArray(rows)) {
+      participants = rows.map(mapResultRow);
     }
     // Joined count
-    if (session.workshopId) {
-      const { count } = await sb.from('participants').select('id',{count:'exact',head:true}).eq('workshop_id',session.workshopId);
-      joinedCount = count || participants.length;
-    }
+    const { count } = await sb.from('participants').select('id',{count:'exact',head:true}).eq('workshop_id',session.workshopId);
+    joinedCount = count || participants.length;
     // Update active screens
     if (currentModule === 'disc_test')     updateTestProgress();
     if (currentModule === 'disc_map')      renderMap();

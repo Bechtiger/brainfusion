@@ -1585,22 +1585,29 @@ async function connectOnlineWorkshop(){
 }
 
 async function refreshOnlineWorkshop(){
-  if(!onlineSession?.code||!onlineSession?.adminToken)return;
+  if(!onlineSession?.workshopId)return;
   initSupabase();
   try{
-    // 1. DISC-Ergebnisse laden
-    const res=await fetch(EDGE_BASE+'/list-workshop-results',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
-      body:JSON.stringify({workshopCode:onlineSession.code,adminToken:onlineSession.adminToken})
+    // 1. DISC-Ergebnisse direkt aus Supabase REST (kein Edge Function)
+    const SB_URL_MOD = 'https://dnoecftuybkoqvrkfvei.supabase.co';
+    const url = SB_URL_MOD+'/rest/v1/results?select=*,participants!inner(alias)&workshop_id=eq.'+onlineSession.workshopId;
+    const res = await fetch(url,{headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY}});
+    const rows = await res.json();
+    const online=(Array.isArray(rows)?rows:[]).map(r=>{
+      const natural={D:r.natural_d||0,I:r.natural_i||0,S:r.natural_s||0,C:r.natural_c||0};
+      const role   ={D:r.role_d||0,  I:r.role_i||0,  S:r.role_s||0,  C:r.role_c||0};
+      const cj     = r.computed_json||{};
+      return{
+        alias:r.participants?.alias||'?',
+        naturalType:r.natural_primary||cj.naturalType||dominantType(natural),
+        roleType:r.role_primary||cj.roleType||dominantType(role),
+        natural,role,
+        stress:cj.stress||r.stress_index||0,
+        deltas:cj.deltas||{},
+        map:cj.map||null,
+        exportedAt:r.submitted_at||new Date().toISOString()
+      };
     });
-    const data=await res.json();
-    if(!res.ok)throw new Error(data.error||'Fehler');
-    const online=(data.results||[]).map(r=>({
-      alias:r.alias||'?',naturalType:dominantType(r.natural||{}),roleType:dominantType(r.role||{}),
-      natural:r.natural||{},role:r.role||{},stress:r.computed?.stress||0,
-      deltas:r.computed?.deltas||{},map:r.computed?.map||null,exportedAt:r.submittedAt||new Date().toISOString()
-    }));
     online.forEach(p=>{
       const i=participants.findIndex(x=>x.alias.toLowerCase()===p.alias.toLowerCase());
       if(i>=0)participants[i]=p;else participants.push(p);
