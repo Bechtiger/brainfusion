@@ -363,6 +363,7 @@ const MODULE_PHASES=[
     {id:'disc_map',            icon:'🗺',name:'DISC Live-Map',  sub:'Beamer'},
     {id:'disc_results',        icon:'✦',name:'DISC Resultate', sub:'Team-Konstellation'},
     {id:'disc_role_profile',   icon:'🎭',name:'Rollenprofil',   sub:'KI-Präsentation'},
+    {id:'was_sage_ich_nicht',  icon:'🤫',name:'Was sage ich nicht?', sub:'Stille Reflexion'},
     {id:'kernbotschaften_info',icon:'⚡',name:'Kernbtsch.',     sub:'Info/Beamer'},
     {id:'kernbotschaften',     icon:'⚡',name:'Kernbotschaft',  sub:'Live-Feed'},
   ]},
@@ -429,6 +430,17 @@ const MODULE_DETAILS={
       'Zeige alle Typen im Team — einer nach dem anderen'],
     beamer:'Beamer zeigt KI-generiertes Rollenprofil mit Fallbeispielen',
     dataType:'disc_role_profile'
+  },
+  was_sage_ich_nicht:{
+    desc:'Jeder schreibt anonym: Was sage ich im Team nicht — obwohl ich es sollte? Antworten erscheinen live auf dem Beamer.',
+    hints:[
+      'Gib 3-4 Minuten Schreibzeit — keine Diskussion vorher',
+      '"Es gibt keine falsche Antwort — nur ehrliche"',
+      'Lies einige Antworten laut vor — ohne zu kommentieren',
+      'Frage dann: "Was löst das in euch aus?"',
+      'Verbinde mit dem DISC-Profil: "Welcher Typ schweigt worüber?"'],
+    beamer:'Beamer zeigt anonyme Antworten live als Feed',
+    dataType:'live_feed'
   },
   intro_question:{
     desc:'Teilnehmer schreiben ihre spontane Antwort — anonym möglich.',
