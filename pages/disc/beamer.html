@@ -1742,9 +1742,11 @@ Gib deine Antwort NUR als JSON zurück — kein Markdown, keine Backticks, kein 
 
   const userPrompt = `Erstelle ein Rollenprofil für den DISC-Typ "${type}" (${info.name}) für einen Workshop mit einem R&D-Engineering-Team.
 
+WICHTIG: Verwende in den Fallbeispielen ausschliesslich fiktive Namen (z.B. Alex, Lea, Jonas, Maria) — niemals echte Teilnehmernamen.
+
 Kontext:
 - Team-Grösse: ${teamSize} Personen
-- Personen mit diesem Typ im Team: ${memberCount > 0 ? memberCount + ' ('+memberNames+')' : 'keine'}
+- Anzahl Personen mit diesem Typ im Team: ${memberCount > 0 ? memberCount : 'keine'}
 - Stärken laut Modell: ${info.strengths.join(', ')}
 - Herausforderungen laut Modell: ${info.challenges.join(', ')}
 - Teamrolle: ${info.teamrole}
