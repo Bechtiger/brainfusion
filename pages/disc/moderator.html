@@ -761,6 +761,7 @@ function renderModuleContent(moduleId){
     case'joined':    dataHTML=renderJoinedData();break;
     case'disc_progress': dataHTML=renderDiscProgress();break;
     case'disc_map':  dataHTML=renderDiscMapSection();break;
+    case'disc_results': dataHTML=renderDiscResultsSection();break;
     case'live_feed': dataHTML=renderLiveFeedSection();break;
     case'johari':    dataHTML=renderJohariSection();break;
     case'raci':      dataHTML=renderRaciSection();break;
@@ -800,6 +801,23 @@ function renderModuleContent(moduleId){
       if(c)drawMap(c,participants,false);
     },60);
   }
+  // DISC-Resultate & Map: Daten frisch laden wenn online
+  if((detail.dataType==='disc_results'||detail.dataType==='disc_map') && onlineSession?.code){
+    refreshOnlineWorkshop().then(()=>{
+      // nur dataHTML neu rendern, nicht ganzes Panel
+      const area=document.getElementById('moduleDetailArea');
+      if(!area) return;
+      if(detail.dataType==='disc_map'){
+        const mapWrap=area.querySelector('.ws-map-wrap canvas');
+        if(mapWrap) drawMap(mapWrap,participants,false);
+      }
+      if(detail.dataType==='disc_results'){
+        // Resultat-Bereich neu befüllen
+        const sec=area.querySelector('[data-section="disc_results"]');
+        if(sec) sec.innerHTML=renderDiscResultsSection();
+      }
+    });
+  }
 }
 
 function renderJoinedData(){
@@ -835,6 +853,77 @@ function renderDiscMapSection(){
       <span><span class="dot" style="background:#7cc4ff"></span>Rolle</span>
       <span><span class="dot" style="background:var(--bad)"></span>hoher Weg</span>
     </div>`;
+}
+
+function renderDiscResultsSection(){
+  if(!participants.length)
+    return`<div class="feed-empty">Noch keine DISC-Resultate vorhanden.<br><span style="font-size:11px;margin-top:4px;display:block;">Warte bis Teilnehmende den Test abgeschlossen haben.</span></div>`;
+
+  const DIM_COLORS = {D:'#e63946',I:'#f4a261',S:'#2a9d8f',C:'#4a90d9'};
+  const DIM_NAMES  = {D:'Dominanz',I:'Initiative',S:'Stetigkeit',C:'Gewissenhaftigkeit'};
+  const dims = ['D','I','S','C'];
+
+  // Team-Durchschnitt
+  const avg = arr => arr.length ? Math.round(arr.reduce((s,v)=>s+v,0)/arr.length) : 0;
+  const teamNat  = Object.fromEntries(dims.map(d=>[d, avg(participants.map(p=>p.natural?.[d]||0))]));
+  const teamRole = Object.fromEntries(dims.map(d=>[d, avg(participants.map(p=>p.role?.[d]||0))]));
+
+  // Typengruppen
+  const groups = {D:[],I:[],S:[],C:[]};
+  participants.forEach(p=>{ const t=p.naturalType||'D'; if(groups[t]) groups[t].push(p); });
+
+  const avatarRows = dims.map(d=>{
+    if(!groups[d].length) return '';
+    const col = DIM_COLORS[d];
+    const pills = groups[d].map(p=>{
+      const stress = Math.round(p.stress||0);
+      const sc = stress<15?'#2a9d8f':stress<30?'#f4a261':'#e63946';
+      return `<span style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.06);border:1px solid ${col}44;border-radius:20px;padding:3px 10px 3px 6px;font-size:12px;">
+        <span style="width:20px;height:20px;border-radius:50%;background:${col};display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;">${d}</span>
+        ${escapeHtml(p.alias)}
+        <span style="color:${sc};font-size:10px;" title="Stilspannung">${stress}%</span>
+      </span>`;
+    }).join('');
+    return `<div style="margin-bottom:10px;">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${col};margin-bottom:5px;">${DIM_NAMES[d]} · ${groups[d].length}×</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">${pills}</div>
+    </div>`;
+  }).join('');
+
+  const barRows = dims.map(d=>{
+    const col = DIM_COLORS[d];
+    const n = teamNat[d], r = teamRole[d];
+    return `<div style="display:grid;grid-template-columns:14px 1fr 36px;gap:6px;align-items:center;margin-bottom:7px;">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:${col};">${d}</span>
+      <div style="position:relative;height:14px;background:rgba(255,255,255,.06);border-radius:7px;overflow:hidden;">
+        <div style="position:absolute;top:1px;left:0;height:6px;width:${n}%;background:${col};opacity:.5;border-radius:3px;transition:width .8s;"></div>
+        <div style="position:absolute;bottom:1px;left:0;height:6px;width:${r}%;background:${col};border-radius:3px;transition:width .8s;"></div>
+      </div>
+      <span style="font-size:11px;color:rgba(200,210,255,.4);font-family:'IBM Plex Mono',monospace;">${r}%</span>
+    </div>`;
+  }).join('');
+
+  const avgStress = avg(participants.map(p=>p.stress||0));
+  const stressCol = avgStress<15?'#2a9d8f':avgStress<30?'#f4a261':'#e63946';
+
+  return `
+    <div data-section="disc_results">
+    <div class="section-title">Team-Konstellation (${participants.length} Profile)</div>
+    <div style="margin-bottom:16px;">${avatarRows}</div>
+
+    <div class="section-title">⌀ Team-Profil <span style="font-weight:400;opacity:.5;font-size:10px;">— oben: natürlich · unten: Rolle</span></div>
+    <div style="margin-bottom:16px;">${barRows}</div>
+
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,.04);border-radius:10px;border:1px solid rgba(255,255,255,.08);margin-bottom:12px;">
+      <span style="font-size:22px;font-weight:700;color:${stressCol};font-family:'IBM Plex Mono',monospace;">${avgStress}%</span>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:${stressCol};">⌀ Stilspannung im Team</div>
+        <div style="font-size:11px;color:rgba(180,190,210,.5);">Differenz natürlicher vs. gezeigter Stil</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(180,190,210,.4);line-height:1.5;">
+      ℹ️ Auf dem Beamer erscheinen Avatar-Gruppen + KI-Teamanalyse wenn du dieses Modul aktivierst.
+    </div></div>`;
 }
 
 function renderFeedCardsHTML(){
