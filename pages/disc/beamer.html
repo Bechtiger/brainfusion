@@ -221,6 +221,111 @@ body{font-family:'IBM Plex Sans',sans-serif}
 #sError{align-items:center;justify-content:center;text-align:center;}
 
 /* ═══════════════════════════════════
+   DISC ROLE PROFILE SCREEN
+═══════════════════════════════════ */
+#sRoleProfile {
+  display:flex; flex-direction:column;
+  background:var(--bg); overflow:hidden;
+}
+.rp-header {
+  display:flex; align-items:center; gap:28px;
+  padding:28px 52px 22px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.rp-type-ball {
+  width:80px; height:80px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Rajdhani',sans-serif; font-size:42px; font-weight:700; color:#fff;
+  box-shadow:0 8px 32px rgba(0,0,0,.5); flex-shrink:0;
+}
+.rp-header-text { flex:1; }
+.rp-eyebrow {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--muted);
+  margin-bottom:4px;
+}
+.rp-role-name {
+  font-family:'Rajdhani',sans-serif;
+  font-size:48px; font-weight:700; line-height:1;
+}
+.rp-role-sub { font-size:16px; color:var(--muted); margin-top:4px; }
+.rp-members {
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+}
+.rp-member-chip {
+  display:flex; align-items:center; gap:6px;
+  padding:5px 12px 5px 8px;
+  border-radius:20px; font-size:13px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);
+}
+.rp-member-dot {
+  width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:700; color:#fff;
+}
+.rp-body {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:0; flex:1; overflow:hidden;
+}
+.rp-left {
+  padding:28px 36px; border-right:1px solid var(--border);
+  display:flex; flex-direction:column; gap:18px; overflow-y:auto;
+}
+.rp-right {
+  padding:28px 36px;
+  display:flex; flex-direction:column; gap:18px; overflow-y:auto;
+}
+.rp-section-title {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--muted); margin-bottom:8px;
+}
+.rp-portrait {
+  font-size:15px; line-height:1.7; color:var(--text);
+}
+.rp-traits {
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.rp-trait-box {
+  background:var(--surf); border:1px solid var(--border);
+  border-radius:12px; padding:14px 16px;
+}
+.rp-trait-lbl {
+  font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--muted); margin-bottom:8px;
+}
+.rp-trait-item {
+  display:flex; align-items:flex-start; gap:7px;
+  font-size:13px; line-height:1.5; margin-bottom:5px; color:var(--text);
+}
+.rp-fallbeispiel {
+  background:var(--surf); border-left:3px solid;
+  border-radius:0 12px 12px 0; padding:14px 18px; margin-bottom:10px;
+}
+.rp-fb-situation {
+  font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:6px;
+}
+.rp-fb-text { font-size:14px; line-height:1.65; color:var(--text); }
+.rp-komm-box {
+  background:var(--surf); border:1px solid var(--border);
+  border-radius:12px; padding:16px 18px;
+}
+.rp-komm-text { font-size:14px; line-height:1.7; color:var(--text); }
+.rp-ki-loading {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:16px; flex:1; color:var(--muted); font-size:14px;
+}
+.rp-spinner {
+  width:36px; height:36px; border-radius:50%;
+  border:3px solid var(--border); border-top-color:var(--S);
+  animation:spin 1s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ═══════════════════════════════════
    DISC RESULTS SCREEN
 ═══════════════════════════════════ */
 #sDiscResults{
@@ -385,6 +490,25 @@ body:hover #fsBtn{ opacity:1; }
 </style>
 </head>
 <body>
+
+<!-- ══ DISC ROLE PROFILE ═════════════════════════ -->
+<div class="screen" id="sRoleProfile">
+  <div class="rp-header">
+    <div class="rp-type-ball" id="rpTypeBall">D</div>
+    <div class="rp-header-text">
+      <div class="rp-eyebrow">Rollenprofil · DISC</div>
+      <div class="rp-role-name" id="rpRoleName">Der Macher</div>
+      <div class="rp-role-sub" id="rpRoleSub">Dominant · Ergebnisorientiert · Direkt</div>
+    </div>
+    <div class="rp-members" id="rpMembers"></div>
+  </div>
+  <div class="rp-body" id="rpBody">
+    <div class="rp-ki-loading" id="rpLoading">
+      <div class="rp-spinner"></div>
+      <div>KI analysiert Rollenprofil…</div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ DISC RESULTS / TEAM KONSTELLATION ════════ -->
 <div class="screen" id="sDiscResults">
@@ -739,6 +863,7 @@ const MODULE_META = {
   disc_test:            { screen:'sTest' },
   disc_map:             { screen:'sMap' },
   disc_results:         { screen:'sDiscResults' },
+  disc_role_profile:    { screen:'sRoleProfile' },
   intro_question:       { screen:'sFeed',    icon:'💬', label:'Einstieg',          title:'Einstiegsfrage',             question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?' },
   kernbotschaften_info: { screen:'sGeneric', icon:'⚡', title:'Kernbotschaften',    desc:'Vier Sätze, die alles sagen.' },
   kernbotschaften:      { screen:'sFeed',    icon:'⚡', label:'Kernbotschaft',      title:'Welcher Satz trifft dich?',  question:'Wähle den Satz, der dich am meisten anspricht – und erkläre warum.' },
@@ -800,6 +925,7 @@ async function handleModule(mod, data) {
     case 'sTest':     showTest(); break;
     case 'sMap':      showMap(); break;
     case 'sDiscResults': showDiscResults(data); break;
+    case 'sRoleProfile': showRoleProfile(data); break;
     case 'sFeed':     showFeed(meta, data); startFeedPolling(mod); break;
     case 'sJohari':       showJohari(data); break;
     case 'sFallbeispiele':  showFallbeispiele(data); break;
@@ -1523,6 +1649,191 @@ function renderFeed() {
   if (feedResponses.length > MAX_VISIBLE) {
     cards.innerHTML += `<div style="text-align:center;color:var(--muted);font-size:14px;padding:10px;">+${feedResponses.length - MAX_VISIBLE} weitere</div>`;
   }
+}
+
+/* ══════════════════════════════════════════════
+   DISC ROLE PROFILE
+══════════════════════════════════════════════ */
+const ROLE_INFO = {
+  D:{ name:'Der Macher',        sub:'Dominant · Ergebnisorientiert · Direkt',    color:'#e63946',
+      strengths:['Entscheidungsfreudig','Zielorientiert','Direkt und klar','Treibt Veränderung an'],
+      challenges:['Wirkt ungeduldig','Wenig Fokus auf Details','Überhört manchmal andere','Geht Risiken ein'],
+      motivation:'Resultate, Kontrolle, Einfluss', fear:'Kontrollverlust, Scheitern',
+      teamrole:'Antreiber — setzt Impulse und bricht Stagnation auf',
+      communication:'Direkt, knapp, resultatorientiert'},
+  I:{ name:'Der Inspirator',    sub:'Einflussreich · Enthusiastisch · Sozial',   color:'#f4a261',
+      strengths:['Begeisterungsfähig','Motiviert andere','Kreativ und offen','Starker Netzwerker'],
+      challenges:['Wenig strukturiert','Schnell abgelenkt','Vermeidet manchmal Konflikte','Überschätzt gelegentlich'],
+      motivation:'Anerkennung, Kreativität, Spass', fear:'Ablehnung, Isolation, Langeweile',
+      teamrole:'Energiegeber — Begeisterung und sozialer Zusammenhalt',
+      communication:'Offen, persönlich, emotional'},
+  S:{ name:'Der Stabilisierer', sub:'Stetig · Zuverlässig · Harmonisch',          color:'#2a9d8f',
+      strengths:['Verlässlich und beständig','Aufmerksamer Zuhörer','Loyal','Hält Team zusammen'],
+      challenges:['Vermeidet Konflikte aktiv','Schwer bei Veränderung','Sagt selten Nein','Entscheide dauern lang'],
+      motivation:'Stabilität, Harmonie, Sicherheit', fear:'Konflikte, plötzliche Veränderungen',
+      teamrole:'Anker — Verlässlichkeit und sozialer Kitt',
+      communication:'Geduldig, freundlich, indirekt'},
+  C:{ name:'Der Analytiker',    sub:'Gewissenhaft · Präzise · Systematisch',     color:'#4a90d9',
+      strengths:['Hohe Qualitätsstandards','Analytisch und gründlich','Strukturiert','Präzise in Details'],
+      challenges:['Kann überanalysieren','Perfektionistisch','Vorsichtig bei Entscheiden','Wenig spontan'],
+      motivation:'Qualität, Genauigkeit, Korrektheit', fear:'Fehler, Kritik, Unordnung',
+      teamrole:'Qualitätshüter — hält Standards und erkennt Risiken',
+      communication:'Faktenbasiert, präzise, schriftlich bevorzugt'},
+};
+
+let rpCurrentType = null;
+let rpKiDone = false;
+
+function showRoleProfile(data) {
+  const type = data?.type || 'D';
+  const info = ROLE_INFO[type];
+  if (!info) return;
+
+  // Neuer Typ → neu aufbauen
+  if (type !== rpCurrentType) {
+    rpCurrentType = type;
+    rpKiDone = false;
+
+    // Header befüllen
+    const ball = document.getElementById('rpTypeBall');
+    ball.textContent = type;
+    ball.style.background = info.color;
+    ball.style.boxShadow = `0 8px 32px ${info.color}66`;
+    document.getElementById('rpRoleName').textContent = info.name;
+    document.getElementById('rpRoleName').style.color = info.color;
+    document.getElementById('rpRoleSub').textContent = info.sub;
+
+    // Team-Mitglieder mit diesem Typ
+    const members = participants.filter(p => p.naturalType === type);
+    const membersEl = document.getElementById('rpMembers');
+    if (members.length) {
+      membersEl.innerHTML = members.map(p => `
+        <div class="rp-member-chip">
+          <div class="rp-member-dot" style="background:${info.color}">${type}</div>
+          ${escapeHtml(p.alias)}
+        </div>`).join('');
+    } else {
+      membersEl.innerHTML = `<span style="font-size:13px;color:var(--muted);">Keine Teilnehmenden mit diesem Typ</span>`;
+    }
+
+    // Body: Loading anzeigen, KI starten
+    document.getElementById('rpBody').innerHTML = `
+      <div class="rp-ki-loading" id="rpLoading">
+        <div class="rp-spinner"></div>
+        <div>KI analysiert Rollenprofil…</div>
+      </div>`;
+
+    show('sRoleProfile');
+    runRoleProfileKi(type, info, members);
+  } else {
+    show('sRoleProfile');
+  }
+}
+
+async function runRoleProfileKi(type, info, members) {
+  const memberCount = members.length;
+  const memberNames = members.map(p => p.alias).join(', ');
+  const teamSize = participants.length;
+
+  const systemPrompt = `Du bist Experte für Teamentwicklung, DISC-Persönlichkeitsmodelle und Workshopmoderation. 
+Du arbeitest mit einem R&D-Team (Software- und Hardware-Ingenieure) in einem Elektronikunternehmen.
+Antworte auf Deutsch. Sei konkret, lebendig, praxisnah. Verwende kurze Sätze.
+Gib deine Antwort NUR als JSON zurück — kein Markdown, keine Backticks, kein Preamble.`;
+
+  const userPrompt = `Erstelle ein Rollenprofil für den DISC-Typ "${type}" (${info.name}) für einen Workshop mit einem R&D-Engineering-Team.
+
+Kontext:
+- Team-Grösse: ${teamSize} Personen
+- Personen mit diesem Typ im Team: ${memberCount > 0 ? memberCount + ' ('+memberNames+')' : 'keine'}
+- Stärken laut Modell: ${info.strengths.join(', ')}
+- Herausforderungen laut Modell: ${info.challenges.join(', ')}
+- Teamrolle: ${info.teamrole}
+
+Erstelle ein JSON mit folgender Struktur:
+{
+  "portrait": "2-3 Sätze lebendiges Kurzporträt dieser Persönlichkeit im Ingenieursalltag",
+  "blind_spot": "1-2 Sätze über den blinden Fleck — was sehen andere, was dieser Typ oft nicht sieht",
+  "fallbeispiele": [
+    { "situation": "kurzer Situationstitel", "text": "Konkrete Szene aus dem Engineering-Alltag (2-3 Sätze). Zeige typisches Verhalten dieses Typs." },
+    { "situation": "kurzer Situationstitel", "text": "Zweite Szene, andere Situation." }
+  ],
+  "mit_ihm_arbeiten": "2-3 konkrete Tipps wie Kollegen mit diesem Typ effektiv zusammenarbeiten",
+  "im_team": "Was bringt dieser Typ ins Team — und was braucht er vom Team (je 1 Satz)"
+}`;
+
+  try {
+    const res = await fetch(SB_URL + '/functions/v1/ki-analyze', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY },
+      body: JSON.stringify({ system: systemPrompt, userPrompt, maxTokens: 1200 })
+    });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error);
+
+    const raw = (json.text || '').replace(/```json|```/g,'').trim();
+    const d = JSON.parse(raw);
+    rpKiDone = true;
+    renderRoleProfileContent(type, info, d);
+  } catch(e) {
+    document.getElementById('rpBody').innerHTML = `
+      <div class="rp-ki-loading">
+        <div style="color:var(--D);">⚠ Fehler: ${escapeHtml(e.message)}</div>
+      </div>`;
+  }
+}
+
+function renderRoleProfileContent(type, info, d) {
+  const col = info.color;
+  const body = document.getElementById('rpBody');
+  if (!body) return;
+
+  const fbHtml = (d.fallbeispiele || []).map(fb => `
+    <div class="rp-fallbeispiel" style="border-color:${col};">
+      <div class="rp-fb-situation" style="color:${col};">📍 ${escapeHtml(fb.situation)}</div>
+      <div class="rp-fb-text">${escapeHtml(fb.text)}</div>
+    </div>`).join('');
+
+  body.innerHTML = `
+    <div class="rp-left">
+      <div>
+        <div class="rp-section-title">◉ Kurzporträt</div>
+        <div class="rp-portrait">${escapeHtml(d.portrait || '')}</div>
+      </div>
+      <div class="rp-traits">
+        <div class="rp-trait-box">
+          <div class="rp-trait-lbl" style="color:${col};">Stärken</div>
+          ${info.strengths.map(s=>`<div class="rp-trait-item"><span style="color:${col};">→</span>${s}</div>`).join('')}
+        </div>
+        <div class="rp-trait-box">
+          <div class="rp-trait-lbl" style="color:rgba(230,57,70,.7);">Herausforderungen</div>
+          ${info.challenges.map(c=>`<div class="rp-trait-item"><span style="color:rgba(230,57,70,.7);">→</span>${c}</div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div class="rp-section-title">⚠ Blinder Fleck</div>
+        <div class="rp-komm-box" style="border-color:rgba(230,57,70,.3);">
+          <div class="rp-komm-text">${escapeHtml(d.blind_spot || '')}</div>
+        </div>
+      </div>
+    </div>
+    <div class="rp-right">
+      <div>
+        <div class="rp-section-title">📍 Fallbeispiele aus dem Alltag</div>
+        ${fbHtml}
+      </div>
+      <div>
+        <div class="rp-section-title">🤝 Mit diesem Typ zusammenarbeiten</div>
+        <div class="rp-komm-box" style="border-color:${col}44;">
+          <div class="rp-komm-text">${escapeHtml(d.mit_ihm_arbeiten || '')}</div>
+        </div>
+      </div>
+      <div>
+        <div class="rp-section-title">⚡ Im Team</div>
+        <div class="rp-komm-box" style="border-color:${col}44;">
+          <div class="rp-komm-text">${escapeHtml(d.im_team || '')}</div>
+        </div>
+      </div>
+    </div>`;
 }
 
 /* ══════════════════════════════════════════════

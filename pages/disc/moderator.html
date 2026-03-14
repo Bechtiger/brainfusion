@@ -362,6 +362,7 @@ const MODULE_PHASES=[
     {id:'disc_test',           icon:'📊',name:'DISC-Test',      sub:'28×2 Fragen'},
     {id:'disc_map',            icon:'🗺',name:'DISC Live-Map',  sub:'Beamer'},
     {id:'disc_results',        icon:'✦',name:'DISC Resultate', sub:'Team-Konstellation'},
+    {id:'disc_role_profile',   icon:'🎭',name:'Rollenprofil',   sub:'KI-Präsentation'},
     {id:'kernbotschaften_info',icon:'⚡',name:'Kernbtsch.',     sub:'Info/Beamer'},
     {id:'kernbotschaften',     icon:'⚡',name:'Kernbotschaft',  sub:'Live-Feed'},
   ]},
@@ -414,10 +415,20 @@ const MODULE_DETAILS={
     hints:['Zeige wer welchen Typ hat — leite durch die Gruppen',
       '"Schaut mal — D-Typen: wer ist überrascht?"',
       'Starte die KI-Analyse und lies die Ergebnisse gemeinsam',
-      'Frage das Team: "Was resoniert, was überrascht euch?"',
-      'Die KI analysiert Teamstärken, Spannungsfelder und gibt eine Empfehlung'],
+      'Frage das Team: "Was resoniert, was überrascht euch?"'],
     beamer:'Beamer zeigt Avatar-Gruppen nach Typ + KI-Teamanalyse',
     dataType:'disc_results'
+  },
+  disc_role_profile:{
+    desc:'KI präsentiert ein Rollenprofil live auf dem Beamer — mit Fallbeispielen aus dem Engineering-Alltag.',
+    hints:[
+      'Wähle einen Typ — der Beamer zeigt sofort das KI-Profil',
+      'Sage dem Team: "Wer sich hier erkennt, darf einfach nicken"',
+      'Lies die Fallbeispiele vor — lade zur Reaktion ein',
+      '"Stimmt das? Oder sieht jemand das anders?"',
+      'Zeige alle Typen im Team — einer nach dem anderen'],
+    beamer:'Beamer zeigt KI-generiertes Rollenprofil mit Fallbeispielen',
+    dataType:'disc_role_profile'
   },
   intro_question:{
     desc:'Teilnehmer schreiben ihre spontane Antwort — anonym möglich.',
@@ -762,6 +773,7 @@ function renderModuleContent(moduleId){
     case'disc_progress': dataHTML=renderDiscProgress();break;
     case'disc_map':  dataHTML=renderDiscMapSection();break;
     case'disc_results': dataHTML=renderDiscResultsSection();break;
+    case'disc_role_profile': dataHTML=renderDiscRoleProfileSection();break;
     case'live_feed': dataHTML=renderLiveFeedSection();break;
     case'johari':    dataHTML=renderJohariSection();break;
     case'raci':      dataHTML=renderRaciSection();break;
@@ -924,6 +936,68 @@ function renderDiscResultsSection(){
     <div style="font-size:11px;color:rgba(180,190,210,.4);line-height:1.5;">
       ℹ️ Auf dem Beamer erscheinen Avatar-Gruppen + KI-Teamanalyse wenn du dieses Modul aktivierst.
     </div></div>`;
+}
+
+function renderDiscRoleProfileSection(){
+  const COLORS = {D:'#e63946',I:'#f4a261',S:'#2a9d8f',C:'#4a90d9'};
+  const NAMES  = {D:'Der Macher',I:'Der Inspirator',S:'Der Stabilisierer',C:'Der Analytiker'};
+
+  // Welche Typen sind im Team vertreten?
+  const typeCounts = {D:0,I:0,S:0,C:0};
+  participants.forEach(p=>{ if(typeCounts[p.naturalType]!==undefined) typeCounts[p.naturalType]++; });
+
+  const typeButtons = ['D','I','S','C'].map(t => {
+    const col   = COLORS[t];
+    const count = typeCounts[t];
+    const active = count > 0;
+    return `<button onclick="activateRoleProfile('${t}')"
+      style="display:flex;flex-direction:column;align-items:center;gap:6px;
+             padding:14px 20px;border-radius:14px;cursor:${active?'pointer':'default'};
+             background:${active?`rgba(${hexToRgb(col)},.12)`:'rgba(255,255,255,.03)'};
+             border:2px solid ${active?col:'rgba(255,255,255,.08)'};
+             opacity:${active?1:.4};transition:all .2s;">
+      <div style="width:44px;height:44px;border-radius:50%;background:${col};
+                  display:flex;align-items:center;justify-content:center;
+                  font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#fff;">${t}</div>
+      <div style="font-size:12px;font-weight:600;color:${active?col:'var(--muted)'};">${NAMES[t].replace('Der ','')}</div>
+      <div style="font-size:11px;color:var(--muted);">${count}×</div>
+    </button>`;
+  }).join('');
+
+  return `
+    <div class="section-title">Typ auswählen → Beamer zeigt KI-Rollenprofil</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">${typeButtons}</div>
+    <div style="font-size:11px;color:rgba(180,190,210,.4);line-height:1.6;padding:10px 14px;
+                background:rgba(255,255,255,.03);border-radius:8px;">
+      💡 Klick auf einen Typ → Beamer startet sofort KI-Analyse für dieses Rollenprofil.<br>
+      Ausgegraut = kein Teilnehmender mit diesem Typ im aktuellen Workshop.
+    </div>`;
+}
+
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16);
+  const g=parseInt(hex.slice(3,5),16);
+  const b=parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+async function activateRoleProfile(type){
+  if(!onlineSession?.workshopId||!onlineSession?.adminToken) return;
+  try{
+    await fetch(EDGE_BASE+'/set-module',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
+      body:JSON.stringify({
+        workshopId:onlineSession.workshopId,
+        adminToken:onlineSession.adminToken,
+        module:'disc_role_profile',
+        data:{type}
+      })
+    });
+    // Lokales UI aktualisieren
+    onlineSession.currentModule='disc_role_profile';
+    renderModuleDetail('disc_role_profile');
+  }catch(e){ alert('Fehler: '+e.message); }
 }
 
 function renderFeedCardsHTML(){
