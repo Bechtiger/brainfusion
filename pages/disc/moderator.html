@@ -984,16 +984,19 @@ function hexToRgb(hex){
 async function activateRoleProfile(type){
   if(!onlineSession?.workshopId||!onlineSession?.adminToken){alert('Kein aktiver Workshop.');return}
   if(!confirm(`Rollenprofil "${type}" auf dem Beamer zeigen?`))return;
-  initSupabase();
   try{
-    const{data,error}=await sb.rpc('set_workshop_module',{
-      p_workshop_id:onlineSession.workshopId,
-      p_admin_token:onlineSession.adminToken,
-      p_module:'disc_role_profile',
-      p_module_data:{type}
+    // Direkt via REST — zuverlässiger als sb.rpc bei wiederholten Aufrufen
+    const res = await fetch('https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/rpc/set_workshop_module',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
+      body:JSON.stringify({
+        p_workshop_id:onlineSession.workshopId,
+        p_admin_token:onlineSession.adminToken,
+        p_module:'disc_role_profile',
+        p_module_data:{type}
+      })
     });
-    if(error)throw new Error(error.message);
-    if(data?.error)throw new Error(data.error);
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.message||'HTTP '+res.status);}
     onlineSession.currentModule='disc_role_profile';
     saveSession();
     buildModuleGrid();
