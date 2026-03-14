@@ -1686,8 +1686,9 @@ async function refreshOnlineWorkshop(){
       renderModuleContent(curMod);
     }
     renderParticipantPanel();
-    // Offline-Canvas auch aktuell halten
-    renderCanvas();
+    // Offline-Canvas debounced aktualisieren
+    if(renderCanvasTimer) clearTimeout(renderCanvasTimer);
+    renderCanvasTimer = setTimeout(()=>renderCanvas(), 300);
 
   }catch(e){
     document.getElementById('onlineStatus').textContent='Fehler: '+e.message;

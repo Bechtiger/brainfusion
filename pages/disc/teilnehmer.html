@@ -1764,8 +1764,24 @@ function calcDiscScores() {
     natural[d]   = Math.round((N - least[d]) / N * 100);
     composite[d] = Math.round((adapted[d] + natural[d]) / 2);
   });
-  const stress = Math.round(['D','I','S','C'].reduce((s,d) => s + Math.abs(adapted[d] - natural[d]), 0) / 4);
-  return { adapted, natural, composite, stress, mostCounts:most, leastCounts:least };
+
+  // Stress: RANG-basiert statt Absolut-Differenz
+  // Rangreihung der Dimensionen in beiden Profilen vergleichen
+  // → misst ob die REIHENFOLGE der Prioritäten abweicht, nicht die absoluten Werte
+  const rankAdapted  = ['D','I','S','C'].sort((a,b) => adapted[b]  - adapted[a]);
+  const rankNatural  = ['D','I','S','C'].sort((a,b) => natural[b]  - natural[a]);
+  // Kendall-Distanz: Anzahl Rangpaare die sich unterscheiden (0–6 möglich bei 4 Elementen)
+  let inversions = 0;
+  for (let i = 0; i < 4; i++) {
+    for (let j = i+1; j < 4; j++) {
+      const aOrder = rankAdapted.indexOf(rankAdapted[i]) < rankAdapted.indexOf(rankAdapted[j]);
+      const nOrder = rankNatural.indexOf(rankAdapted[i]) < rankNatural.indexOf(rankAdapted[j]);
+      if (aOrder !== nOrder) inversions++;
+    }
+  }
+  // Normiert auf 0–100%: max 6 Inversionen → 100%
+  const stress = Math.round((inversions / 6) * 100);
+  return { adapted, natural, composite, stress, inversions, mostCounts:most, leastCounts:least };
 }
 
 /* ─── RADAR CHART ────────────────────────────── */
@@ -1833,14 +1849,15 @@ function domType(p) {
 /* ─── RESULTS ─────────────────────────────────────── */
 function buildDiscResults() {
   const sc = calcDiscScores();
-  const { adapted, natural, composite, stress } = sc;
+  const { adapted, natural, composite, stress, inversions } = sc;
   const aT = domType(adapted), nT = domType(natural), cT = domType(composite);
 
   // Stress interpretation
   let stressLabel, stressColor, stressDesc;
-  if (stress < 15)      { stressLabel='Niedrig';   stressColor='var(--S)';  stressDesc='Du kannst im Berufsalltag weitgehend du selbst sein.'; }
-  else if (stress < 30) { stressLabel='Mittel';    stressColor='var(--I)';  stressDesc='Du passt dich an — das kostet manchmal Energie.'; }
-  else                  { stressLabel='Hoch';      stressColor='var(--D)';  stressDesc='Zwischen Maske und Kern besteht eine spürbare Spannung.'; }
+  if (stress === 0)       { stressLabel='Keine';    stressColor='var(--S)';  stressDesc='Maske und Kern priorisieren dieselben Stärken — du kannst authentisch sein.'; }
+  else if (stress <= 33)  { stressLabel='Gering';   stressColor='var(--S)';  stressDesc='Kleine Verschiebung in der Priorität — kaum spürbar im Alltag.'; }
+  else if (stress <= 66)  { stressLabel='Mittel';   stressColor='var(--I)';  stressDesc='Die Reihenfolge deiner Stärken verschiebt sich je nach Kontext.'; }
+  else                    { stressLabel='Hoch';     stressColor='var(--D)';  stressDesc='Maske und Kern haben deutlich unterschiedliche Prioritäten — das kostet Energie.'; }
 
   const dimBars = ['D','I','S','C'].map(d => {
     const col = DIM_COLORS[d];
@@ -1931,14 +1948,7 @@ function buildDiscResults() {
             <div style="font-size:13px;color:var(--muted);margin-top:3px;">${stressDesc}</div>
           </div>
         </div>
-        ${stress >= 15 ? `<div style="font-size:13px;color:var(--muted);">Dimensionen mit grösster Spannung: ${
-          ['D','I','S','C']
-            .map(d => ({d, delta: Math.abs(adapted[d]-natural[d])}))
-            .filter(x => x.delta >= 15)
-            .sort((a,b)=>b.delta-a.delta)
-            .map(x=>`<strong style="color:${DIM_COLORS[x.d]}">${x.d}</strong> (${x.delta}%)`)
-            .join(' · ')
-        }</div>` : ''}
+        ${stress > 33 ? `<div style="font-size:13px;color:var(--muted);margin-top:8px;">Rang-Verschiebung: <strong style="color:${stressColor}">${inversions} von 6</strong> Dimensionspaaren haben unterschiedliche Priorität in Maske vs. Kern.</div>` : ''}
       </div>
 
       <!-- Detail: Composite type -->
