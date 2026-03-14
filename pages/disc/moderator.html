@@ -1112,21 +1112,8 @@ async function loadGfkCoachingData() {
 }
 
 async function renderGfkCoachingSection() {
-  // Placeholder anzeigen — Daten laden
-  setTimeout(async () => {
-    const data = await loadGfkCoachingData();
-    const area = document.getElementById('moduleDetailArea');
-    if (!area) return;
-    const secEl = area.querySelector('[data-section="gfk_coaching"]');
-    if (secEl) secEl.innerHTML = buildGfkCoachingHTML(data);
-  }, 100);
-
-  return `<div data-section="gfk_coaching">
-    <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;padding:12px 0;">
-      <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--muted);border-top-color:var(--S);animation:spin 1s linear infinite;"></div>
-      Lade GFK-Coaching Daten…
-    </div>
-  </div>`;
+  const data = await loadGfkCoachingData();
+  return buildGfkCoachingHTML(data);
 }
 
 function buildGfkCoachingHTML(data) {
