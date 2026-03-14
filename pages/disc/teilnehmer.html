@@ -2233,7 +2233,7 @@ function renderGfkRound() {
     </div>
 
     <div style="padding:0 16px 24px;">
-      <button class="btn btn-primary" style="width:100%;" onclick="submitGfkAnswer()">
+      <button class="btn btn-primary" style="width:100%;" onclick="submitGfkCoachAnswer()">
         Analysieren lassen →
       </button>
     </div>`;
@@ -2241,7 +2241,7 @@ function renderGfkRound() {
   document.getElementById('gfkInput')?.focus();
 }
 
-async function submitGfkAnswer() {
+async function submitGfkCoachAnswer() {
   if (gfkCoachAnalyzing) return;
   const input = document.getElementById('gfkInput');
   const text = input?.value?.trim();
