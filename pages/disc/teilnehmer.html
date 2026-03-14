@@ -842,6 +842,7 @@ function handleModule(mod, data) {
     case 'waiting':               showWaiting(data); break;
     case 'disc_test':             showDiscTest(); break;
     case 'disc_results':          /* stay on results screen */ break;
+    case 'pairing_karten':        showPairingKarten(data); break;
     case 'disc_map':
     case 'disc_role_profile':
     case 'johari_erklaerung':
@@ -901,6 +902,7 @@ function showBeamerMode(mod, data) {
 const MODULE_DEFS = {
   intro_question:      { type:'freetext',  icon:'💬', title:'Einstiegsfrage',           allowAnon:true,  maxLen:300, question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?', placeholder:'Deine ehrliche Antwort…' },
   was_sage_ich_nicht:  { type:'freetext',  icon:'🤫', title:'Was sage ich nicht?',       allowAnon:true,  maxLen:300, question:'Was sagst du im Team nicht — obwohl du es eigentlich solltest?', placeholder:'Ich sage nicht, dass… / Ich verschweige… / Mich beschäftigt…' },
+  pairing_karten:      { type:'pairing', icon:'🤝', title:'Pairing-Karten', desc:'Deine persönlichen Karten für die Zusammenarbeit mit anderen Typen im Team.' },
   johari_quiz:         { type:'multiple_choice', icon:'🪟', title:'Johari-Fenster' },
   johari_reflexion:    { type:'freetext',  icon:'🔍', title:'Johari-Reflexion',         allowAnon:true,  maxLen:300, question:'Was denkst du: Wo liegt dein grösster blinder Fleck?', placeholder:'Sei ehrlich mit dir selbst…' },
   kernbotschaften:     { type:'freetext',  icon:'⚡', title:'Kernbotschaft',             allowAnon:true,  maxLen:400, question:'Welcher der vier Sätze trifft dich am meisten — und warum?', placeholder:'Deine Gedanken dazu…' },
@@ -2021,8 +2023,8 @@ function buildDiscResults() {
       el.style.width = el.getAttribute('data-w') + '%';
     });
   }, 150);
-  // Pairing-Karten nach kurzem Delay starten
-  setTimeout(() => buildPairingCards(sc), 800);
+  // Pairing-Karten werden NICHT automatisch generiert
+  // → erst wenn Moderator das Modul 'pairing_karten' aktiviert
 }
 
 /* ─── PAIRING KARTEN ─────────────────────────────── */
@@ -2030,7 +2032,34 @@ const PAIR_COLORS = {D:'#e63946',I:'#f4a261',S:'#2a9d8f',C:'#4a90d9'};
 const PAIR_NAMES  = {D:'Der Macher',I:'Der Inspirator',S:'Der Stabilisierer',C:'Der Analytiker'};
 let pairingData = null;
 
-async function buildPairingCards(sc) {
+/* ─── PAIRING KARTEN (Modul-gesteuert) ──────────── */
+function showPairingKarten(data) {
+  // Eigenes Profil aus letztem Test-Ergebnis holen
+  const sc = calcDiscScores();
+  if (!sc) { showWaiting(data); return; }
+  const myType = domType(sc.natural);
+
+  // Team-Typen aus module_data (vom Moderator gesetzt)
+  // Format: { teamTypes: ['D','D','S','C','I'] }
+  const teamTypes = data?.teamTypes || ['D','I','S','C'];
+  const uniqueTypes = [...new Set(teamTypes)].filter(t => ['D','I','S','C'].includes(t));
+
+  // Screen aufbauen
+  const el = document.getElementById('sDiscResults');
+  // Pairing-Sektion sichtbar machen und scrollen
+  const pairingSection = document.getElementById('pairingSection');
+  if (pairingSection) {
+    pairingSection.style.display = 'block';
+    setTimeout(() => pairingSection.scrollIntoView({ behavior:'smooth', block:'start' }), 200);
+    // Karten nur generieren wenn noch nicht vorhanden
+    if (!pairingData) buildPairingCards(sc, uniqueTypes);
+  } else {
+    // Falls noch kein Ergebnis-Screen — erst Test machen
+    showWaiting({ title:'Fast geschafft!', desc:'Schliesse zuerst den DISC-Test ab, dann erscheinen deine Pairing-Karten.' });
+  }
+}
+
+async function buildPairingCards(sc, teamTypes) {
   const myType = domType(sc.natural);
   const el = document.getElementById('pairingCards');
   if (!el) return;

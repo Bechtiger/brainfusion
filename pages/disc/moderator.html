@@ -363,6 +363,7 @@ const MODULE_PHASES=[
     {id:'disc_map',            icon:'🗺',name:'DISC Live-Map',  sub:'Beamer'},
     {id:'disc_results',        icon:'✦',name:'DISC Resultate', sub:'Team-Konstellation'},
     {id:'disc_role_profile',   icon:'🎭',name:'Rollenprofil',   sub:'KI-Präsentation'},
+    {id:'pairing_karten',      icon:'🤝',name:'Pairing-Karten', sub:'Freigabe an TN'},
     {id:'was_sage_ich_nicht',  icon:'🤫',name:'Was sage ich nicht?', sub:'Stille Reflexion'},
     {id:'kernbotschaften_info',icon:'⚡',name:'Kernbtsch.',     sub:'Info/Beamer'},
     {id:'kernbotschaften',     icon:'⚡',name:'Kernbotschaft',  sub:'Live-Feed'},
@@ -441,6 +442,17 @@ const MODULE_DETAILS={
       'Verbinde mit dem DISC-Profil: "Welcher Typ schweigt worüber?"'],
     beamer:'Beamer zeigt anonyme Antworten live als Feed',
     dataType:'live_feed'
+  },
+  pairing_karten:{
+    desc:'Gibt die Pairing-Karten für alle Teilnehmenden frei — personalisiert auf die echten Typen im Team.',
+    hints:[
+      'Erst nach den Rollenprofil-Präsentationen aktivieren',
+      'Die KI vergleicht nur die Typen die wirklich im Team sind',
+      'Gib 5 Minuten Zeit zum Lesen',
+      '"Schaut eure Karte an — was überrascht euch?"',
+      'Anschliessend PDF-Download anbieten'],
+    beamer:'Kein Beamer-Screen — Teilnehmende lesen auf ihrem Gerät',
+    dataType:'pairing_karten'
   },
   intro_question:{
     desc:'Teilnehmer schreiben ihre spontane Antwort — anonym möglich.',
@@ -715,17 +727,21 @@ const MODULE_DATA={
 async function activateModule(moduleId){
   if(!onlineSession?.workshopId||!onlineSession?.adminToken){alert('Kein aktiver Workshop.');return}
   const mod=MODULES.find(m=>m.id===moduleId);
-  // Kein Confirm für 'waiting' - sofort setzen
   if(moduleId!=='waiting'&&!confirm(`Modul "${mod?.name||moduleId}" aktivieren?\nAlle Teilnehmer sehen das sofort.`))return;
   initSupabase();
+
+  // Für pairing_karten: Team-Typen dynamisch aus participants holen
+  let moduleData = MODULE_DATA[moduleId] || {};
+  if (moduleId === 'pairing_karten') {
+    const teamTypes = [...new Set(participants.map(p=>p.naturalType).filter(t=>['D','I','S','C'].includes(t)))];
+    moduleData = { teamTypes };
+  }
   try{
     const{data,error}=await sb.rpc('set_workshop_module',{
       p_workshop_id:onlineSession.workshopId,
       p_admin_token:onlineSession.adminToken,
       p_module:moduleId,
-      p_module_data:MODULE_DATA[moduleId]||{}
-    });
-    if(error)throw new Error(error.message);
+      p_module_data:moduleData
     if(data?.error)throw new Error(data.error);
     onlineSession.currentModule=moduleId;
     saveSession();
@@ -786,6 +802,7 @@ function renderModuleContent(moduleId){
     case'disc_map':  dataHTML=renderDiscMapSection();break;
     case'disc_results': dataHTML=renderDiscResultsSection();break;
     case'disc_role_profile': dataHTML=renderDiscRoleProfileSection();break;
+    case'pairing_karten':    dataHTML=renderPairingKartenSection();break;
     case'live_feed': dataHTML=renderLiveFeedSection();break;
     case'johari':    dataHTML=renderJohariSection();break;
     case'raci':      dataHTML=renderRaciSection();break;
@@ -1014,6 +1031,36 @@ async function activateRoleProfile(type){
     buildModuleGrid();
     renderModuleContent('disc_role_profile');
   }catch(e){alert('Fehler: '+e.message)}
+}
+
+function renderPairingKartenSection(){
+  const DIM_COLORS = {D:'#e63946',I:'#f4a261',S:'#2a9d8f',C:'#4a90d9'};
+  const DIM_NAMES  = {D:'Macher',I:'Inspirator',S:'Stabilisierer',C:'Analytiker'};
+  const dims = ['D','I','S','C'];
+
+  // Welche Typen sind im Team?
+  const typeCounts = {D:0,I:0,S:0,C:0};
+  participants.forEach(p=>{ if(typeCounts[p.naturalType]!==undefined) typeCounts[p.naturalType]++; });
+  const presentTypes = dims.filter(t => typeCounts[t] > 0);
+
+  const typeList = presentTypes.map(t =>
+    `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;
+      background:${DIM_COLORS[t]}22;border:1px solid ${DIM_COLORS[t]}66;font-size:12px;font-weight:600;color:${DIM_COLORS[t]};">
+      ${t} · ${DIM_NAMES[t]} (${typeCounts[t]}×)
+    </span>`).join('');
+
+  return `
+    <div class="section-title">Team-Typen die verglichen werden</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">${typeList}</div>
+    <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:14px;">
+      Jeder Teilnehmende erhält Pairing-Karten <strong>nur für diese ${presentTypes.length} Typen</strong> — 
+      basierend auf dem echten Team. Die KI generiert individuell für jeden Teilnehmenden.
+    </div>
+    <div style="font-size:11px;color:rgba(180,190,210,.4);line-height:1.5;padding:8px 12px;
+                background:rgba(255,255,255,.03);border-radius:8px;">
+      ℹ️ Beim Aktivieren werden die Team-Typen [${presentTypes.join(', ')}] an alle Teilnehmenden übermittelt.
+      Die Karten erscheinen auf deren Gerät — kein Beamer-Screen.
+    </div>`;
 }
 
 function renderFeedCardsHTML(){
