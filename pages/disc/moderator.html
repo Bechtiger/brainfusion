@@ -742,6 +742,8 @@ async function activateModule(moduleId){
       p_admin_token:onlineSession.adminToken,
       p_module:moduleId,
       p_module_data:moduleData
+    });
+    if(error)throw new Error(error.message);
     if(data?.error)throw new Error(data.error);
     onlineSession.currentModule=moduleId;
     saveSession();
