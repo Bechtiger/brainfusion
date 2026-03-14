@@ -1876,7 +1876,15 @@ function renderCoach(){
   el.innerHTML=`<h3 style="margin:14px 0 8px;font-size:14px">Team-Hinweise</h3>${notes.map(t=>`<p>${t}</p>`).join('')}`;
 }
 
-function renderOffline(){renderStats();renderRows();renderCoach();renderCanvas()}
+let renderCanvasTimer = null;
+function renderOffline(){
+  renderStats();
+  renderRows();
+  renderCoach();
+  // Canvas debounced — verhindert Flackern bei schnellen Updates
+  if(renderCanvasTimer) clearTimeout(renderCanvasTimer);
+  renderCanvasTimer = setTimeout(()=>renderCanvas(), 150);
+}
 
 // ─── FILE IMPORT ──────────────────────────────────────────────────────────────
 async function importFiles(files){

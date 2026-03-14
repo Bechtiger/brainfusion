@@ -1644,17 +1644,18 @@ Gib eine prägnante Teamanalyse in 3 Abschnitten (je 2-3 Sätze):
 Schreibe direkt, klar, ohne Floskeln. Keine langen Einleitungen.`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch(SB_URL + '/functions/v1/ki-analyze', {
       method:'POST',
-      headers:{ 'Content-Type':'application/json' },
+      headers:{ 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY },
       body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{ role:'user', content:prompt }]
+        system: 'Du bist ein Experte für Teamentwicklung und DISC-Persönlichkeitsmodelle. Antworte auf Deutsch, prägnant und direkt.',
+        userPrompt: prompt,
+        maxTokens: 1000
       })
     });
     const json = await resp.json();
-    const text = json?.content?.[0]?.text || 'Keine Antwort erhalten.';
+    if (json.error) throw new Error(json.error);
+    const text = json.text || 'Keine Antwort erhalten.';
     // Formatiert ausgeben
     out.innerHTML = text
       .replace(/\n\n/g,'</p><p>')
