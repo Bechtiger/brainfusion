@@ -2096,33 +2096,29 @@ async function buildPairingCards(sc, teamTypes, myTypeOverride) {
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
       body: JSON.stringify({
         system: 'Du bist Experte für Teamentwicklung und DISC. Antworte NUR als JSON, kein Markdown, keine Backticks.',
-        userPrompt: `Erstelle Pairing-Karten für einen ${myType}-Typ (${PAIR_NAMES[myType]}) im Zusammenspiel mit den anderen DISC-Typen in einem R&D-Engineering-Team.
+        userPrompt: `Erstelle Pairing-Karten für einen ${myType}-Typ (${PAIR_NAMES[myType]}) in einem R&D-Engineering-Team.
 
-Für jeden der anderen Typen (D, I, S, C — auch den eigenen Typ falls mehrere davon im Team sind):
-- Was läuft gut zwischen diesen beiden Typen?
-- Wo entstehen typische Reibungen?
-- Ein konkreter Tipp für die Zusammenarbeit
+WICHTIG: Erstelle NUR Karten für diese ${typesToShow.length} Typen die im Team vorhanden sind: ${typesToShow.join(', ')}
+Keine anderen Typen! Genau ${typesToShow.length} pairs im Array.
 
-Antworte als JSON:
+Für jeden dieser Typen: ${typesToShow.map(t => `${t} (${PAIR_NAMES[t]})`).join(', ')}
+
+JSON-Format:
 {
   "myType": "${myType}",
   "myName": "${PAIR_NAMES[myType]}",
   "pairs": [
-    {
-      "type": "D",
-      "name": "Der Macher",
-      "synergy": "Was gut läuft (1-2 Sätze)",
-      "tension": "Wo es reibt (1-2 Sätze)",
-      "tip": "Konkreter Tipp (1 Satz)"
-    }
+    { "type": "X", "name": "exakter Name aus DISC", "synergy": "1-2 Sätze", "tension": "1-2 Sätze", "tip": "1 Satz" }
   ]
 }`,
         maxTokens: 1400
       })
     });
     const json = await res.json();
-    const raw = (json.text||'').replace(/\`\`\`json|\`\`\`/g,'').trim();
+    const raw = (json.text||'').replace(/```json|```/g,'').trim();
     pairingData = JSON.parse(raw);
+    // Nur erlaubte Typen behalten — keine KI-Halluzinationen
+    pairingData.pairs = (pairingData.pairs||[]).filter(p => typesToShow.includes(p.type));
     renderPairingCards(pairingData, myType);
   } catch(e) {
     el.innerHTML = `<div style="color:var(--D);font-size:13px;">⚠ ${e.message}</div>`;
