@@ -982,22 +982,23 @@ function hexToRgb(hex){
 }
 
 async function activateRoleProfile(type){
-  if(!onlineSession?.workshopId||!onlineSession?.adminToken) return;
+  if(!onlineSession?.workshopId||!onlineSession?.adminToken){alert('Kein aktiver Workshop.');return}
+  if(!confirm(`Rollenprofil "${type}" auf dem Beamer zeigen?`))return;
+  initSupabase();
   try{
-    await fetch(EDGE_BASE+'/set-module',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
-      body:JSON.stringify({
-        workshopId:onlineSession.workshopId,
-        adminToken:onlineSession.adminToken,
-        module:'disc_role_profile',
-        data:{type}
-      })
+    const{data,error}=await sb.rpc('set_workshop_module',{
+      p_workshop_id:onlineSession.workshopId,
+      p_admin_token:onlineSession.adminToken,
+      p_module:'disc_role_profile',
+      p_module_data:{type}
     });
-    // Lokales UI aktualisieren
+    if(error)throw new Error(error.message);
+    if(data?.error)throw new Error(data.error);
     onlineSession.currentModule='disc_role_profile';
-    renderModuleDetail('disc_role_profile');
-  }catch(e){ alert('Fehler: '+e.message); }
+    saveSession();
+    buildModuleGrid();
+    renderModuleContent('disc_role_profile');
+  }catch(e){alert('Fehler: '+e.message)}
 }
 
 function renderFeedCardsHTML(){
