@@ -1101,7 +1101,7 @@ let gfkCoachingKiRunning = false;
 async function loadGfkCoachingData() {
   if (!onlineSession?.workshopId) return [];
   try {
-    const url = `https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/exercise_responses?workshop_id=eq.${onlineSession.workshopId}&module=like.gfk_coaching_r*&select=alias,content,created_at&order=created_at.asc`;
+    const url = `https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/exercise_responses?workshop_id=eq.${onlineSession.workshopId}&response_type=eq.gfk_analysis&select=alias,content,created_at&order=created_at.asc`;
     const res = await fetch(url, { headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY} });
     const rows = await res.json();
     return (rows||[]).map(r => {
