@@ -726,6 +726,25 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
     <div id="resultsContent" style="flex:1;padding:24px 28px 40px;overflow-y:auto;"></div>
   </div>
 
+  <!-- PAIRING KARTEN eigener Screen -->
+  <div id="sPairingKarten" class="screen">
+    <div style="position:sticky;top:0;z-index:50;background:rgba(8,8,16,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 28px;">
+      <div style="font-size:16px;font-weight:600;">🤝 Deine Pairing-Karten</div>
+      <div style="font-size:12px;color:var(--muted);">Wie du am besten mit anderen Typen zusammenarbeitest</div>
+    </div>
+    <div style="padding:20px 28px 40px;overflow-y:auto;flex:1;">
+      <div id="pairingKartenContent">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;padding:24px 0;">
+          <div style="width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);border-top-color:var(--S);animation:spin 1s linear infinite;flex-shrink:0;"></div>
+          KI generiert deine persönlichen Pairing-Karten…
+        </div>
+      </div>
+      <button id="pairingPdfBtn" onclick="downloadPairingPdf()" class="btn btn-ghost" style="margin-top:14px;display:none;">
+        ⬇ Als PDF speichern
+      </button>
+    </div>
+  </div>
+
 </div><!-- #app -->
 
 <div id="toast"></div>
@@ -2041,47 +2060,34 @@ let pairingData = null;
 
 /* ─── PAIRING KARTEN (Modul-gesteuert) ──────────── */
 function showPairingKarten(data) {
-  const teamTypes = data?.teamTypes || ['D','I','S','C'];
-  const uniqueTypes = [...new Set(teamTypes)].filter(t => ['D','I','S','C'].includes(t));
+  const teamTypes = [...new Set((data?.teamTypes||['D','I','S','C']).filter(t=>'DISC'.includes(t)))];
 
-  // Eigenen Typ ermitteln: erst frischer Score, dann Session-Speicher
+  // Eigenen Typ ermitteln — erst Session, dann frischer Score
   let myType = null;
-  try {
-    const sc = calcDiscScores();
-    const total = Object.values(sc.mostCounts).reduce((s,v)=>s+v,0);
-    if (total > 0) myType = domType(sc.natural);
-  } catch(e) {}
-
+  try { myType = JSON.parse(sessionStorage.getItem('disc_session')||'{}').naturalType; } catch(e){}
   if (!myType) {
     try {
-      const stored = JSON.parse(sessionStorage.getItem('disc_session') || '{}');
-      myType = stored.naturalType || null;
-    } catch(e) {}
+      const sc = calcDiscScores();
+      if (Object.values(sc.mostCounts).reduce((s,v)=>s+v,0) > 0) myType = domType(sc.natural);
+    } catch(e){}
   }
 
   if (!myType) {
-    // Test noch nicht gemacht
-    showWaiting({ title:'Fast geschafft!', desc:'Schliesse zuerst den DISC-Test ab, dann erscheinen deine Pairing-Karten.' });
+    // Test noch nicht abgeschlossen
+    show('sWaiting');
+    document.getElementById('waitingTitle').textContent = 'Pairing-Karten kommen gleich!';
+    document.getElementById('waitingDesc').textContent  = 'Schliesse zuerst den DISC-Test ab.';
     return;
   }
 
-  // Falls Ergebnis-Screen noch nicht aufgebaut — jetzt aufbauen
-  const pairingSection = document.getElementById('pairingSection');
-  if (!pairingSection) {
-    // Resultate neu aufbauen (passiert wenn Seite neu geladen wurde)
-    buildDiscResults();
-    setTimeout(() => showPairingKarten(data), 500);
-    return;
-  }
-
-  pairingSection.style.display = 'block';
-  setTimeout(() => pairingSection.scrollIntoView({ behavior:'smooth', block:'start' }), 200);
-  if (!pairingData) buildPairingCards({ natural: {D:0,I:0,S:0,C:0}, mostCounts:{D:0,I:0,S:0,C:0} }, uniqueTypes, myType);
+  show('sPairingKarten');
+  if (!pairingData) buildPairingCards(null, teamTypes, myType);
 }
 
 async function buildPairingCards(sc, teamTypes, myTypeOverride) {
-  const myType = myTypeOverride || domType(sc.natural);
-  const el = document.getElementById('pairingCards');
+  const myType = myTypeOverride || domType(sc?.natural || {});
+  const typesToShow = teamTypes || ['D','I','S','C'];
+  const el = document.getElementById('pairingKartenContent');
   if (!el) return;
 
   try {
@@ -2124,7 +2130,7 @@ Antworte als JSON:
 }
 
 function renderPairingCards(data, myType) {
-  const el = document.getElementById('pairingCards');
+  const el = document.getElementById('pairingKartenContent');
   const btn = document.getElementById('pairingPdfBtn');
   if (!el) return;
 
