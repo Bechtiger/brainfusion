@@ -2300,32 +2300,47 @@ JSON-Format:
 }
 
 async function saveGfkCoachingResult(round, text, analysis) {
-  if (!session?.participantId || !session?.workshopId || !session?.joinToken) return;
+  if (!session?.participantId || !session?.workshopId || !session?.joinToken) {
+    console.warn('saveGfkCoachingResult: Session unvollständig', {
+      participantId: session?.participantId,
+      workshopId: session?.workshopId,
+      joinToken: session?.joinToken ? 'vorhanden' : 'FEHLT'
+    });
+    return;
+  }
   try {
     const schritteFehlen = (analysis.schritte||[])
       .filter(s => !s.vorhanden).map(s => s.name);
-    await fetch(`${EDGE}/submit-exercise`, {
-      method:'POST', headers:HDR,
-      body: JSON.stringify({
-        participantId: session.participantId,
-        joinToken:     session.joinToken,
-        workshopId:    session.workshopId,
-        alias:         session.alias,
-        module:        'gfk_coaching_r' + round.id,
-        responseType:  'gfk_analysis',
-        content: JSON.stringify({
-          runde:         round.id,
-          rundeLabel:    round.label,
-          typ:           round.type,
-          antwort:       text,
-          gesamteindruck: analysis.gesamteindruck || '',
-          fehlendeSchritte: schritteFehlen,
-          lernpunkt:     analysis.lernpunkt || '',
-          score:         Math.round(((analysis.schritte||[]).filter(s=>s.vorhanden).length / 4) * 100)
-        })
+    const payload = {
+      participantId: session.participantId,
+      joinToken:     session.joinToken,
+      workshopId:    session.workshopId,
+      alias:         session.alias,
+      module:        'gfk_coaching_r' + round.id,
+      responseType:  'gfk_analysis',
+      content: JSON.stringify({
+        runde:            round.id,
+        rundeLabel:       round.label,
+        typ:              round.type,
+        antwort:          text,
+        gesamteindruck:   analysis.gesamteindruck || '',
+        fehlendeSchritte: schritteFehlen,
+        lernpunkt:        analysis.lernpunkt || '',
+        score:            Math.round(((analysis.schritte||[]).filter(s=>s.vorhanden).length / 4) * 100)
       })
+    };
+    const res = await fetch(`${EDGE}/submit-exercise`, {
+      method:'POST', headers:HDR, body: JSON.stringify(payload)
     });
-  } catch(e) { console.warn('saveGfkCoachingResult:', e.message); }
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      console.warn('saveGfkCoachingResult HTTP Error:', res.status, err);
+    } else {
+      console.log('GFK Runde', round.id, 'gespeichert ✓');
+    }
+  } catch(e) {
+    console.warn('saveGfkCoachingResult Fehler:', e.message);
+  }
 }
 
 function renderGfkFeedback(d, originalText) {
