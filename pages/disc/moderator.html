@@ -817,6 +817,7 @@ function renderModuleContent(moduleId){
     case'disc_results': dataHTML=renderDiscResultsSection();break;
     case'disc_role_profile': dataHTML=renderDiscRoleProfileSection();break;
     case'pairing_karten':    dataHTML=renderPairingKartenSection();break;
+    case'gfk_coaching':      dataHTML=renderGfkCoachingSection();break;
     case'live_feed': dataHTML=renderLiveFeedSection();break;
     case'johari':    dataHTML=renderJohariSection();break;
     case'raci':      dataHTML=renderRaciSection();break;
@@ -859,7 +860,6 @@ function renderModuleContent(moduleId){
   // DISC-Resultate & Map: Daten frisch laden wenn online
   if((detail.dataType==='disc_results'||detail.dataType==='disc_map') && onlineSession?.code){
     refreshOnlineWorkshop().then(()=>{
-      // nur dataHTML neu rendern, nicht ganzes Panel
       const area=document.getElementById('moduleDetailArea');
       if(!area) return;
       if(detail.dataType==='disc_map'){
@@ -867,7 +867,6 @@ function renderModuleContent(moduleId){
         if(mapWrap) drawMap(mapWrap,participants,false);
       }
       if(detail.dataType==='disc_results'){
-        // Resultat-Bereich neu befüllen
         const sec=area.querySelector('[data-section="disc_results"]');
         if(sec) sec.innerHTML=renderDiscResultsSection();
       }
@@ -1093,6 +1092,201 @@ function renderFeedCardsHTML(){
         </div>`;
       }).join('')}
     </div>`;
+}
+
+let gfkCoachingKiResult = null;
+let gfkCoachingKiRunning = false;
+
+async function loadGfkCoachingData() {
+  if (!onlineSession?.workshopId) return [];
+  try {
+    const url = `https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/exercise_responses?workshop_id=eq.${onlineSession.workshopId}&module=like.gfk_coaching_r*&select=alias,content,created_at&order=created_at.asc`;
+    const res = await fetch(url, { headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY} });
+    const rows = await res.json();
+    return (rows||[]).map(r => {
+      try { return { alias: r.alias, ...JSON.parse(r.content), created_at: r.created_at }; }
+      catch(e) { return null; }
+    }).filter(Boolean);
+  } catch(e) { return []; }
+}
+
+async function renderGfkCoachingSection() {
+  // Placeholder anzeigen — Daten laden
+  setTimeout(async () => {
+    const data = await loadGfkCoachingData();
+    const area = document.getElementById('moduleDetailArea');
+    if (!area) return;
+    const secEl = area.querySelector('[data-section="gfk_coaching"]');
+    if (secEl) secEl.innerHTML = buildGfkCoachingHTML(data);
+  }, 100);
+
+  return `<div data-section="gfk_coaching">
+    <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;padding:12px 0;">
+      <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--muted);border-top-color:var(--S);animation:spin 1s linear infinite;"></div>
+      Lade GFK-Coaching Daten…
+    </div>
+  </div>`;
+}
+
+function buildGfkCoachingHTML(data) {
+  if (!data.length) return `
+    <div style="color:var(--muted);font-size:13px;padding:12px 0;">
+      Noch keine Antworten eingegangen. Warte bis Teilnehmende Runden abschliessen.
+      <button onclick="refreshGfkCoaching()" style="margin-left:12px;background:rgba(42,157,143,.15);border:1px solid rgba(42,157,143,.3);color:var(--S);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;">↻ Aktualisieren</button>
+    </div>`;
+
+  // Aggregation
+  const rundenMap = {};
+  const schritteFehler = { 'Beobachtung':0, 'Gefühl':0, 'Bedürfnis':0, 'Bitte':0 };
+  const aliasSet = new Set();
+  let totalScore = 0;
+
+  data.forEach(d => {
+    aliasSet.add(d.alias);
+    totalScore += d.score || 0;
+    (d.fehlendeSchritte||[]).forEach(s => { if(schritteFehler[s] !== undefined) schritteFehler[s]++; });
+    const r = d.runde || 0;
+    if (!rundenMap[r]) rundenMap[r] = { count:0, scores:[], lernpunkte:[] };
+    rundenMap[r].count++;
+    rundenMap[r].scores.push(d.score||0);
+    if (d.lernpunkt) rundenMap[r].lernpunkte.push(`${d.alias}: ${d.lernpunkt}`);
+  });
+
+  const avgScore = Math.round(totalScore / data.length);
+  const scoreCol = avgScore >= 75 ? '#2a9d8f' : avgScore >= 50 ? '#f4a261' : '#e63946';
+
+  // Schwächste Schritte
+  const schwaechen = Object.entries(schritteFehler)
+    .sort((a,b) => b[1]-a[1])
+    .filter(([,v]) => v > 0);
+
+  const STEP_COLORS = { 'Beobachtung':'#4a90d9', 'Gefühl':'#f4a261', 'Bedürfnis':'#2a9d8f', 'Bitte':'#e63946' };
+
+  const schwachenHTML = schwaechen.length ? schwaechen.map(([name, count]) => {
+    const pct = Math.round((count / data.length) * 100);
+    const col = STEP_COLORS[name] || '#888';
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <div style="width:80px;font-size:11px;font-weight:600;color:${col};">${name}</div>
+      <div style="flex:1;height:8px;background:var(--surf2);border-radius:4px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:${col};opacity:.7;border-radius:4px;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);width:40px;">${count}× (${pct}%)</div>
+    </div>`;
+  }).join('') : `<div style="font-size:12px;color:var(--S);">✓ Alle Schritte gut abgedeckt</div>`;
+
+  return `
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <div style="background:var(--surf2);border-radius:10px;padding:10px 16px;flex:1;min-width:100px;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Teilnehmende</div>
+        <div style="font-size:24px;font-weight:700;">${aliasSet.size}</div>
+        <div style="font-size:11px;color:var(--muted);">${data.length} Antworten total</div>
+      </div>
+      <div style="background:var(--surf2);border-radius:10px;padding:10px 16px;flex:1;min-width:100px;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Ø GFK-Score</div>
+        <div style="font-size:24px;font-weight:700;color:${scoreCol};">${avgScore}%</div>
+        <div style="font-size:11px;color:var(--muted);">Schritte korrekt</div>
+      </div>
+    </div>
+
+    <div class="section-title">Häufig fehlende Schritte</div>
+    <div style="margin-bottom:14px;">${schwachenHTML}</div>
+
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>✦ KI-Empfehlung für dich als Moderator</span>
+      <button onclick="runGfkCoachingKi()" id="gfkKiBtn"
+        style="background:rgba(42,157,143,.15);border:1px solid rgba(42,157,143,.3);color:var(--S);
+               padding:4px 12px;border-radius:6px;cursor:pointer;font-size:11px;">
+        Analyse starten
+      </button>
+    </div>
+    <div id="gfkKiOutput" style="background:var(--surf2);border-radius:10px;padding:12px 14px;
+      font-size:13px;color:var(--muted);line-height:1.6;min-height:60px;margin-bottom:12px;">
+      ${gfkCoachingKiResult || 'Klicke "Analyse starten" für eine KI-Auswertung mit konkreten Moderationstipps.'}
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button onclick="refreshGfkCoaching()"
+        style="background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);
+               padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;">
+        ↻ Aktualisieren
+      </button>
+    </div>`;
+}
+
+async function refreshGfkCoaching() {
+  const area = document.getElementById('moduleDetailArea');
+  const secEl = area?.querySelector('[data-section="gfk_coaching"]');
+  if (!secEl) return;
+  secEl.innerHTML = `<div style="color:var(--muted);font-size:12px;">Lade...</div>`;
+  const data = await loadGfkCoachingData();
+  secEl.innerHTML = buildGfkCoachingHTML(data);
+}
+
+async function runGfkCoachingKi() {
+  if (gfkCoachingKiRunning) return;
+  gfkCoachingKiRunning = true;
+  const btn = document.getElementById('gfkKiBtn');
+  const out = document.getElementById('gfkKiOutput');
+  if (btn) { btn.disabled = true; btn.textContent = 'Analysiert...'; }
+  if (out) out.innerHTML = '<span style="color:var(--S);">KI analysiert alle Antworten…</span>';
+
+  const data = await loadGfkCoachingData();
+  if (!data.length) {
+    if (out) out.textContent = 'Noch keine Daten vorhanden.';
+    gfkCoachingKiRunning = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Analyse starten'; }
+    return;
+  }
+
+  // Daten für KI aufbereiten
+  const schritteFehler = { 'Beobachtung':0, 'Gefühl':0, 'Bedürfnis':0, 'Bitte':0 };
+  const lernpunkte = [];
+  let totalScore = 0;
+  const aliasSet = new Set();
+
+  data.forEach(d => {
+    aliasSet.add(d.alias);
+    totalScore += d.score || 0;
+    (d.fehlendeSchritte||[]).forEach(s => { if(schritteFehler[s]!==undefined) schritteFehler[s]++; });
+    if (d.lernpunkt) lernpunkte.push(d.lernpunkt);
+  });
+
+  const avgScore = Math.round(totalScore / data.length);
+  const schwaechen = Object.entries(schritteFehler).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+
+  try {
+    const res = await fetch('https://dnoecftuybkoqvrkfvei.supabase.co/functions/v1/ki-analyze', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
+      body: JSON.stringify({
+        system: 'Du bist ein erfahrener Workshop-Coach und GFK-Experte. Antworte auf Deutsch, direkt und praxisnah.',
+        userPrompt: `Du analysierst die GFK-Coaching Ergebnisse eines R&D-Engineering-Teams im Workshop.
+
+Daten:
+- ${aliasSet.size} Teilnehmende, ${data.length} Antworten ausgewertet
+- Ø GFK-Score: ${avgScore}% (korrekte Schritte)
+- Häufig fehlende Schritte: ${schwaechen.map(([n,c])=>`${n} (${c}× fehlt)`).join(', ') || 'keine'}
+- Häufige Lernpunkte der KI: ${[...new Set(lernpunkte)].slice(0,5).join(' | ')}
+
+Gib mir als Moderator:
+1. Eine kurze Einschätzung wo das Team steht (2 Sätze)
+2. Den wichtigsten Schritt der noch nicht verstanden wurde — mit Erklärung warum Teams damit kämpfen
+3. Einen konkreten Übungsvorschlag den ich jetzt spontan einsetzen kann (1-2 Sätze)
+4. Eine Frage die ich ans Team stellen kann um das Verständnis zu vertiefen
+
+Sei direkt — ich stehe vor dem Team.`,
+        maxTokens: 600
+      })
+    });
+    const json = await res.json();
+    gfkCoachingKiResult = json.text || '';
+    if (out) out.innerHTML = gfkCoachingKiResult.replace(/\n/g, '<br>');
+  } catch(e) {
+    if (out) out.textContent = 'Fehler: ' + e.message;
+  }
+
+  gfkCoachingKiRunning = false;
+  if (btn) { btn.disabled = false; btn.textContent = '↻ Neu analysieren'; }
 }
 
 function renderLiveFeedSection(){
