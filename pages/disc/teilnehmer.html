@@ -558,6 +558,33 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
   #sDiscResults { display: flex !important; }
   #app { max-width: 100%; }
 }
+/* ─── GFK COACHING ─────────────────────────────── */
+.gfk-screen { display:flex;flex-direction:column;height:100%;overflow-y:auto; }
+.gfk-progress { display:flex;gap:6px;padding:16px 20px 0; }
+.gfk-prog-dot { height:4px;border-radius:2px;flex:1;background:var(--border);transition:background .3s; }
+.gfk-prog-dot.done { background:var(--S); }
+.gfk-prog-dot.active { background:var(--I); }
+.gfk-card { background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:18px;margin:12px 16px; }
+.gfk-round-label { font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px; }
+.gfk-scenario { font-size:14px;line-height:1.7;color:var(--text);margin-bottom:0; }
+.gfk-steps { display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 16px; }
+.gfk-step { background:var(--surf2);border-radius:10px;padding:8px 10px; }
+.gfk-step-lbl { font-size:9px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px; }
+.gfk-step-desc { font-size:11px;color:var(--muted);line-height:1.4; }
+.gfk-input-wrap { margin:0 16px 12px; }
+.gfk-textarea { width:100%;min-height:90px;background:var(--surf2);border:1px solid var(--border);
+  border-radius:12px;padding:12px;color:var(--text);font-size:14px;line-height:1.6;
+  resize:vertical;font-family:inherit; }
+.gfk-textarea:focus { outline:none;border-color:var(--S); }
+.gfk-feedback { margin:0 16px 16px;border-radius:14px;overflow:hidden;animation:fadeIn .4s ease; }
+.gfk-fb-header { padding:10px 14px 8px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase; }
+.gfk-fb-body { padding:0 14px 14px; }
+.gfk-fb-section { margin-bottom:10px; }
+.gfk-fb-section-title { font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px; }
+.gfk-fb-text { font-size:13px;line-height:1.65;color:var(--text); }
+.gfk-step-check { display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:12px; }
+.gfk-check-icon { width:18px;height:18px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px; }
 </style>
 </head>
 <body>
@@ -745,6 +772,17 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
     </div>
   </div>
 
+  <!-- GFK COACHING SCREEN -->
+  <div id="sGfkCoaching" class="screen">
+    <div style="position:sticky;top:0;z-index:50;background:rgba(8,8,16,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 20px;">
+      <div style="font-size:15px;font-weight:600;">🕊 GFK-Coaching</div>
+      <div style="font-size:11px;color:var(--muted);">Übe die Gewaltfreie Kommunikation in 3 Runden</div>
+    </div>
+    <div id="gfkCoachingContent" class="gfk-screen">
+      <!-- wird dynamisch befüllt -->
+    </div>
+  </div>
+
 </div><!-- #app -->
 
 <div id="toast"></div>
@@ -877,6 +915,8 @@ function handleModule(mod, data) {
       showVerzerrungsVote(data); break;
     case 'gfk_fallbeispiel':
       showGfkVote(data); break;
+    case 'gfk_coaching':
+      showGfkCoaching(data); break;
     default:
       if (MODULE_DEFS[mod]) showModule(mod, data);
       else showWaiting(data);
@@ -2051,6 +2091,246 @@ function buildDiscResults() {
   } catch(e) {}
   // Pairing-Karten werden NICHT automatisch generiert
   // → erst wenn Moderator das Modul 'pairing_karten' aktiviert
+}
+
+/* ─── GFK COACHING ───────────────────────────────── */
+const GFK_ROUNDS = [
+  {
+    id: 1,
+    type: 'eigene',
+    label: 'Runde 1 — Deine eigene Situation',
+    prompt: 'Denk an eine Situation aus deinem Arbeitsalltag, in der du dich unwohl gefühlt hast oder etwas nicht direkt ansprechen konntest.',
+    question: 'Formuliere diese Situation nach GFK:\nBeobachtung · Gefühl · Bedürfnis · Bitte',
+    placeholder: 'Als... beobachte ich, dass...\nIch fühle mich dabei...\nWeil mir ... wichtig ist...\nIch bitte dich,...'
+  },
+  {
+    id: 2,
+    type: 'szenario',
+    label: 'Runde 2 — Fallbeispiel',
+    prompt: 'Lea ist Entwicklerin. Ihr Kollege Jonas unterbricht sie regelmässig in Meetings, wenn sie ihre Ideen vorstellt. Sie hat das Gefühl, nicht ernst genommen zu werden, sagt aber nichts.',
+    question: 'Formuliere für Lea eine GFK-Aussage an Jonas:',
+    placeholder: 'Jonas, wenn du... beobachte ich...\nDann fühle ich...\nWeil mir ... wichtig ist...\nIch wünsche mir von dir,...'
+  },
+  {
+    id: 3,
+    type: 'szenario',
+    label: 'Runde 3 — Fallbeispiel',
+    prompt: 'Marc ist Teamleiter. Er bemerkt, dass seit dem letzten Statusmeeting die Stimmung im Team gedrückt ist. Niemand spricht offen darüber, aber er spürt Unzufriedenheit.',
+    question: 'Formuliere für Marc eine GFK-Aussage ans Team:',
+    placeholder: 'Mir ist aufgefallen, dass...\nIch mache mir dabei Sorgen, weil...\nFür mich ist ... wichtig...\nDeshalb möchte ich euch bitten,...'
+  }
+];
+
+let gfkCoachRound = 0;
+let gfkCoachAnswers = [];
+let gfkCoachAnalyzing = false;
+
+function showGfkCoaching(data) {
+  gfkCoachRound = 0;
+  gfkCoachAnswers = [];
+  show('sGfkCoaching');
+  renderGfkRound();
+}
+
+function renderGfkRound() {
+  const el = document.getElementById('gfkCoachingContent');
+  if (!el) return;
+  const round = GFK_ROUNDS[gfkCoachRound];
+  if (!round) { renderGfkComplete(); return; }
+
+  // Fortschritts-Dots
+  const dots = GFK_ROUNDS.map((r, i) =>
+    `<div class="gfk-prog-dot ${i < gfkCoachRound ? 'done' : i === gfkCoachRound ? 'active' : ''}"></div>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="gfk-progress">${dots}</div>
+
+    <div class="gfk-card" style="margin-top:14px;">
+      <div class="gfk-round-label">${round.label}</div>
+      <div class="gfk-scenario">${round.prompt}</div>
+    </div>
+
+    <div class="gfk-steps">
+      <div class="gfk-step">
+        <div class="gfk-step-lbl" style="color:#4a90d9;">1. Beobachtung</div>
+        <div class="gfk-step-desc">Was genau ist passiert — ohne Bewertung?</div>
+      </div>
+      <div class="gfk-step">
+        <div class="gfk-step-lbl" style="color:#f4a261;">2. Gefühl</div>
+        <div class="gfk-step-desc">Wie fühlst du dich dabei wirklich?</div>
+      </div>
+      <div class="gfk-step">
+        <div class="gfk-step-lbl" style="color:#2a9d8f;">3. Bedürfnis</div>
+        <div class="gfk-step-desc">Welches Bedürfnis steckt dahinter?</div>
+      </div>
+      <div class="gfk-step">
+        <div class="gfk-step-lbl" style="color:#e63946;">4. Bitte</div>
+        <div class="gfk-step-desc">Was bittest du konkret — erfüllbar?</div>
+      </div>
+    </div>
+
+    <div style="padding:4px 16px 6px;font-size:13px;font-weight:600;color:var(--muted);">${round.question}</div>
+
+    <div class="gfk-input-wrap">
+      <textarea class="gfk-textarea" id="gfkInput" placeholder="${round.placeholder}"></textarea>
+    </div>
+
+    <div style="padding:0 16px 24px;">
+      <button class="btn btn-primary" style="width:100%;" onclick="submitGfkAnswer()">
+        Analysieren lassen →
+      </button>
+    </div>`;
+
+  document.getElementById('gfkInput')?.focus();
+}
+
+async function submitGfkAnswer() {
+  if (gfkCoachAnalyzing) return;
+  const input = document.getElementById('gfkInput');
+  const text = input?.value?.trim();
+  if (!text || text.length < 15) {
+    toast('Bitte schreib zuerst deinen Satz.', 'info'); return;
+  }
+  gfkCoachAnalyzing = true;
+  const round = GFK_ROUNDS[gfkCoachRound];
+  gfkCoachAnswers.push({ round: round.id, text });
+
+  // Loading anzeigen
+  const btn = document.querySelector('#gfkCoachingContent .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'KI analysiert...'; }
+
+  try {
+    const res = await fetch(SB_URL + '/functions/v1/ki-analyze', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+      body: JSON.stringify({
+        system: `Du bist ein einfühlsamer GFK-Coach (Gewaltfreie Kommunikation nach Marshall Rosenberg). 
+Analysiere kurz, präzise und ermutigend. Antworte NUR als JSON ohne Markdown.`,
+        userPrompt: `Analysiere diese GFK-Formulierung eines Workshop-Teilnehmers:
+
+Kontext: "${round.prompt}"
+Formulierung: "${text}"
+
+Bewerte die 4 GFK-Schritte und gib Verbesserungsvorschläge.
+Sei ermutigend — auch unvollständige Versuche verdienen Anerkennung.
+
+JSON-Format:
+{
+  "gesamteindruck": "1-2 Sätze zur Gesamtformulierung",
+  "schritte": [
+    { "name": "Beobachtung", "vorhanden": true/false, "kommentar": "kurze Einschätzung", "farbe": "#4a90d9" },
+    { "name": "Gefühl", "vorhanden": true/false, "kommentar": "kurze Einschätzung", "farbe": "#f4a261" },
+    { "name": "Bedürfnis", "vorhanden": true/false, "kommentar": "kurze Einschätzung", "farbe": "#2a9d8f" },
+    { "name": "Bitte", "vorhanden": true/false, "kommentar": "kurze Einschätzung", "farbe": "#e63946" }
+  ],
+  "verbesserung": "Eine konkrete Alternativformulierung als vollständiger GFK-Satz",
+  "lernpunkt": "Der wichtigste Tipp für die nächste Runde (1 Satz)"
+}`,
+        maxTokens: 900
+      })
+    });
+    const json = await res.json();
+    const raw = (json.text||'').replace(/```json|```/g,'').trim();
+    const d = JSON.parse(raw);
+    renderGfkFeedback(d, text);
+  } catch(e) {
+    toast('Fehler: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Analysieren lassen →'; }
+  }
+  gfkCoachAnalyzing = false;
+}
+
+function renderGfkFeedback(d, originalText) {
+  const el = document.getElementById('gfkCoachingContent');
+  const round = GFK_ROUNDS[gfkCoachRound];
+  const isLast = gfkCoachRound >= GFK_ROUNDS.length - 1;
+
+  const dots = GFK_ROUNDS.map((r, i) =>
+    `<div class="gfk-prog-dot ${i <= gfkCoachRound ? 'done' : ''}"></div>`
+  ).join('');
+
+  const stepChecks = (d.schritte||[]).map(s => `
+    <div class="gfk-step-check">
+      <div class="gfk-check-icon" style="background:${s.vorhanden ? s.farbe+'33' : 'rgba(230,57,70,.15)'};color:${s.vorhanden ? s.farbe : '#e63946'};">
+        ${s.vorhanden ? '✓' : '○'}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:${s.farbe};">${s.name}</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.4;">${s.kommentar}</div>
+      </div>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="gfk-progress">${dots}</div>
+
+    <div class="gfk-card" style="margin-top:14px;border-color:rgba(255,255,255,.08);">
+      <div class="gfk-round-label">Deine Formulierung</div>
+      <div style="font-size:13px;line-height:1.6;color:var(--muted);font-style:italic;">"${originalText}"</div>
+    </div>
+
+    <div class="gfk-feedback" style="background:rgba(42,157,143,.07);border:1px solid rgba(42,157,143,.25);">
+      <div class="gfk-fb-header" style="color:var(--S);">✦ KI-Analyse</div>
+      <div class="gfk-fb-body">
+        <div style="font-size:13px;line-height:1.6;color:var(--text);margin-bottom:12px;">${d.gesamteindruck||''}</div>
+        <div style="margin-bottom:12px;">${stepChecks}</div>
+      </div>
+    </div>
+
+    <div class="gfk-feedback" style="background:rgba(74,144,217,.07);border:1px solid rgba(74,144,217,.25);">
+      <div class="gfk-fb-header" style="color:var(--C);">💡 Verbesserungsvorschlag</div>
+      <div class="gfk-fb-body">
+        <div style="font-size:13px;line-height:1.7;color:var(--text);font-style:italic;">"${d.verbesserung||''}"</div>
+      </div>
+    </div>
+
+    <div class="gfk-feedback" style="background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.2);">
+      <div class="gfk-fb-header" style="color:#ffd700;">→ Lernpunkt</div>
+      <div class="gfk-fb-body">
+        <div style="font-size:13px;line-height:1.6;color:var(--text);">${d.lernpunkt||''}</div>
+      </div>
+    </div>
+
+    <div style="padding:4px 16px 28px;">
+      <button class="btn btn-primary" style="width:100%;" onclick="gfkNextRound()">
+        ${isLast ? '✓ Abschliessen' : 'Weiter zur nächsten Runde →'}
+      </button>
+    </div>`;
+}
+
+function gfkNextRound() {
+  gfkCoachRound++;
+  if (gfkCoachRound >= GFK_ROUNDS.length) {
+    renderGfkComplete();
+  } else {
+    renderGfkRound();
+    document.getElementById('sGfkCoaching')?.scrollTo({ top:0, behavior:'smooth' });
+  }
+}
+
+function renderGfkComplete() {
+  const el = document.getElementById('gfkCoachingContent');
+  const dots = GFK_ROUNDS.map(() => `<div class="gfk-prog-dot done"></div>`).join('');
+  el.innerHTML = `
+    <div class="gfk-progress">${dots}</div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                padding:40px 24px;text-align:center;min-height:60vh;">
+      <div style="font-size:64px;margin-bottom:20px;">🕊</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;margin-bottom:12px;">
+        Gut gemacht!
+      </div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.7;max-width:320px;">
+        Du hast alle 3 Runden abgeschlossen. GFK ist eine Praxis — 
+        je öfter du sie anwendest, desto natürlicher wird sie.
+      </div>
+      <div style="margin-top:28px;padding:16px 20px;background:var(--surf);border-radius:14px;
+                  border:1px solid var(--border);font-size:13px;color:var(--muted);text-align:left;
+                  max-width:340px;line-height:1.7;">
+        <strong style="color:var(--S);">Merke dir:</strong><br>
+        B·G·B·B — Beobachtung · Gefühl · Bedürfnis · Bitte.<br>
+        Immer in dieser Reihenfolge. Immer ohne Vorwurf.
+      </div>
+    </div>`;
 }
 
 /* ─── PAIRING KARTEN ─────────────────────────────── */

@@ -356,6 +356,7 @@ const MODULE_PHASES=[
     {id:'mut_info',            icon:'💪',name:'Mut & Offenheit',sub:'Beamer'},
     {id:'gfk_info',            icon:'🕊',name:'GFK Einführung', sub:'Beamer'},
     {id:'gfk_fallbeispiel',    icon:'🎯',name:'GFK Fallbsp.',   sub:'MC-Voting'},
+    {id:'gfk_coaching',        icon:'🏋',name:'GFK Coaching',   sub:'Individuell'},
     {id:'gfk',                 icon:'🕊',name:'GFK',            sub:'Live-Feed'},
   ]},
   {label:'▸ Tag 1 – DISC & Kernbotschaften',modules:[
@@ -602,6 +603,17 @@ const MODULE_DETAILS={
       '&#220;berleitung: "Jetzt euer eigener Versuch — aus eurem Alltag"'],
     beamer:'Beamer zeigt Szenario + Live-Abstimmungsbalken',
     dataType:'gfk_fallbeispiel'
+  },
+  gfk_coaching:{
+    desc:'Jeder Teilnehmer durchläuft 3 persönliche GFK-Coaching Runden auf seinem Gerät — mit KI-Analyse und Verbesserungsvorschlägen.',
+    hints:[
+      'Aktiviere das Modul — alle arbeiten nun individuell auf ihrem Gerät',
+      'Gib 10-15 Minuten Zeit für alle 3 Runden',
+      'Runde 1: eigene Situation, Runde 2+3: Fallbeispiele',
+      'Nach Abschluss: "Wer mag einen Lernpunkt teilen?"',
+      'Überleitung zum GFK Live-Feed: eigene Formulierungen fürs Team'],
+    beamer:'Beamer zeigt "GFK Coaching läuft..." — kein Feedback sichtbar',
+    dataType:'static'
   },
   gfk:{
     desc:'Teilnehmer formulieren eine GFK-Aussage (Beobachtung/Gefühl/Bedürfnis/Bitte).',
