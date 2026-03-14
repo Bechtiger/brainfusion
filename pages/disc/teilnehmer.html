@@ -2170,65 +2170,88 @@ function renderPairingCards(data, myType) {
 async function downloadPairingPdf() {
   if (!pairingData) return;
   const btn = document.getElementById('pairingPdfBtn');
-  btn.textContent = '⏳ Erstelle PDF…'; btn.disabled = true;
+  btn.textContent = 'Erstelle PDF...'; btn.disabled = true;
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const myCol = PAIR_COLORS[pairingData.myType] || '#333';
   const hexToRgb = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+  const myCol = PAIR_COLORS[pairingData.myType] || '#333';
+  const myRgb = hexToRgb(myCol);
 
-  // Header
-  doc.setFillColor(...hexToRgb(myCol));
-  doc.rect(0, 0, 210, 28, 'F');
+  // ── Header ──────────────────────────────────────────
+  doc.setFillColor(...myRgb);
+  doc.rect(0, 0, 210, 26, 'F');
   doc.setTextColor(255,255,255);
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(18);
-  doc.text(`Pairing-Karten: ${pairingData.myName}`, 14, 12);
-  doc.setFontSize(10); doc.setFont('helvetica','normal');
-  doc.text('DISC Workshop · Wahrheitsfähigkeit im Team', 14, 21);
+  doc.setFont('helvetica','bold'); doc.setFontSize(16);
+  doc.text(`Pairing-Karten: ${pairingData.myName}`, 12, 11);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('DISC Workshop - Wahrheitsfahigkeit im Team', 12, 20);
 
-  let y = 36;
+  let y = 32;
+
   (pairingData.pairs||[]).forEach(p => {
-    const col = PAIR_COLORS[p.type]||'#888';
+    if (!p || !p.type) return;
+    const col = PAIR_COLORS[p.type] || '#888';
     const rgb = hexToRgb(col);
 
-    // Karten-Header
+    // Berechne Texthöhen voraus
+    const synLines = doc.splitTextToSize(p.synergy || '', 82);
+    const tenLines = doc.splitTextToSize(p.tension || '', 82);
+    const tipLines = doc.splitTextToSize(p.tip || '', 178);
+    const rowH = Math.max(synLines.length, tenLines.length) * 4.5 + 5;
+    const cardH = 10 + rowH + tipLines.length * 4.5 + 16;
+
+    // Neue Seite falls nötig
+    if (y + cardH > 278) { doc.addPage(); y = 16; }
+
+    // Karten-Header farbig
     doc.setFillColor(...rgb);
-    doc.roundedRect(12, y, 186, 8, 2, 2, 'F');
+    doc.roundedRect(10, y, 190, 8, 1.5, 1.5, 'F');
     doc.setTextColor(255,255,255);
-    doc.setFont('helvetica','bold'); doc.setFontSize(11);
-    doc.text(`${pairingData.myType} ↔ ${p.type}  ·  ${p.name}`, 16, y+5.5);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.text(`${pairingData.myType} <-> ${p.type}  |  ${p.name||''}`, 14, y + 5.5);
 
-    // Inhalt
+    y += 10;
+
+    // Synergie / Reibung nebeneinander
     doc.setTextColor(30,30,30);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text('✓ Synergie', 14, y+14);
-    doc.setFont('helvetica','normal');
-    const synLines = doc.splitTextToSize(p.synergy, 85);
-    doc.text(synLines, 14, y+19);
+    doc.setFillColor(235, 248, 244);
+    doc.roundedRect(10, y, 93, rowH, 1, 1, 'F');
+    doc.setFillColor(253, 238, 238);
+    doc.roundedRect(107, y, 93, rowH, 1, 1, 'F');
 
-    doc.setFont('helvetica','bold');
-    doc.text('⚡ Reibung', 110, y+14);
-    doc.setFont('helvetica','normal');
-    const tenLines = doc.splitTextToSize(p.tension, 85);
-    doc.text(tenLines, 110, y+19);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.setTextColor(30, 120, 90);
+    doc.text('SYNERGIE', 14, y + 5);
+    doc.setTextColor(180, 40, 40);
+    doc.text('REIBUNG', 111, y + 5);
 
-    doc.setFont('helvetica','bold');
-    doc.text('💡 Tipp', 14, y+30);
-    doc.setFont('helvetica','normal');
-    const tipLines = doc.splitTextToSize(p.tip, 180);
-    doc.text(tipLines, 14, y+35);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+    doc.setTextColor(40, 40, 40);
+    doc.text(synLines, 14, y + 10);
+    doc.text(tenLines, 111, y + 10);
+
+    y += rowH + 2;
+
+    // Tipp
+    doc.setFillColor(255, 252, 230);
+    doc.roundedRect(10, y, 190, tipLines.length * 4.5 + 8, 1, 1, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.setTextColor(140, 100, 0);
+    doc.text('TIPP', 14, y + 5);
+    doc.setFont('helvetica','normal'); doc.setTextColor(60, 50, 0);
+    doc.text(tipLines, 14, y + 10);
+
+    y += tipLines.length * 4.5 + 12;
 
     // Trennlinie
-    y += 48;
-    doc.setDrawColor(220,220,220);
-    doc.line(12, y-2, 198, y-2);
-
-    if (y > 260) { doc.addPage(); y = 20; }
+    doc.setDrawColor(210, 210, 210);
+    doc.line(10, y, 200, y);
+    y += 4;
   });
 
-  doc.save(`Pairing_${pairingData.myType}_${pairingData.myName.replace('Der ','')}.pdf`);
-  btn.textContent = '⬇ Pairing-Karten als PDF'; btn.disabled = false;
+  doc.save(`Pairing_${pairingData.myType}_${(pairingData.myName||'').replace('Der ','')}.pdf`);
+  btn.textContent = 'Als PDF speichern'; btn.disabled = false;
 }
 
 /* ─── PAYLOAD for sendDiscResult ─────────────────── */
