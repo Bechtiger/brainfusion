@@ -2300,7 +2300,7 @@ JSON-Format:
 }
 
 async function saveGfkCoachingResult(round, text, analysis) {
-  if (!session?.participantId || !session?.workshopId) return;
+  if (!session?.participantId || !session?.workshopId || !session?.joinToken) return;
   try {
     const schritteFehlen = (analysis.schritte||[])
       .filter(s => !s.vorhanden).map(s => s.name);
@@ -2308,6 +2308,7 @@ async function saveGfkCoachingResult(round, text, analysis) {
       method:'POST', headers:HDR,
       body: JSON.stringify({
         participantId: session.participantId,
+        joinToken:     session.joinToken,
         workshopId:    session.workshopId,
         alias:         session.alias,
         module:        'gfk_coaching_r' + round.id,
