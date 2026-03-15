@@ -549,14 +549,94 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
 .sel-desc { font-size: 13px; color: var(--muted); }
 
 /* ═══════════════════════════════════════════════════════
-   PRINT
+   PRINT — Light Theme für Ausdruck / PDF
 ═══════════════════════════════════════════════════════ */
+#printHeader { display: none; }
+.print-title-block {
+  padding-bottom: 14px; margin-bottom: 22px;
+  border-bottom: 3px solid #111;
+}
+.print-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 26px; font-weight: 700;
+  color: #111; line-height: 1.1; letter-spacing: 1px;
+}
+.print-subtitle {
+  font-size: 11px; color: #555;
+  margin-top: 5px; letter-spacing: 0.5px;
+}
+
 @media print {
-  @page { margin: 14mm 16mm; size: A4; }
-  body { background: #fff !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .app-header, #sJoin, #sWaiting, #sModule, #sDiscIntro, #sDiscQuestions, #sDiscTransition { display: none !important; }
+  @page { margin: 15mm 18mm; size: A4; }
+
+  /* ── CSS-Variablen: Dark → Light ─────────────────── */
+  :root {
+    --bg:      #ffffff;
+    --surf:    #f7f8fa;
+    --surf2:   #edf0f3;
+    --surf3:   #e2e6ea;
+    --border:  #ced3db;
+    --border2: #b8bec8;
+    --text:    #111827;
+    --muted:   #4b5563;
+    --dim:     #9ca3af;
+    --gold:    #a07800;
+  }
+
+  /* ── Body Reset ─────────────────────────────────── */
+  body {
+    background: #fff !important; color: #111 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  /* ── Screens: alles ausblenden, nur Results zeigen ── */
+  .app-header, #sJoin, #sWaiting, #sModule, #sDiscIntro,
+  #sDiscQuestions, #sDiscTransition,
+  #sPairingKarten, #sGfkCoaching { display: none !important; }
   #sDiscResults { display: flex !important; }
   #app { max-width: 100%; }
+
+  /* ── Sticky Sende-Header + alle Buttons ausblenden ── */
+  #sDiscResults > div:first-child { display: none !important; }
+  .btn, button { display: none !important; }
+  #pairingSection { display: none !important; }
+  #printHeader { display: block !important; }
+
+  /* ── Results-Container: kein Scroll-Clip ─────────── */
+  #resultsContent {
+    overflow: visible !important;
+    overflow-y: visible !important;
+    padding: 0 4px !important;
+  }
+
+  /* ── Karten-Hintergründe: dark → light ──────────── */
+  .profile-card { background: #f7f8fa !important; border-color: #ced3db !important; }
+  .bar-card     { background: #f7f8fa !important; border-color: #ced3db !important; }
+  .radar-card   { background: #f7f8fa !important; border-color: #ced3db !important; }
+  .detail-card  { background: #f7f8fa !important; border-color: #ced3db !important; }
+  .tension-card { background: #fff8f0 !important; border-color: #f0d8b0 !important; }
+  .trait-card   { background: #edf0f3 !important; border-color: #ced3db !important; }
+  .info-row     { background: #edf0f3 !important; border-color: #ced3db !important; }
+  .score-cell   { background: #edf0f3 !important; border-color: #ced3db !important; }
+  .bar-track    { background: #dde1e7 !important; }
+
+  /* ── Textfarben ─────────────────────────────────── */
+  .detail-card h2, .bar-title, .tension-card h3 { color: #111 !important; }
+  .pc-sub, .ir-lbl, .trait-lbl, .dim-name       { color: #555 !important; }
+  .score-dim { color: #666 !important; }
+  .leg-item  { color: #555 !important; }
+
+  /* ── Balken ohne Transition ─────────────────────── */
+  .bar-fill { transition: none !important; }
+
+  /* ── Seitenumbrüche ─────────────────────────────── */
+  .profile-card { page-break-inside: avoid; break-inside: avoid; }
+  .bar-card     { page-break-inside: avoid; break-inside: avoid; }
+  .radar-card   { page-break-inside: avoid; break-inside: avoid; }
+  .tension-card { page-break-inside: avoid; break-inside: avoid; }
+  .detail-card  { break-inside: avoid; }
+  .trait-grid   { page-break-inside: avoid; break-inside: avoid; }
+  .scores-grid  { page-break-inside: avoid; break-inside: avoid; }
 }
 /* ─── GFK COACHING ─────────────────────────────── */
 .gfk-screen { display:flex;flex-direction:column;height:100%;overflow-y:auto; }
@@ -2053,10 +2133,12 @@ function buildDiscResults() {
       </div>
 
       <div style="margin-top:16px;padding-bottom:32px;">
-        <div style="font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:14px;padding:8px 12px;border-left:2px solid rgba(255,255,255,.1);">
+        <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:14px;padding:8px 12px;border-left:2px solid var(--border);">
           ℹ️ Dieses Reflexionsinstrument dient der Workshop-Selbstreflexion und ersetzt keine validierte psychometrische Diagnostik.
         </div>
-        <button class="btn btn-ghost" onclick="window.print()" style="margin-bottom:10px;">PDF speichern</button>
+        <button class="btn btn-ghost" onclick="preparePrint()" style="margin-bottom:10px;gap:10px;">
+          <span style="font-size:16px;">↓</span> PDF speichern / Drucken
+        </button>
       </div>
 
       <!-- Pairing-Karten -->
@@ -2708,6 +2790,84 @@ async function sendDiscResult() {
   if (urlCode) joinCodeEl.value = urlCode;
   show('sJoin');
 })();
+
+/* ═══════════════════════════════════════════════════════
+   PRINT SUPPORT
+═══════════════════════════════════════════════════════ */
+function preparePrint() {
+  // Dynamischen Print-Header mit Name & Datum einfügen
+  let hdr = document.getElementById('printHeader');
+  if (!hdr) {
+    hdr = document.createElement('div');
+    hdr.id = 'printHeader';
+    const rc = document.getElementById('resultsContent');
+    if (rc) rc.insertBefore(hdr, rc.firstChild);
+  }
+  const now = new Date().toLocaleDateString('de-CH', { day:'2-digit', month:'long', year:'numeric' });
+  hdr.innerHTML = `
+    <div class="print-title-block">
+      <div class="print-title">DISC-Profil Auswertung</div>
+      <div class="print-subtitle">Wahrheitsfähigkeit im Team &nbsp;·&nbsp; ${session.alias || 'Teilnehmer'} &nbsp;·&nbsp; ${now}</div>
+    </div>`;
+
+  // Balken auf korrekte Breite setzen (Animation-Sicherheitsnetz)
+  document.querySelectorAll('.bar-fill[data-w]').forEach(el => {
+    el.style.transition = 'none';
+    el.style.width = el.getAttribute('data-w') + '%';
+  });
+
+  window.print();
+}
+
+// Radar-SVG: vor dem Druck auf weissen Hintergrund patchen
+window.addEventListener('beforeprint', function() {
+  document.querySelectorAll('#resultsContent svg').forEach(svg => {
+    // Gitter-Ringe: weiss → sichtbar dunkel
+    svg.querySelectorAll('path').forEach(el => {
+      const s = el.getAttribute('stroke') || '';
+      if (s.startsWith('rgba(255,255,255')) {
+        el.setAttribute('data-orig-stroke', s);
+        el.setAttribute('stroke', 'rgba(0,0,0,.13)');
+      }
+      // Polygon-Füllungen für Weiss-Papier verstärken
+      const fo = parseFloat(el.getAttribute('fill-opacity') || '0');
+      if (fo > 0 && fo < 0.4) {
+        el.setAttribute('data-orig-fo', String(fo));
+        el.setAttribute('fill-opacity', String(Math.min(0.6, fo * 3)));
+      }
+      // Polygon-Stroke ebenfalls
+      const so = parseFloat(el.getAttribute('stroke-opacity') || '0');
+      if (so > 0 && so < 0.7) {
+        el.setAttribute('data-orig-so', String(so));
+        el.setAttribute('stroke-opacity', String(Math.min(0.9, so * 2)));
+      }
+    });
+    // Achslinien
+    svg.querySelectorAll('line').forEach(el => {
+      const s = el.getAttribute('stroke') || '';
+      if (s.startsWith('rgba(255,255,255')) {
+        el.setAttribute('data-orig-stroke', s);
+        el.setAttribute('stroke', 'rgba(0,0,0,.18)');
+      }
+    });
+  });
+});
+
+// Nach dem Druck: SVG-Attribute wiederherstellen
+window.addEventListener('afterprint', function() {
+  document.querySelectorAll('[data-orig-stroke]').forEach(el => {
+    el.setAttribute('stroke', el.getAttribute('data-orig-stroke'));
+    el.removeAttribute('data-orig-stroke');
+  });
+  document.querySelectorAll('[data-orig-fo]').forEach(el => {
+    el.setAttribute('fill-opacity', el.getAttribute('data-orig-fo'));
+    el.removeAttribute('data-orig-fo');
+  });
+  document.querySelectorAll('[data-orig-so]').forEach(el => {
+    el.setAttribute('stroke-opacity', el.getAttribute('data-orig-so'));
+    el.removeAttribute('data-orig-so');
+  });
+});
 </script>
 </body>
 </html>
