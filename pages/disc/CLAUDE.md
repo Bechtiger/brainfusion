@@ -1,7 +1,7 @@
 # Wahrheitsfähigkeit im Team - Workshop-Plattform
 > Projektgedächtnis für Claude Code / Claude Chat Sessions
-> Letzte Aktualisierung: 2026-03-15
-> Status: Session 15.03.2026 abgeschlossen ✅ | Nächster Workshop: 22./23. April 2026
+> Letzte Aktualisierung: 2026-03-15 (Nachmittag — PDF/Print Session)
+> Status: Session 15.03.2026 (2) abgeschlossen ✅ | Nächster Workshop: 22./23. April 2026
 
 ---
 
@@ -323,7 +323,11 @@ Zwischen Profil-Cards und Balkendiagramm - erklärt visuell warum gleicher Typ t
 12. **sessionStorage statt localStorage** für Teilnehmer-Session
 13. **PowerShell &&** funktioniert nicht → `;` oder Start-Process cmd.exe
 14. **Vercel CSP** erlaubt nur cdn.jsdelivr.net, nicht cdnjs.cloudflare.com
-15. **renderGfkCoachingSection setTimeout-Hack** → direkt async/await (kein DOM-Hack nötig)
+15. **App-Header im Print sichtbar** → `id="appHeader"` auf den sticky Header div → `#appHeader { display:none }` in @media print
+16. **Toast im Print sichtbar** → `#toast { display:none !important }` in @media print
+17. **PDF-Content zu schmal** → `#resultsContent > div { max-width:100% !important }` in @media print
+18. **Emojis in jsPDF** nicht unterstützt → Grossbuchstaben-Labels, KEINE Emojis (auch nicht ✓ ⚡ →)
+19. **jsPDF Pairing-PDF**: `window.jspdf.jsPDF` (UMD-Format) — immer so aufrufen
 
 ---
 
@@ -348,6 +352,63 @@ Start-Process "cmd.exe" -ArgumentList '/c cd /d "E:\Programme\Homepage Brainfusi
 # ExitCode leer = gepusht (kein Feedback = Erfolg!)
 # Ctrl+Shift+R nach ~1-2 Min auf Vercel
 ```
+
+---
+
+## 16. PDF / Print — Stand 15.03.2026 (Nachmittag)
+
+### 16.1 DISC-Auswertung als PDF (`teilnehmer.html` → `preparePrint()`)
+
+**Auslöser:** Button "PDF speichern / Drucken" → `preparePrint()` → `window.print()`
+
+**Was `preparePrint()` tut:**
+- Fügt dynamisch `#printHeader` ein (Titel + Teilnehmername + Datum)
+- Stellt sicher dass alle `.bar-fill[data-w]` ihre korrekten Breiten haben (Transition-Sicherheitsnetz)
+
+**`beforeprint` / `afterprint` Hooks:**
+- Radar-SVG: weisse Gitter-Linien (`rgba(255,255,255,...)`) → dunkel patchen vor Druck
+- Polygon fill-opacity & stroke-opacity verstärken für Weiss-Papier
+- Nach Druck: alle `data-orig-*` Attribute wiederherstellen
+
+**Print-CSS @media print:**
+- CSS-Variablen komplett überschreiben (Dark → Light)
+- `#appHeader`, `#toast`, `.btn`, `button`, `#pairingSection` → `display:none`
+- `#sDiscResults > div:first-child` (sticky Sende-Header) → `display:none`
+- `#resultsContent > div { max-width:100% }` → volle Druckbreite
+- `.score-raw { display:none }` → M/L-Counts ausblenden (technisch, für Teilnehmer irrelevant)
+- `.print-disclaimer { break-inside:avoid }` → Disclaimer nicht abschneiden
+- Alle Karten: `break-inside: avoid` für saubere Seitenumbrüche
+
+**`#printHeader` Struktur (dynamisch erzeugt):**
+```html
+<div id="printHeader">
+  <div class="print-title-block">
+    <div class="print-title">DISC-Profil Auswertung</div>
+    <div class="print-subtitle">Wahrheitsfähigkeit im Team · [alias] · [Datum]</div>
+  </div>
+</div>
+```
+> `#printHeader { display:none }` im normalen CSS — nur im Print sichtbar
+
+### 16.2 Pairing-Karten als PDF (`downloadPairingPdf()`)
+
+**Auslöser:** Button "Als PDF speichern" auf `#sPairingKarten` oder `#pairingPdfBtn`
+
+**Layout (jsPDF, A4 portrait, Margins ML/MR=14mm):**
+- Farbiger Banner oben (in Typenfarbe des Teilnehmers), Weisskreis mit Typ-Letter rechts
+- Titel: "Pairing-Karten" + Typ-Name + Alias + Datum
+- Intro-Box mit farbigem Akzentbalken links
+- Pro Karte: farbiger Header (beide Typ-Badges + Pfeil), Synergie/Reibung nebeneinander, Tipp-Box mit Goldbalken
+- Footer jede Seite: hellgrauer Balken + "Wahrheitsfaehigkeit im Team | DISC Workshop | Pairing-Karten" + Seitenzahl
+
+**Dateiname:** `Pairing-Karten_[TypName]_[Vorname].pdf`
+
+**Kritisch:**
+- `hexToRgb()` für alle jsPDF-Farbwerte nötig (kein CSS hex direkt)
+- `doc.splitTextToSize(text, width)` vor dem Zeichnen — Kartenhöhe dynamisch berechnen
+- Neue Seite: `if (y + cardH > H - 14) { doc.addPage(); pageNum++; y = 16; }`
+- KEINE Emojis in jsPDF (✓ ⚡ 💡 → werden als Leerraum gerendert)
+- Button-ID: `pairingPdfBtn` (im `#sPairingKarten` Screen) — die Funktion sucht beide IDs
 
 ---
 
