@@ -331,14 +331,24 @@ Zwischen Profil-Cards und Balkendiagramm - erklärt visuell warum gleicher Typ t
 
 ---
 
-## 13. Aktuelle Modul-Reihenfolge (korrekt)
+## 13. Aktuelle Modul-Reihenfolge (korrekt, Stand 15.03.2026 nachmittag)
 
 ```
-johari_reflexion → mut_info → gfk_info → gfk_fallbeispiel → gfk_coaching → gfk
-→ disc_test → disc_map → disc_results → disc_role_profile → pairing_karten
-→ was_sage_ich_nicht → kernbotschaften_info → kernbotschaften
-→ [Tag 2] morgen_reflexion → raci_info → raci
-→ steckbrief_feiern → steckbrief_grenzen → steckbrief_zumuten → ritual → closing
+[Tag 1 – Johari & GFK]
+intro_question → johari_erklaerung → johari_fallbeispiele
+→ kognitive_verzerrungen_info → verzerrungen_quiz → johari_reflexion
+→ was_sage_ich_nicht          ← HIERHER verschoben (war nach pairing_karten — passt zu Johari/Fassade)
+→ mut_info → gfk_info → gfk_fallbeispiel → gfk_coaching → gfk
+→ kernbotschaften_info → kernbotschaften  ← HIERHER verschoben (Brücke GFK → DISC)
+
+[Tag 1 – DISC]
+disc_test → disc_map → disc_results → disc_role_profile → pairing_karten
+
+[Tag 2 – Vertiefen]
+morgen_reflexion → raci_info → raci
+
+[Tag 2 – Abschluss]
+steckbrief_feiern → steckbrief_grenzen → steckbrief_zumuten → ritual → closing
 ```
 
 ---
