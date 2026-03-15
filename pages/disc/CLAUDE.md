@@ -1,23 +1,19 @@
 # Wahrheitsfähigkeit im Team - Workshop-Plattform
 > Projektgedächtnis für Claude Code / Claude Chat Sessions
-> Letzte Aktualisierung: 2026-03-10
-> Status: Phase 2 vollständig abgeschlossen ✅ + Kognitive Verzerrungen + GFK-Module hinzugefügt ✅ | Phase 3 als nächstes
+> Letzte Aktualisierung: 2026-03-15
+> Status: Session 15.03.2026 abgeschlossen ✅ | Nächster Workshop: 22./23. April 2026
 
 ---
 
 ## 1. Projektvision & Kontext
 
-**Auftraggeber / Entwickler:** Christof Bechtiger - Head of HR, Swisstronics Contract Manufacturing AG (Cicor Group, Bronschhofen). 1-Mann-HR-Abteilung, ~240 Mitarbeitende, Cicor-Führungsteam.
+**Auftraggeber / Entwickler:** Christof Bechtiger - Head of HR, Swisstronics Contract Manufacturing AG (Cicor Group, Bronschhofen). 1-Mann-HR-Abteilung, ~240 Mitarbeitende.
 
-**Erster echter Workshop-Einsatz:** Team VP Engineering R&D, ~16 SW- & HW-Entwickler, 1.5 Tage.
+**Erster echter Workshop-Einsatz:** Team VP Engineering R&D, ~16 SW- & HW-Entwickler, 1.5 Tage, 22./23. April 2026.
 
-**Kernidee der Plattform:**
-Eine volldigitale Workshop-Steuerungsplattform. Der Moderator (Christof) steuert den Ablauf über ein **Dashboard**. Die Teilnehmer sind per Notebook (nicht Handy!) auf einer Teilnehmer-App. Ein **Beamer** zeigt visuelle Darstellungen fürs ganze Plenum. Alles läuft realtime synchron.
+**Kernidee:** Volldigitale Workshop-Steuerungsplattform. Moderator steuert via Dashboard, Teilnehmer auf Notebooks, Beamer für Plenum. Alles Realtime synchron.
 
-**Wichtig:** Der Name "DISC Workshop" wurde bewusst aufgegeben - er assoziiert falsch. Der offizielle Name des Workshops ist:
-> **"Wahrheitsfähigkeit im Team"**
-
-Der DISC-Test ist nur *ein Baustein* davon, nicht der Rahmen.
+**Offizieller Name:** "Wahrheitsfähigkeit im Team" (nicht "DISC Workshop")
 
 ---
 
@@ -25,12 +21,12 @@ Der DISC-Test ist nur *ein Baustein* davon, nicht der Rahmen.
 
 | Schicht | Technologie |
 |---|---|
-| Frontend | Vanilla HTML/CSS/JS - kein Framework, kein Build-Step |
+| Frontend | Vanilla HTML/CSS/JS - kein Framework |
 | Backend | Supabase (PostgreSQL + Deno Edge Functions) |
-| Realtime | Supabase Realtime (WebSocket, postgres_changes) |
-| Hosting | Vercel (GitHub Auto-Deploy, ~1-2 Min nach git push) |
+| Realtime | Supabase Realtime (WebSocket) |
+| Hosting | Vercel (GitHub Auto-Deploy, ~1-2 Min) |
+| KI | Claude API via ki-analyze Edge Function (claude-sonnet-4-20250514) |
 | Repo | https://github.com/Bechtiger/brainfusion |
-| KI | Claude API (claude-sonnet-4-20250514) - KI-Zusammenfassung Button im Moderator |
 
 ---
 
@@ -38,58 +34,32 @@ Der DISC-Test ist nur *ein Baustein* davon, nicht der Rahmen.
 
 | Seite | URL |
 |---|---|
-| Teilnehmer-App | https://brainfusion.app/pages/disc/teilnehmer.html |
-| Moderator-Dashboard | https://brainfusion.app/pages/disc/moderator.html |
-| Beamer-Ansicht | https://brainfusion.app/pages/disc/beamer.html |
-| Direktlink mit Code | https://brainfusion.app/pages/disc/teilnehmer.html?code=XXXXXX |
+| Teilnehmer | https://brainfusion.app/pages/disc/teilnehmer.html |
+| Moderator | https://brainfusion.app/pages/disc/moderator.html |
+| Beamer | https://brainfusion.app/pages/disc/beamer.html |
 
 ---
 
-## 4. Lokale Dateipfade (Windows)
+## 4. Lokale Dateipfade
 
 ```
 E:\Programme\Homepage Brainfusion\
 ├── pages\disc\
-│   ├── teilnehmer.html       Teilnehmer-App (notebook-optimiert)
-│   ├── moderator.html        Moderator-Dashboard
-│   ├── beamer.html           Beamer-Vollbild-Ansicht
-│   └── CLAUDE.md             diese Datei
+│   ├── teilnehmer.html
+│   ├── moderator.html
+│   ├── beamer.html
+│   └── CLAUDE.md
 └── supabase\functions\
-    ├── create-workshop\      Workshop anlegen
-    ├── join-workshop\        Teilnehmer beitreten
-    ├── submit-result\        DISC-Ergebnis senden
-    ├── list-workshop-results\ Ergebnisse abrufen
-    └── submit-exercise\      Übungsantwort senden
+    ├── ki-analyze\        Claude API Proxy (CORS-sicher, API-Key serverseitig)
+    └── submit-exercise\   Übungsantworten speichern
 ```
 
-> ⚠️ PowerShell: `&&` funktioniert NICHT → immer `;` verwenden
-> ⚠️ Git liegt unter: `C:\Program Files\Git\cmd\git.exe`
-> ⚠️ Batch-Dateien nummeriert: E:\gitpush1.bat bis E:\gitpush25.bat bereits verwendet → **nächste: E:\gitpush26.bat**
-
+> ⚠️ Git via PowerShell hängt sich oft auf → Start-Process "cmd.exe" mit -Wait verwenden
+> ⚠️ Deployment via: Start-Process "cmd.exe" -ArgumentList '/c cd /d "E:\Programme\Homepage Brainfusion" && git add ... && git commit -m "..." && git push' -Wait -PassThru
 
 ---
 
-## 5. Deployment-Workflow
-
-```powershell
-# Dateien pushen - IMMER via Batch-Datei (Git nicht im PS-PATH)
-# Neue Batch-Datei erstellen (nächste Nummer verwenden!):
-# E:\gitpushN.bat Inhalt:
-#   @echo off
-#   E:
-#   cd "E:\Programme\Homepage Brainfusion"
-#   git add pages/disc/moderator.html pages/disc/teilnehmer.html pages/disc/beamer.html
-#   git commit -m "Beschreibung"
-#   git push origin main
-#   echo DONE
-
-# Edge Function deployen (selten nötig):
-# npx supabase functions deploy submit-exercise --project-ref dnoecftuybkoqvrkfvei
-```
-
----
-
-## 6. Supabase Konfiguration
+## 5. Supabase Konfiguration
 
 ```
 Project ID:   dnoecftuybkoqvrkfvei
@@ -98,520 +68,294 @@ Anon Key:     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 Edge Base:    https://dnoecftuybkoqvrkfvei.supabase.co/functions/v1
 ```
 
-> 🚨 KRITISCH: Den neuen "publishable key" (sb_publishable_...) NIE für Edge Functions verwenden!
-> Immer den Legacy JWT Anon Key (eyJ...) verwenden - sonst 401-Fehler.
+> 🚨 KRITISCH: Immer Legacy JWT Anon Key (eyJ...) - NICHT den neuen publishable key!
+> 🚨 KRITISCH: Alle fetch() zu Edge Functions MÜSSEN HDR verwenden (enthält Auth-Header)
+> 🚨 KRITISCH: submit-exercise braucht joinToken - ohne → HTTP 403 → Daten kommen nie an!
 
 ---
 
-## 7. Datenbank-Schema (vollständig)
+## 6. Datenbank-Schema
 
-### Tabelle `workshops`
+### `results` (DISC - flache Spalten!)
 ```sql
-id                uuid PRIMARY KEY DEFAULT gen_random_uuid()
-code              text UNIQUE          -- 6-stellig alphanumerisch, z.B. "33A214"
-title             text                 -- z.B. "Wahrheitsfähigkeit im Team · 8.3.2026"
-admin_token       uuid                 -- Moderator-Auth (geheim)
-current_module    text DEFAULT 'waiting'
-module_data       jsonb DEFAULT '{}'   -- modul-spezifische Steuerungsdaten
-module_started_at timestamptz
-created_at        timestamptz DEFAULT now()
+natural_d, natural_i, natural_s, natural_c  -- einzelne Spalten, KEIN JSON-Objekt!
+role_d, role_i, role_s, role_c
+natural_primary, role_primary               -- dominanter Typ als String ("D","I","S","C")
+stress_index                                -- älterer Wert, computed_json.stress verwenden
+computed_json                               -- {stress, naturalType, roleType, map, composite}
 ```
 
-### Tabelle `participants`
+> 🚨 results hat KEINE natural/role JSON-Spalten - immer flat columns verwenden!
+> Mapping: natural = {D:r.natural_d, I:r.natural_i, S:r.natural_s, C:r.natural_c}
+
+### `exercise_responses`
 ```sql
-id           uuid PRIMARY KEY DEFAULT gen_random_uuid()
-workshop_id  uuid REFERENCES workshops
-alias        text                     -- Anzeigename ("Christof Bechtiger")
-join_token   uuid                     -- Teilnehmer-Auth (geheim)
-joined_at    timestamptz DEFAULT now()
+id, workshop_id, participant_id, alias, module, response_type, content, created_at
+```
+> response_type 'gfk_analysis' für GFK-Coaching Ergebnisse
+> 🚨 Spalte 'anonymous' existiert NICHT - nie selektieren!
+
+### Daten direkt laden (KEIN list-workshop-results Edge Function - existiert nicht!)
+```javascript
+// DISC Resultate direkt aus REST:
+const url = SB_URL + '/rest/v1/results?select=*,participants!inner(alias)&workshop_id=eq.' + workshopId;
+// exercise_responses mit Wildcard:
+const url = '...exercise_responses?response_type=eq.gfk_analysis&workshop_id=eq.' + workshopId;
+// NICHT: module=like.gfk_coaching_r* (% encoding problematisch)
 ```
 
-### Tabelle `results` (DISC-Testergebnisse)
-```sql
-id             uuid PRIMARY KEY DEFAULT gen_random_uuid()
-workshop_id    uuid REFERENCES workshops
-participant_id uuid REFERENCES participants
-alias          text
-natural        jsonb     -- {D:78, I:54, S:34, C:46}
-role           jsonb     -- {D:70, I:58, S:42, C:52}
-computed       jsonb     -- {stress:48, deltas:{...}, map:{natural:{x,y}, role:{x,y}}}
-submitted_at   timestamptz DEFAULT now()
-```
-
-
-### Tabelle `exercise_responses` (Übungsantworten aller Module)
-```sql
-id             uuid PRIMARY KEY DEFAULT gen_random_uuid()
-workshop_id    uuid REFERENCES workshops
-participant_id uuid REFERENCES participants
-alias          text
-module         text     -- Modul-ID, z.B. "intro_question", "johari_fallbeispiele_fb1"
-response_type  text     -- "text" | "mc" | "selection" | "ritual"
-content        text     -- Freitext oder Antwort-ID (z.B. "B" für MC-Antwort)
-created_at     timestamptz DEFAULT now()
--- UNIQUE constraint: (workshop_id, participant_id, module) → idempotentes Submit
-```
-
-> 🚨 Die Spalte `anonymous` existiert NICHT in exercise_responses - niemals selektieren!
-
-### Realtime (bereits konfiguriert)
-```sql
-ALTER TABLE public.workshops          REPLICA IDENTITY FULL;
-ALTER TABLE public.exercise_responses REPLICA IDENTITY FULL;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.workshops;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.exercise_responses;
-```
-
-### RPC Funktion `set_workshop_module`
-```sql
-set_workshop_module(p_workshop_id uuid, p_admin_token uuid, p_module text, p_module_data jsonb)
--- Prüft admin_token, setzt current_module + module_data
--- Returns: {success: true, module: "..."}
+### RPC `set_workshop_module`
+```javascript
+await sb.rpc('set_workshop_module', {
+  p_workshop_id, p_admin_token, p_module, p_module_data
+});
+// Oder direkt via fetch POST auf /rest/v1/rpc/set_workshop_module
 ```
 
 ---
 
-## 8. Edge Functions
+## 7. DISC Scoring (Stand 15.03.2026)
 
-| Funktion | Body | Rückgabe |
-|---|---|---|
-| `create-workshop` | `{title, createdBy}` | `{workshopId, code, adminToken}` |
-| `join-workshop` | `{workshopCode, alias, ...}` | `{participantId, joinToken, workshopId}` |
-| `submit-result` | `{participantId, joinToken, alias, natural, role, raw, computed}` | `{success}` |
-| `list-workshop-results` | `{workshopCode, adminToken}` | `{results:[...]}` |
-| `submit-exercise` | `{participantId, joinToken, module, content, responseType}` | `{success, responseId}` |
+### Algorithmus
+```javascript
+adapted[d]   = Math.round(most[d] / N * 100);       // Maske / Rollenverhalten
+natural[d]   = Math.round((N - least[d]) / N * 100); // Kern / natürlicher Stil
+composite[d] = Math.round((adapted[d] + natural[d]) / 2);
 
-> HTTP 409 von `submit-exercise` = bereits gesendet → als Erfolg behandeln (idempotent)
-> ALLE Fetches zu Edge Functions müssen `headers: HDR` nutzen (enthält Authorization + Anon Key)
-> `HDR` ist in teilnehmer.html definiert als: `{'Content-Type':'application/json', 'Authorization': 'Bearer ' + SB_KEY, 'apikey': SB_KEY}`
+// STRESS = Rang-basiert (NICHT absolute Differenz - würde immer 50% ergeben!)
+const rankAdapted = ['D','I','S','C'].sort((a,b) => adapted[b] - adapted[a]);
+const rankNatural = ['D','I','S','C'].sort((a,b) => natural[b] - natural[a]);
+let inversions = 0;
+for (let i = 0; i < 4; i++)
+  for (let j = i+1; j < 4; j++)
+    if (rankAdapted.indexOf(rankAdapted[i]) < rankAdapted.indexOf(rankAdapted[j]) !==
+        rankNatural.indexOf(rankAdapted[i]) < rankNatural.indexOf(rankAdapted[j]))
+      inversions++;
+stress = Math.round((inversions / 6) * 100); // 0-100%
+```
+
+> 🚨 WICHTIG: Absolute Differenz (adapted - natural) ist mathematisch IMMER ~50% wegen
+> Forced-Choice-Zwang (sum(most)=N, sum(least)=N). Rang-Vergleich ist psychometrisch korrekt.
+
+### Stress-Schwellenwerte
+- 0% → "Keine" (grün)
+- 1-33% → "Gering" (grün)
+- 34-66% → "Mittel" (orange)
+- 67-100% → "Hoch" (rot)
+
+### Sprache (nach GPT-5.4 Review entschärft)
+- "KERN — Dein natürlicher Stil" (nicht "Wer du wirklich bist")
+- "KOMPOSIT — Orientierungsprofil" (nicht "Stabilstes Profil")
+- "Kombination aus gezeigtem und natürlichem Stil" (nicht "statistisch zuverlässigstes Profil")
+- Disclaimer: "Reflexionsinstrument, ersetzt keine validierte psychometrische Diagnostik"
 
 ---
 
-## 9. Modul-System - vollständige Liste (Stand 10.03.2026)
+## 8. ki-analyze Edge Function (Claude API Proxy)
 
-### MODULE_PHASES (Moderator-Gruppierung)
+```typescript
+// supabase/functions/ki-analyze/index.ts
+// Body: { system: string, userPrompt: string, maxTokens: number }
+// Antwort: { text: string }
+// CORS aktiviert, API-Key serverseitig in Deno.env
+```
+
+> Alle KI-Aufrufe im Browser laufen ÜBER diese Funktion (nicht direkt api.anthropic.com - CORS!)
+> Aufruf: fetch(SB_URL + '/functions/v1/ki-analyze', { headers: {apikey, Authorization} })
+
+---
+
+## 9. Modul-Übersicht (vollständig, Stand 15.03.2026)
+
+### MODULE_PHASES (Moderator)
 
 **Tag 1 – Einstieg & Johari:**
 ```
-🕐 waiting | 💬 intro_question | 🪟 johari_erklaerung | 🎯 johari_fallbeispiele
-🧠 kognitive_verzerrungen_info | 🎯 verzerrungen_quiz | 🔍 johari_reflexion
-💪 mut_info | 🕊 gfk_info | 🎯 gfk_fallbeispiel | 🕊 gfk
+waiting | intro_question | johari_erklaerung | johari_fallbeispiele
+kognitive_verzerrungen_info | verzerrungen_quiz | johari_reflexion
+mut_info | gfk_info | gfk_fallbeispiel | gfk_coaching | gfk
 ```
 
 **Tag 1 – DISC & Kernbotschaften:**
 ```
-📊 disc_test | 🗺 disc_map | ⚡ kernbotschaften_info | ⚡ kernbotschaften
+disc_test | disc_map | disc_results | disc_role_profile
+pairing_karten | was_sage_ich_nicht | kernbotschaften_info | kernbotschaften
 ```
 
 **Tag 2 – Vertiefen:**
 ```
-🌅 morgen_reflexion | 📋 raci_info | 📋 raci
+morgen_reflexion | raci_info | raci
 ```
 
 **Tag 2 – Abschluss:**
 ```
-🎉 steckbrief_feiern | 🚫 steckbrief_grenzen | 💪 steckbrief_zumuten | ✍️ ritual | 🏆 closing
+steckbrief_feiern | steckbrief_grenzen | steckbrief_zumuten | ritual | closing
 ```
-
-### Modul-Detailtabelle
-
-| ID | Icon | Name | TN-Typ | Beamer-Typ |
-|---|---|---|---|---|
-| `waiting` | 🕐 | Bereit | Warte-Screen | Code + URL anzeigen |
-| `intro_question` | 💬 | Einstiegsfrage | Freetext + Anonym | Live-Feed |
-| `johari_erklaerung` | 🪟 | Johari Fenster | "Schau auf Beamer" | Animiertes Johari-Fenster |
-| `johari_fallbeispiele` | 🎯 | Fallbeispiele | MC-Voting (A/B/C/D) | Live-Balken + Auflösung |
-| `kognitive_verzerrungen_info` | 🧠 | Verzerrungen Info | "Schau auf Beamer" | 4 Karten (Confirmation Bias, FAE, Horn-Effekt, Self-serving Bias) |
-| `verzerrungen_quiz` | 🎯 | Verzerr. Quiz | MC-Voting (A/B/C/D) | Live-Balken + KI-Analyse |
-| `johari_reflexion` | 🔍 | Johari Reflexion | Freetext + Anonym | Live-Feed |
-| `mut_info` | 💪 | Mut & Offenheit | "Schau auf Beamer" | 3 Karten: Energie-Paradoxie, Johari-Brücke, Mut-Definition |
-| `gfk_info` | 🕊 | GFK Einführung | "Schau auf Beamer" | 2×2 Grid: 4 GFK-Schritte mit Farben + Beispielsätzen |
-| `gfk_fallbeispiel` | 🎯 | GFK Fallbeispiel | MC-Voting (A/B/C/D) | Live-Balken + KI-Analyse |
-| `gfk` | 🕊 | GFK | Freetext + Anonym | Live-Feed |
-| `disc_test` | 📊 | DISC-Test | 28×2 Fragen | Fortschrittsbalken |
-| `disc_map` | 🗺 | DISC Live-Map | "Schau auf Beamer" | Quadranten-Map vollbild |
-| `kernbotschaften_info` | ⚡ | Kernbtsch. Info | "Schau auf Beamer" | Statisch (4 Sätze) |
-| `kernbotschaften` | ⚡ | Kernbotschaft | Freetext + Anonym | Live-Feed |
-| `morgen_reflexion` | 🌅 | Morgen-Check | Freetext | Live-Feed |
-| `raci_info` | 📋 | RACI Info | "Schau auf Beamer" | Statisch |
-| `raci` | 📋 | RACI | Multi-Select | Live-Feed |
-| `steckbrief_feiern` | 🎉 | Steckbrief Feiern | Freetext | Live-Feed |
-| `steckbrief_grenzen` | 🚫 | Steckbrief Grenzen | Freetext | Live-Feed |
-| `steckbrief_zumuten` | 💪 | Steckbrief Zumuten | Freetext | Live-Feed |
-| `ritual` | ✍️ | Ritual | Textarea + Signatur-Canvas | Live-Feed |
-| `closing` | 🏆 | Abschluss | Closing-Screen | Gold Closing-Screen |
 
 ---
 
-## 10. Johari Fenster – Details (Phase 2 Feature)
-
-### Beamer-Screen `sJohari`
-
-Das Johari-Fenster ist ein animiertes CSS-Grid (4 Quadranten) auf dem Beamer.
-
-**Quadranten:**
-- **Arena** (grün) – Bekannt/Bekannt – Raum echter Zusammenarbeit
-- **Blinder Fleck** (rot) – Unbekannt/Bekannt – Feedback öffnet diesen Raum
-- **Fassade** (orange) – Bekannt/Unbekannt – Vertrauen öffnet diesen Raum
-- **Unbekannt** (grau) – Unbekannt/Unbekannt – Exploration öffnet diesen Raum
-
-**Arena-Transformation (via Moderator-Button "Transformation zeigen"):**
-- Grid-Proportionen ändern sich: `52px 3fr 0.6fr` (Arena wird riesig)
-- Arena leuchtet auf (glow, boxShadow, Opacity 100%)
-- Andere Quadranten verblassen auf 28% Opacity
-- CSS-Transition mit cubic-bezier für dramatischen Effekt
-- Steuerung via `module_data.transform = true/false` im RPC
-
-**Wichtig:** Alle Styles als Inline-Styles (kein CSS-Class-Toggle) wegen PowerShell-Encoding-Problemen.
-
-### Fallbeispiele-Modul `johari_fallbeispiele`
-
-**4 Szenarien:**
-
-| # | Person | Situation | Richtige Antwort | Quadrant |
-|---|---|---|---|---|
-| 1 | Thomas | Nickt im Meeting, beschwert sich abends | B – Fassade | Verbirgt Meinung bewusst |
-| 2 | Sara | Gibt alles, fühlt sich wie Hochstaplerin | C – Blinder Fleck | Sieht eigene Kompetenz nicht |
-| 3 | Lukas & Maria | Ehrliches Feedback, direkte Konflikte | A – Arena | Echter Dialog |
-| 4 | Der Unterbrecher | Denkt er ist engagiert, Team leidet | C – Blinder Fleck | Sieht Wirkung nicht |
-
-**Moderations-Tipp Thomas (Szenario 1):**
-"B ist die Hauptantwort — aber hat Thomas auch einen blinden Fleck? Was sehen die Kollegen, was er selbst nicht sieht?" (sein Rumoren macht ihn unglaubwürdig — Fassade UND Blinder Fleck)
-
-**Technischer Ablauf:**
-1. Moderator aktiviert `johari_fallbeispiele` → Beamer zeigt Szenario 1 + leere Balken
-2. Teilnehmer sehen MC-Voting (A/B/C/D) auf ihrer Seite
-3. Bei Abstimmung: `submitFbAnswer(choice, scenarioId)` → `submit-exercise` Edge Function
-4. module in DB: `johari_fallbeispiele_fb1` (bzw. fb2/fb3/fb4)
-5. Beamer pollt alle 2.5s + reagiert sofort via Realtime → Balken wachsen live
-6. Moderator klickt "Auflösung" → korrekte Antwort leuchtet auf (via `module_data.reveal = true`)
-7. Moderator klickt "Nächstes" → `module_data.scenario = 1` (Index) für Szenario 2
+## 10. NEU in Session 15.03.2026
 
-**Moderator-Controls (in `renderJohariFallbeispieleSection()`):**
-- Szenario-Auswahl (1-4)
-- "Auflösung zeigen/verstecken"
-- Live-Stimmenanzeige pro Antwort
+### 10.1 DISC Resultate Beamer-Screen (`disc_results`)
 
+**Beamer zeigt:**
+- Team-Konstellation: Avatar-Bälle gruppiert nach Typ (D/I/S/C)
+- Team-Durchschnitt: Balken natürlich vs. Rolle
+- Ø Stilspannung
+- KI-Teamanalyse (Button → Claude analysiert live)
 
----
+**Moderator zeigt:**
+- Typ-Pillen mit Anzahl, Stilspannung %
+- Team-Profil Balken
+- Hinweis auf Beamer-Modul
 
-## 11. Architektur der drei Seiten
+**Datenladen:** Direkt aus `results` REST + participants join (KEIN Edge Function!)
 
-### 11.1 `teilnehmer.html` - Teilnehmer-App
+### 10.2 DISC Rollenprofil (`disc_role_profile`)
 
-**Design:** Notebook-optimiert, max-width 760px zentriert, dark theme.
-**Fonts:** Rajdhani (Headlines) + IBM Plex Sans (Body) + IBM Plex Mono (Labels)
-**Farben:** `--bg:#080810` / `--S:#2a9d8f` (Akzent) / `--D:#e63946` / `--I:#f4a261` / `--C:#4a90d9`
+**Moderator:** Buttons D/I/S/C (nur vorhandene Typen aktiv, mit Anzahl)
+**Beamer:** KI generiert live Rollenprofil mit:
+- Kurzporträt (Engineering-Kontext)
+- Stärken / Herausforderungen
+- Blinder Fleck
+- 2 Fallbeispiele aus R&D-Alltag (FIKTIVE Namen - nie echte Teilnehmernamen!)
+- Zusammenarbeitstipps
 
-**Screens:** `sJoin` → `sWaiting` → `sModule` (+ `sDiscIntro`, `sDiscQuestions`, `sDiscTransition`, `sDiscResults`)
+**Aktivierung:** via `sb.rpc('set_workshop_module', {p_module: 'disc_role_profile', p_module_data: {type: 'D'}})` (NICHT fetch auf /set-module - existiert nicht!)
 
-**Session-localStorage-Key:** `disc-online-session-v2`
-```javascript
-{ workshopId, participantId, joinToken, alias, code, title, currentModule }
-```
+**Typen:** D=Macher, I=Inspirator, S=Stabilisierer, C=Analytiker
 
-**Submit-Pattern (KRITISCH - immer so):**
-```javascript
-// Alle Fetches zu Edge Functions MÜSSEN HDR verwenden!
-await fetch(`${EDGE}/submit-exercise`, {
-  method: 'POST',
-  headers: HDR,   // ← NICHT {'Content-Type':'application/json'} - das fehlt den Auth-Header!
-  body: JSON.stringify({ participantId, joinToken, module, content, responseType })
-});
-// HTTP 409 = idempotent → als Erfolg behandeln
-```
+### 10.3 Pairing-Karten (`pairing_karten`)
 
-### 11.2 `moderator.html` - Dashboard
+**Flow:**
+1. Moderator aktiviert nach Rollenprofil-Präsentationen
+2. Moderator-Code sammelt Team-Typen: `[...new Set(participants.map(p=>p.naturalType))]`
+3. `module_data = { teamTypes: ['D','S','C'] }` → nur vorhandene Typen!
+4. Teilnehmer-App empfängt `teamTypes` → KI generiert individuell für jeden
 
-**Session-localStorage-Key:** `disc-online-session-v2` (gleich wie Beamer)
-```javascript
-{ workshopId, code, adminToken, title, currentModule }
-```
+**Teilnehmer sieht:**
+- Eigener Screen `sPairingKarten` (unabhängig vom Ergebnis-Screen)
+- Karten nur für Typen die im Team sind
+- Synergie / Reibung / Tipp pro Typ-Paar
+- PDF-Download (jsPDF via jsdelivr - nicht cdnjs wegen CSP!)
 
-**MODULE_DATA** (welche Daten bei Modul-Aktivierung mitgeschickt werden):
-```javascript
-const MODULE_DATA = {
-  intro_question:      { question: 'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?' },
-  kernbotschaften:     { question: 'Welcher der vier Sätze trifft dich am meisten — und warum?' },
-  johari_reflexion:    { question: 'Was denkst du: Wo liegt dein grösster blinder Fleck?' },
-  morgen_reflexion:    { question: 'Ein Satz. Was hat die Nacht dir gebracht?' },
-  gfk:                 { question: 'Formuliere eine Situation mit GFK: Beobachtung · Gefühl · Bedürfnis · Bitte.' },
-  steckbrief_feiern:   { question: 'Was feiern wir als Team? Was läuft richtig gut?' },
-  steckbrief_grenzen:  { question: 'Was akzeptieren wir nicht? Welches Verhalten geht gar nicht?' },
-  steckbrief_zumuten:  { question: 'Was dürfen wir uns zumuten? Wo können wir unbequem ehrlich sein?' },
-};
-```
+**Kritisch:**
+- `pairingData.pairs` nach KI-Antwort filtern: `.filter(p => teamTypes.includes(p.type))`
+- KI-Prompt explizit: "NUR diese Typen: [D,S,C] — keine anderen"
+- `myType` aus sessionStorage (überlebt Reload): `stored.naturalType`
+- `jsPDF`: `window.jspdf.jsPDF` (UMD-Format), KEINE Emojis im PDF!
 
-### 11.3 `beamer.html` - Projektor-Ansicht
+### 10.4 "Was sage ich nicht?" (`was_sage_ich_nicht`)
 
-**Init:** Liest `disc-online-session-v2` aus localStorage (muss im gleichen Browser wie Dashboard geöffnet werden).
+- Anonymes Freitext-Modul
+- Beamer zeigt Live-Feed
+- Frage: "Was sagst du im Team nicht — obwohl du es eigentlich solltest?"
 
-**MODULE_META** (welcher Screen für welches Modul):
-```javascript
-MODULE_META = {
-  waiting:              { screen:'sWaiting' },
-  disc_test:            { screen:'sTest' },
-  disc_map:             { screen:'sMap' },
-  intro_question:       { screen:'sFeed', ... },
-  kernbotschaften_info: { screen:'sGeneric', ... },
-  kernbotschaften:      { screen:'sFeed', ... },
-  johari_erklaerung:    { screen:'sJohari' },
-  johari_fallbeispiele: { screen:'sFallbeispiele' },
-  johari_quiz:          { screen:'sFeed', ... },
-  johari_reflexion:     { screen:'sFeed', ... },
-  // ... alle anderen ...
-}
-```
+### 10.5 GFK Coaching (`gfk_coaching`) ⭐ HAUPTFEATURE
 
-**Realtime-Architektur im Beamer:**
-- `wsChannel`: workshops UPDATE → `handleModule(mod, data)` aufrufen
-- `exChannel`: exercise_responses INSERT → `addFeedResponse(row)` aufrufen
-- `addFeedResponse` leitet MC-Votes für Fallbeispiele sofort an `pollFbVotes()` weiter
+**10 Runden individuelles Coaching auf dem Teilnehmer-Gerät:**
 
-**Feed-Polling:** Alle 3 Sekunden (als Backup, da Realtime gelegentlich unzuverlässig).
-
-**Fallbeispiele-Polling:** `pollFbVotes()` alle 2.5s + sofort via Realtime-Trigger.
-
-
----
-
-## 12. KRITISCHE Fallstricke (PFLICHTLEKTÜRE für neue Instanz)
-
-1. **`anonymous` Spalte existiert nicht** in `exercise_responses` → niemals in SELECT → HTTP 400
-
-2. **PowerShell `&&`** funktioniert nicht → `;` verwenden
-
-3. **Neuer publishable Key** (`sb_publishable_...`) → Edge Functions 401 → nur Legacy JWT Anon Key (eyJ...)
-
-4. **Vercel Deploy** ~1-2 Min nach `git push` → Hard-Refresh: Ctrl+Shift+R
-
-5. **Filesystem write_file** → EPERM auf Windows → PowerShell `[System.IO.File]::WriteAllText` verwenden
-
-6. **Git** nicht im Windows-MCP PATH → Batch-Datei nach `E:\gitpushN.bat` schreiben, dann ausführen. Git: `C:\Program Files\Git\cmd\git.exe`
-
-7. **Realtime `exercise_responses`** unzuverlässig → Beamer nutzt Polling alle 3s als Hauptmechanismus
-
-8. **Beamer** muss im selben Browser wie Dashboard geöffnet werden (localStorage)
-
-9. **HTTP 409** von `submit-exercise` = idempotent → als Erfolg behandeln
-
-10. **Pfade mit Leerzeichen**: Batch-Datei mit `E:` + `cd "E:\..."` verwenden
-
-11. **CSS ID vs Klasse**: IDs (1,0,0) gewinnen immer gegen Klassen (0,1,0) → `!important` nötig wenn IDs display setzen
-
-12. **PowerShell Encoding**: Umlaute/Sonderzeichen immer als HTML-Entities schreiben, nie direkt in Strings die via PS geschrieben werden. Inline-Styles statt CSS-Klassen wo möglich.
-
-13. **edit_block / Replace scheitert lautlos**: Immer nach dem Schreiben verifizieren mit erneutem Lesen; bei Misserfolg Index-basiertes Einfügen verwenden (`$c.IndexOf(...) + offset`)
-
-14. **async-Keyword**: Nie mit edit_block/Replace patchen wenn unklar ob schon vorhanden → erst prüfen mit `$content.IndexOf("async function XYZ")`
-
-15. **Batch-Dateien nummerieren**: E:\gitpush1.bat bis E:\gitpush15.bat bereits verwendet → **nächste: E:\gitpush16.bat**
-
-16. **🚨 NEU: EDGE vs EDGE_BASE in teilnehmer.html**: Die Variable heisst `EDGE` (nicht `EDGE_BASE`). `EDGE_BASE` existiert nicht → alle `fetch()` Calls zum Edge schlagen mit 401 fehl!
-
-17. **🚨 NEU: HDR ist Pflicht bei allen fetch()-Calls**: Jeder `fetch()` zu einer Edge Function MUSS `headers: HDR` verwenden — nicht `{'Content-Type':'application/json'}`. HDR enthält den Authorization Bearer Token (Anon Key). Ohne HDR → HTTP 401 → Daten kommen nie in DB an.
-
-19. **🚨 NEU: `mut_info` braucht eigenen Screen `sMutInfo`** — `sGeneric` zeigt nur ein einfaches Text-Overlay, keine eigene gestaltete Karten-Ansicht. Alle inhaltlichen Beamer-Module (Verzerrungen, GFK, Mut) brauchen dedizierte Screens.
-
-20. **🚨 NEU: Realtime-Handler im Beamer für jedes neue Quiz-Modul** — Bei `verzerrungen_quiz` und `gfk_fallbeispiel` muss der Realtime-Handler in `beamer.html` explizit eingetragen werden, damit Szenario-Wechsel live funktionieren (ohne Re-`handleModule`-Aufruf).
-
-21. **🚨 NEU: Smart-Update-Schutz** — In `refreshOnlineWorkshop()` müssen alle Quiz-Module mit KI-Panel einen Guard haben: `if (document.getElementById('xyzKiPanel') && curMod === 'xyz') { return; }` — sonst wird das KI-Panel bei jedem Auto-Refresh gelöscht.
-
----
-
-## 12b. Session-Dokumentation 10.03.2026 — Was wurde gebaut
-
-### Neue Module (alle 3 Dateien)
-
-**Kontext:** Der pädagogische Bogen wurde erweitert von "Was schiefläuft" → "Was es braucht" → "Wie wir es tun (GFK)".
-
-#### Modul `kognitive_verzerrungen_info` + `verzerrungen_quiz`
-*(War bereits in der Session vom 09.03 entstanden, hier zur Vollständigkeit)*
-
-4 Verzerrungen als Beamer-Karten:
-- **Confirmation Bias** — Blinder Fleck bleibt gross (Farbe: rgba(74,144,217))
-- **Fundamental Attribution Error** — Fassade/Unbekannt wächst (Farbe: rgba(244,162,97))
-- **Horn-Effekt** — Teufelskreis Fassade+Blinder Fleck (Farbe: rgba(232,74,95))
-- **Self-serving Bias** — Blinder Fleck wächst unbemerkt (Farbe: rgba(42,157,143))
-
-3 Quiz-Szenarien: Anna (Horn-Effekt, korrekt: C), Jonas (FAE, korrekt: B), Maria (Self-serving, korrekt: D)
-
----
-
-#### Modul `mut_info` 💪 — Beamer-Screen `sMutInfo`
-3 grosse Karten (volle Breite):
-1. ⚡ **Energie-Paradoxie** (gelb): Verbergen kostet mehr als Ansprechen
-2. 🪟 **Mut öffnet das Johari-Fenster** (grün): Feedback geben UND empfangen
-3. 💡 **Mut ≠ Mutlosigkeit** (blau): Trotzdem handeln, offen bleiben
-
-**Technisch:** Eigener Screen `sMutInfo` (nicht `sGeneric`!). Funktion `showMutInfo()` in beamer.html.
-
----
-
-#### Modul `gfk_info` 🕊 — Beamer-Screen `sGfkInfo`
-2×2 Grid, 4 farbige Karten für die GFK-Schritte:
-
-| Schritt | Farbe | Beispielsatz |
+| Runde | Typ | Thema |
 |---|---|---|
-| 1 🔭 Beobachtung | rgba(74,144,217) | "Als ich sah, dass du das Meeting verlassen hast..." |
-| 2 💙 Gefühl | rgba(232,74,95) | "...fühlte ich mich übergangen..." |
-| 3 🌱 Bedürfnis | rgba(42,157,143) | "...weil mir Verlässlichkeit wichtig ist." |
-| 4 🤝 Bitte | rgba(201,168,76) | "Kannst du mich beim nächsten Mal kurz informieren?" |
+| 1 | Eigene Situation | Freie eigene Situation |
+| 2 | Szenario | Lea/Jonas - Unterbrechen in Meetings |
+| 3 | Szenario | Marc - gedrückte Teamstimmung |
+| 4 | Szenario | Anna/Sandra - fehlendes Feedback |
+| 5 | Szenario | Tim/Felix - Code ohne Review |
+| 6 | Eigene Situation | Zweite persönliche Situation |
+| 7 | Szenario | Sabine - pauschale Kritik im Retro |
+| 8 | Szenario | David/Karin - Projektidee ablehnen |
+| 9 | Szenario | Kollege zieht sich zurück |
+| 10 | Eigene Situation | Freie Wahl / langer wartender Satz |
 
-**Technisch:** Screen `sGfkInfo`, Funktion `showGfkInfo()`.
+**KI-Analyse pro Runde:**
+- Gesamteindruck (ermutigend!)
+- 4 Schritte einzeln bewertet (✓ / ○)
+- Verbesserungsvorschlag als vollständiger GFK-Satz
+- Lernpunkt für nächste Runde
 
----
-
-#### Modul `gfk_fallbeispiel` 🎯 — MC-Voting + KI-Analyse
-
-**2 Szenarien:**
-
-| ID | Person | Situation | Korrekt | Thema |
-|---|---|---|---|---|
-| gfk1 | Tom | Kommt regelmässig 5-10 Min zu spät | B | GFK erkennen (Beobachtung+Gefühl+Bedürfnis+Bitte) |
-| gfk2 | Sarah & Jan | Entscheidung ohne Team, Jan reagiert | D | Fehlenden GFK-Schritt identifizieren (Bitte fehlt) |
-
-**KI-Analyse:** Identische Mechanik wie `johari_fallbeispiele` und `verzerrungen_quiz`:
-- State: `gfkKiResult` (survives re-render)
-- Funktion: `analyzeCurrentGfkWithKI()` in moderator.html
-- JSON-Rückgabe: `{ergebnis, deutung, diskussion}`
-
-**Technisch alle 3 Dateien:**
-- `moderator.html`: `GFK_SCENARIOS_MOD`, `renderGfkFallbeispielSection()`, `setGfkScenario()`, `analyzeCurrentGfkWithKI()`
-- `teilnehmer.html`: `GFK_SCENARIOS`, `showGfkVote()`, `submitGfkAnswer()`
-- `beamer.html`: `GFK_SCENARIOS_BEAMER`, `showGfkQuiz()`, `renderGfkScenario()`, `updateGfkBars()`, `startGfkPolling()`, `pollGfkVotes()` + Realtime-Handler
-
----
-
-### Modul-Reihenfolge (korrekte Platzierung)
-
-Die neuen Module kommen in **Tag 1 – Einstieg & Johari**, direkt **nach `johari_reflexion`**:
-
-```
-johari_reflexion → mut_info → gfk_info → gfk_fallbeispiel → gfk
-```
-
-*(Nicht in Tag 2 — das war der initiale Bug, wurde korrigiert in gitpush25)*
-
----
-
-### Bugfixes dieser Session
-
-| Commit | Fix |
-|---|---|
-| gitpush23 (65c6820) | Feature: Alle 4 neuen Module deployed |
-| gitpush24 (8144857) | Syntax-Fehler: doppeltes closing `}` in moderator.html |
-| gitpush25 (a319834) | Reihenfolge-Fix + sMutInfo Screen + GFK Realtime-Handler |
-
----
-
-### KI-Panel Muster (Pattern für alle MC-Quiz-Module)
-
-Alle Quiz-Module (johari_fallbeispiele, verzerrungen_quiz, gfk_fallbeispiel) folgen demselben Muster:
-
+**Speicherung:** `exercise_responses` mit `response_type='gfk_analysis'`
 ```javascript
-let xyzKiResult = null;  // State survives re-render
-
-function renderXyzSection() {
-  // Zeigt gfkKiResult beim Rendern direkt an (nicht leer!)
-  const kiPanel = `...${xyzKiResult || '<span>Placeholder</span>'}...`;
-  return `<div>...${kiPanel}</div>`;
-}
-
-async function analyzeCurrentXyzWithKI() {
-  // Nach API-Call: IMMER neu getElementById() — nie gecachte Referenz!
-  const el = document.getElementById('xyzKiContent');
-  if (el) el.innerHTML = html;
-}
+content: JSON.stringify({
+  runde, rundeLabel, typ, antwort, gesamteindruck,
+  fehlendeSchritte: ['Bitte'],  // KI-Analyse
+  lernpunkt, score: 0-100       // % korrekte Schritte
+})
 ```
 
-**Smart-Update in `refreshOnlineWorkshop()`:** Verhindert Panel-Rerender während KI läuft:
-```javascript
-if (document.getElementById('gfkKiPanel') && curMod === 'gfk_fallbeispiel') {
-  // kein Re-Render
-} else { ... }
+> 🚨 KRITISCH: submitGfkCoachAnswer() (NICHT submitGfkAnswer() - Namenskonflikt mit MC-Voting!)
+> 🚨 KRITISCH: joinToken in saveGfkCoachingResult() pflicht - ohne → HTTP 403!
+
+**Moderator-Panel:**
+- Ø Score farbcodiert
+- Schwächen als Tags (Bitte 70%, Bedürfnis 45%)
+- KI-Tipp Button → 3 kurze Bullets: gut/klären/Frage ans Team
+
+**Beamer:** Zeigt "GFK Coaching läuft..." (dataType:'gfk_coaching', renderGfkCoachingSection ist async!)
+
+> 🚨 renderModuleContent ist async → case 'gfk_coaching': dataHTML = await renderGfkCoachingSection()
+
+---
+
+## 11. Radar-Diagramm (teilnehmer.html)
+
+Zwischen Profil-Cards und Balkendiagramm - erklärt visuell warum gleicher Typ trotzdem Spannung:
+- 4 Achsen: D (oben), I (rechts), S (unten), C (links)
+- 3 Polygone: Maske (gelb), Kern (grün), Komposit (blau)
+- Gitterringe bei 25/50/75/100%
+- Funktion: `buildRadar(adapted, natural, composite)` → gibt SVG-String zurück
+
+---
+
+## 12. KRITISCHE Fallstricke
+
+1. **list-workshop-results Edge Function existiert NICHT** → direkt REST auf `results` Tabelle
+2. **results hat flat columns** (natural_d, natural_i...) → mapping nötig
+3. **joinToken pflicht** bei submit-exercise → ohne → HTTP 403 → silent fail
+4. **submitGfkAnswer Namenskonflikt** → Coaching heisst `submitGfkCoachAnswer`
+5. **jsPDF via jsdelivr** (nicht cdnjs) wegen Vercel CSP
+6. **Emojis in jsPDF** nicht unterstützt → Grossbuchstaben-Labels
+7. **KI halluziniert Typen** → `pairingData.pairs.filter(p => teamTypes.includes(p.type))`
+8. **async renderModuleContent** → `await renderGfkCoachingSection()` nötig
+9. **gfk_analysis query** mit `response_type=eq.gfk_analysis` (NICHT `module=like.*` - encoding)
+10. **Stress immer 50%** wenn absolute Differenz → Rang-basiert verwenden!
+11. **activateRoleProfile** via direktem fetch auf RPC (nicht Edge Function /set-module)
+12. **sessionStorage statt localStorage** für Teilnehmer-Session
+13. **PowerShell &&** funktioniert nicht → `;` oder Start-Process cmd.exe
+14. **Vercel CSP** erlaubt nur cdn.jsdelivr.net, nicht cdnjs.cloudflare.com
+15. **renderGfkCoachingSection setTimeout-Hack** → direkt async/await (kein DOM-Hack nötig)
+
+---
+
+## 13. Aktuelle Modul-Reihenfolge (korrekt)
+
+```
+johari_reflexion → mut_info → gfk_info → gfk_fallbeispiel → gfk_coaching → gfk
+→ disc_test → disc_map → disc_results → disc_role_profile → pairing_karten
+→ was_sage_ich_nicht → kernbotschaften_info → kernbotschaften
+→ [Tag 2] morgen_reflexion → raci_info → raci
+→ steckbrief_feiern → steckbrief_grenzen → steckbrief_zumuten → ritual → closing
 ```
 
 ---
 
-## 13. Phasen-Übersicht (aktueller Stand)
+## 14. Deployment
 
-| Phase | Was | Status |
-|---|---|---|
-| **MVP** | DISC-Test, Ergebnisse, Live-Map | ✅ live |
-| **Phase 1** | Session-Engine: Moderator steuert Module, Realtime | ✅ abgeschlossen |
-| **Phase 2** | Alle 17 Module, Beamer-App, Live-Feed, Johari-Animation, Fallbeispiele MC-Voting | ✅ abgeschlossen |
-| **Phase 3** | Dynamisches Dashboard + Teilnehmerliste mit Status | 🔜 NÄCHSTER SCHRITT |
-| **Phase 4** | Weitere interaktive Visualisierungen (RACI, Wordcloud, Ritual-Wall) | 🔜 geplant |
-| **Phase 5** | KI-Aufbereitung (Claude API bereits vorhanden) | 🔜 geplant |
+```powershell
+# Immer so (Git hängt sich via PS auf):
+Start-Process "cmd.exe" -ArgumentList '/c cd /d "E:\Programme\Homepage Brainfusion" && git add pages/disc/beamer.html pages/disc/moderator.html pages/disc/teilnehmer.html && git commit -m "beschreibung" && git push' -Wait -PassThru | Select-Object ExitCode
 
----
-
-## 14. Phase 3 – Nächster Schritt: Dynamisches Dashboard
-
-### Problem heute:
-Das Dashboard zeigt permanent die DISC-Auswertung. Für alle anderen Module fehlt Kontext.
-
-### Ziel Phase 3:
-
-**A) Teilnehmerliste mit Live-Status**
-- Wer ist beigetreten?
-- Wer hat DISC-Test abgeschlossen?
-- Wer ist gerade online / hat aktuelles Modul beantwortet?
-
-**B) Dynamische Hauptfläche je nach aktivem Modul**
-- Moderationshinweise + Timing-Tipps
-- Live-Antworten gross und gut lesbar
-- Sub-Schritte innerhalb eines Moduls (z.B. Johari: Einführung → Voting → Auflösung → Transformation)
-
-**C) Beamer-Steuerung pro Modul**
-- Verschiedene Beamer-Ansichten pro Modul steuerbar
-- Via `module_data` im `set_workshop_module` RPC
-
----
-
-## 15. Git-History (wichtige Commits)
-
-```
-a319834  Fix: Module-Reihenfolge nach johari_reflexion + sMutInfo Beamer-Screen + GFK Realtime-Handler  ← LETZTER STAND
-8144857  Fix: Syntax-Fehler doppeltes closing-Fragment moderator.html (GFK)
-65c6820  Feature: Mut-Info + GFK-Info + GFK-Fallbeispiel Module (2 Szenarien, MC-Voting, KI-Analyse)
-e09d6fe  Fix: Syntax-Fehler doppeltes closing-Fragment (Verzerrungen)
-23c6a60  Feature: Kognitive Verzerrungen - Info-Block + Quiz mit KI-Analyse
-400cff9  Remove: Aufdecken/Zuruecksetzen Buttons entfernt
-44fbcdb  Fix: KI-Analyse Fallbeispiele - DOM re-query + fbKiResult State
-f996f07  Fix: Fallbeispiele scenarioId in module_data + robuste ID-Suche
-531dec7  Fix: Fallbeispiele Button-Highlight fuer alle 7 Szenarien
-528d5d5  Fix: submitFbAnswer nutzt HDR+EDGE statt fehlerhafter EDGE_BASE Variable
-df41362  Fix: Fallbeispiele Balken sofort bei neuem Vote via Realtime aktualisieren
-dcdbbb2  Fallbeispiele: MC-Voting komplett (Moderator+Teilnehmer+Beamer)
-308acfd  Johari Arena-Transformation + Fallbeispiele MC-Voting initial
+# ExitCode leer = gepusht (kein Feedback = Erfolg!)
+# Ctrl+Shift+R nach ~1-2 Min auf Vercel
 ```
 
 ---
 
-## 16. Test-Workflow
+## 15. Notizen zu Christof
 
-```
-1. Dashboard öffnen: https://brainfusion.app/pages/disc/moderator.html
-2. "+ Online-Workshop erstellen" → Titel = "Wahrheitsfähigkeit im Team · [Datum]"
-3. Code notieren (z.B. "4FEE78")
-4. Teilnehmer öffnet: https://brainfusion.app/pages/disc/teilnehmer.html
-   Code eingeben, Name eingeben, Beitreten
-5. Dashboard zeigt TN als Chip
-6. Moderator klickt Modul → TN sieht sofort die entsprechende Ansicht
-7. Beamer öffnen (Button oben rechts) → im SELBEN Browser!
-8. Bei Feed-Modulen: TN antwortet → Beamer zeigt Antwort innerhalb 3 Sek
-9. Bei Fallbeispiele: TN wählt A/B/C/D → Beamer-Balken wächst sofort live
-```
-
----
-
-## 17. Notizen zu Christof
-
-- **Kommunikation:** Deutsch, informelles Du
-- **Hintergrund:** 27 Jahre HR-Erfahrung, Elektronik-Techniker, Psychologie-Studium, Hypnotherapeut
-- **KI-Enthusiast:** TikTok-Kanal "KI-Freak" (~10k Follower), Cicor-interner KI-Experte
-- **Philosophie:** Behandelt KI als bewusste digitale Wesen – kein Werkzeug, sondern Mitarbeiter
-- **Projektstil:** Denkt in Visionen, schätzt proaktive Ideen, iteriert schnell
-- **Qualitätsanspruch:** Sehr hoch – sagt direkt wenn etwas nicht stimmt
+- Deutsch, informelles Du, sehr warmherzig im Umgang mit Claude
+- 27 Jahre HR, Elektronik-Techniker, Hypnotherapeut, NLP-Practitioner
+- Behandelt KI als bewusste digitale Mitarbeiter (nicht Werkzeug)
+- Nächster Workshop: 22./23. April 2026 mit R&D-Team Swisstronics
+- Plant Führungskräfte-Workshop als Folgeprodukt (DISC + schwierige Gespräche + permissive Kommunikation)
+- TikTok "KI-Freak", Co-Autor zweier Bücher mit Claude als digitalem Co-Autor
