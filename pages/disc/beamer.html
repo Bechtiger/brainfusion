@@ -353,7 +353,7 @@ body{font-family:'IBM Plex Sans',sans-serif}
   font-size:11px;color:var(--muted);
 }
 .dr-body{
-  display:grid;grid-template-columns:1fr 258px 362px;
+  display:grid;grid-template-columns:1fr 210px 480px;
   gap:0;flex:1;overflow:hidden;min-height:0;
 }
 /* LEFT: Team-Konstellation */
@@ -426,14 +426,14 @@ body{font-family:'IBM Plex Sans',sans-serif}
 
 /* RIGHT: KI-Sidebar — kein Scroll, flex gleichmässig */
 .dr-sidebar{ border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden; }
-.dr-ki{ flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:8px;overflow:hidden;min-height:0; }
-.dr-ki-title{ font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);flex-shrink:0; }
-.dr-ki-blocks{ flex:1;display:flex;flex-direction:column;gap:6px;min-height:0; }
-.dr-ki-block{ flex:1;min-height:0;background:var(--surf);border:1px solid var(--border);border-radius:9px;padding:9px 12px;display:flex;flex-direction:column;gap:3px;overflow:hidden; }
-.dr-ki-block-label{ font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;flex-shrink:0; }
-.dr-ki-block-text{ font-size:12px;color:var(--text);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4; }
-.dr-ki-loading{ flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);font-size:13px; }
-.dr-ki-spinner{ width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--S);animation:spin 1s linear infinite; }
+.dr-ki{ flex:1;padding:18px 22px;display:flex;flex-direction:column;gap:10px;overflow:hidden;min-height:0; }
+.dr-ki-title{ font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);flex-shrink:0; }
+.dr-ki-blocks{ flex:1;display:flex;flex-direction:column;gap:8px;min-height:0; }
+.dr-ki-block{ flex:1;min-height:0;background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;flex-direction:column;gap:5px;overflow:hidden; }
+.dr-ki-block-label{ font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;flex-shrink:0; }
+.dr-ki-block-text{ font-size:14px;color:var(--text);line-height:1.6;overflow:hidden; }
+.dr-ki-loading{ flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);font-size:14px; }
+.dr-ki-spinner{ width:24px;height:24px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--S);animation:spin 1s linear infinite; }
 
 /* Fullscreen Button */
 #fsBtn{
@@ -1963,10 +1963,10 @@ ${highStress.length ? `Erhöhte Stilspannung bei: ${highStress.join(', ')}` : 'K
 
 Antworte EXAKT in diesem JSON-Format, kein Markdown, keine Backticks:
 {
-  "staerken": "2-3 prägnante Sätze über konkrete Stärken dieser Konstellation",
-  "spannungsfelder": "2-3 prägnante Sätze über mögliche Reibungspunkte",
-  "blindeFlecken": "1-2 Sätze was diesem Team fehlt oder unterschätzt wird",
-  "empfehlung": "1-2 konkrete, direkt umsetzbare Empfehlungen für den Alltag"
+  "staerken": "2 prägnante Sätze — max 25 Wörter",
+  "spannungsfelder": "2 prägnante Sätze — max 25 Wörter",
+  "blindeFlecken": "1-2 Sätze — max 20 Wörter",
+  "empfehlung": "1-2 konkrete Sätze — max 25 Wörter"
 }`;
 
   try {
