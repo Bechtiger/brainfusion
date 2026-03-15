@@ -589,10 +589,13 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
 
-  /* ── Screens: alles ausblenden, nur Results zeigen ── */
+  /* ── Alles ausblenden ausser Results ────────────── */
+  #appHeader,
   .app-header, #sJoin, #sWaiting, #sModule, #sDiscIntro,
   #sDiscQuestions, #sDiscTransition,
-  #sPairingKarten, #sGfkCoaching { display: none !important; }
+  #sPairingKarten, #sGfkCoaching,
+  #toast { display: none !important; }
+
   #sDiscResults { display: flex !important; }
   #app { max-width: 100%; }
 
@@ -602,11 +605,24 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
   #pairingSection { display: none !important; }
   #printHeader { display: block !important; }
 
-  /* ── Results-Container: kein Scroll-Clip ─────────── */
+  /* ── Results-Container: volle Breite, kein Scroll ── */
   #resultsContent {
     overflow: visible !important;
     overflow-y: visible !important;
     padding: 0 4px !important;
+  }
+  #resultsContent > div {
+    max-width: 100% !important;
+  }
+
+  /* ── Rohwerte M/L-Counts ausblenden ─────────────── */
+  .score-raw { display: none !important; }
+
+  /* ── Disclaimer: nicht abschneiden ──────────────── */
+  .print-disclaimer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-before: auto;
   }
 
   /* ── Karten-Hintergründe: dark → light ──────────── */
@@ -669,7 +685,7 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
 </head>
 <body>
 <!-- ─── Fixed header (outside max-width container so it spans full width) ─── -->
-<div style="position:sticky;top:0;z-index:100;background:rgba(8,8,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid #1e1e38;">
+<div id="appHeader" style="position:sticky;top:0;z-index:100;background:rgba(8,8,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid #1e1e38;">
   <div style="max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 28px;">
     <div class="header-logo">D<span class="dot">I</span>SC</div>
     <div id="headerStatus"></div>
@@ -2127,13 +2143,13 @@ function buildDiscResults() {
           ${['D','I','S','C'].map(d=>`<div class="score-cell">
             <div class="score-val" style="color:${DIM_COLORS[d]}">${composite[d]}</div>
             <div class="score-dim">${d}</div>
-            <div style="font-size:10px;color:var(--dim);margin-top:2px;">${sc.mostCounts[d]}M / ${sc.leastCounts[d]}L</div>
+            <div class="score-raw" style="font-size:10px;color:var(--dim);margin-top:2px;">${sc.mostCounts[d]}M / ${sc.leastCounts[d]}L</div>
           </div>`).join('')}
         </div>
       </div>
 
-      <div style="margin-top:16px;padding-bottom:32px;">
-        <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:14px;padding:8px 12px;border-left:2px solid var(--border);">
+      <div style="margin-top:16px;padding-bottom:32px;" class="print-disclaimer">
+        <div style="font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:14px;padding:8px 12px;border-left:2px solid var(--border);">
           ℹ️ Dieses Reflexionsinstrument dient der Workshop-Selbstreflexion und ersetzt keine validierte psychometrische Diagnostik.
         </div>
         <button class="btn btn-ghost" onclick="preparePrint()" style="margin-bottom:10px;gap:10px;">
