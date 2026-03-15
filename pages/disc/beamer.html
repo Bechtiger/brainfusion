@@ -1942,7 +1942,7 @@ async function runDiscKiAnalysis() {
 
   content.innerHTML = `<div class="dr-ki-loading">
     <div class="dr-ki-spinner"></div>
-    <div>KI analysiert Team…</div>
+    <div style="font-size:13px;">KI analysiert Team…</div>
   </div>`;
 
   const dims = ['D','I','S','C'];
@@ -1955,54 +1955,94 @@ async function runDiscKiAnalysis() {
     return cnt ? `${d}:${cnt}` : '';
   }).filter(Boolean).join(', ');
 
-  const prompt = `Du analysierst ein R&D-Engineering-Team (${participants.length} Personen) anhand ihrer DISC-Profile. Dies ist ein Reflexionsinstrument — keine klinische Diagnostik.
+  const prompt = `Analysiere dieses R&D-Engineering-Team (${participants.length} Personen) anhand ihrer DISC-Profile.
 
-Team-Typenverteilung: ${typeSummary}
-Team-Profil-Durchschnitt (natürlicher Stil): D=${teamNatural.D}% I=${teamNatural.I}% S=${teamNatural.S}% C=${teamNatural.C}%
-${highStress.length ? `Erhöhte Stilspannung bei: ${highStress.join(', ')}` : 'Keine Person mit hoher Stilspannung.'}
+Typenverteilung: ${typeSummary}
+Profil-Durchschnitt: D=${teamNatural.D}% I=${teamNatural.I}% S=${teamNatural.S}% C=${teamNatural.C}%
+${highStress.length ? `Hohe Stilspannung bei: ${highStress.join(', ')}` : 'Keine hohe Stilspannung.'}
 
-Antworte EXAKT in diesem JSON-Format, kein Markdown, keine Backticks:
-{
-  "staerken": "2 prägnante Sätze — max 25 Wörter",
-  "spannungsfelder": "2 prägnante Sätze — max 25 Wörter",
-  "blindeFlecken": "1-2 Sätze — max 20 Wörter",
-  "empfehlung": "1-2 konkrete Sätze — max 25 Wörter"
-}`;
+Antworte NUR als reines JSON ohne Markdown, Backticks oder Kommentare:
+{"staerken":"...","spannungsfelder":"...","blindeFlecken":"...","empfehlung":"..."}
+
+Jeder Wert: 2-3 kurze Sätze, direkt und prägnant.`;
+
+  const blocks = [
+    { key:'staerken',        label:'Team-Staerken',   color:'var(--S)',    border:'rgba(42,157,143,.35)'  },
+    { key:'spannungsfelder', label:'Spannungsfelder', color:'var(--I)',    border:'rgba(244,162,97,.35)'  },
+    { key:'blindeFlecken',   label:'Blinde Flecken',  color:'var(--C)',    border:'rgba(74,144,217,.35)'  },
+    { key:'empfehlung',      label:'Empfehlung',      color:'var(--gold)', border:'rgba(201,168,76,.35)'  },
+  ];
+
+  function showBlocks(d) {
+    content.innerHTML = blocks.map(b => `
+      <div class="dr-ki-block" style="border-color:${b.border};">
+        <div class="dr-ki-block-label" style="color:${b.color};">${b.label}</div>
+        <div class="dr-ki-block-text">${escapeHtml(d[b.key]||'—')}</div>
+      </div>`).join('');
+  }
+
+  function showError(msg) {
+    content.innerHTML = `
+      <div class="dr-ki-block" style="border-color:rgba(230,57,70,.5);flex:none;padding:16px;">
+        <div class="dr-ki-block-label" style="color:var(--D);">Verbindungsfehler</div>
+        <div class="dr-ki-block-text" style="color:var(--muted);font-size:13px;">${escapeHtml(msg)}</div>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);text-align:center;">
+          Automatischer Neuversuch in 10 Sek…<br>
+          <span style="color:var(--muted);">Oder Seite neu laden (F5)</span>
+        </div>
+      </div>`;
+    // Auto-retry nach 10s
+    setTimeout(() => { drKiRunning = false; runDiscKiAnalysis(); }, 10000);
+  }
 
   try {
     const resp = await fetch(SB_URL + '/functions/v1/ki-analyze', {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY },
       body: JSON.stringify({
-        system: 'Du bist Experte für Teamentwicklung und DISC. Antworte ausschliesslich als JSON-Objekt, kein Text davor oder danach, kein Markdown.',
+        system: 'Du bist Experte fuer Teamentwicklung und DISC. Antworte AUSSCHLIESSLICH als kompaktes JSON-Objekt. Kein Text davor oder danach, kein Markdown, keine Backticks, keine Erklaerungen.',
         userPrompt: prompt,
-        maxTokens: 900
+        maxTokens: 700
       })
     });
+
+    if (!resp.ok) { showError(`HTTP ${resp.status}`); return; }
+
     const json = await resp.json();
-    const raw  = (json.text||'').replace(/```json|```/g,'').trim();
-    const d    = JSON.parse(raw);
+    if (json.error) { showError(json.error); return; }
 
-    const blocks = [
-      { key:'staerken',        label:'Team-Staerken',   color:'var(--S)',    border:'rgba(42,157,143,.35)'  },
-      { key:'spannungsfelder', label:'Spannungsfelder', color:'var(--I)',    border:'rgba(244,162,97,.35)'  },
-      { key:'blindeFlecken',   label:'Blinde Flecken',  color:'var(--C)',    border:'rgba(74,144,217,.35)'  },
-      { key:'empfehlung',      label:'Empfehlung',      color:'var(--gold)', border:'rgba(201,168,76,.35)'  },
-    ];
+    // Robustes Parsen: mehrere Strategien
+    let raw = (json.text || '').trim();
 
-    content.innerHTML = blocks.map(b => `
-      <div class="dr-ki-block" style="border-color:${b.border};">
-        <div class="dr-ki-block-label" style="color:${b.color};">${b.label}</div>
-        <div class="dr-ki-block-text">${escapeHtml(d[b.key]||'—')}</div>
-      </div>`).join('');
+    // Backticks und json-Tag entfernen
+    raw = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+
+    // Nur den JSON-Teil extrahieren (zwischen { und })
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) raw = jsonMatch[0];
+
+    let d;
+    try {
+      d = JSON.parse(raw);
+    } catch(parseErr) {
+      // Fallback: Versuche Felder per Regex zu extrahieren
+      d = {};
+      ['staerken','spannungsfelder','blindeFlecken','empfehlung'].forEach(key => {
+        const m = raw.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`));
+        if (m) d[key] = m[1];
+        else   d[key] = '(Analyse nicht verfügbar)';
+      });
+    }
+
+    showBlocks(d);
 
   } catch(e) {
-    content.innerHTML = `<div class="dr-ki-block" style="border-color:rgba(230,57,70,.35);">
-      <div class="dr-ki-block-label" style="color:var(--D);">Fehler</div>
-      <div class="dr-ki-block-text" style="color:var(--muted);">${e.message} — Seite neu laden um erneut zu versuchen.</div>
-    </div>`;
+    showError(e.message || 'Unbekannter Fehler');
+  } finally {
+    drKiRunning = false;
   }
-  drKiRunning = false;
 }
 
 /* ══════════════════════════════════════════════
