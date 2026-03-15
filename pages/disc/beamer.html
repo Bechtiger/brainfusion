@@ -771,6 +771,65 @@ body:hover #fsBtn{ opacity:1; }
   </div>
 </div>
 
+<!-- == KERNBOTSCHAFTEN SCREEN == -->
+<div class="screen" id="sKernbotschaften">
+  <div style="flex:1;display:flex;flex-direction:column;padding:36px 70px 32px;background:#060610;height:100vh;overflow:hidden;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-shrink:0;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:4px;text-transform:uppercase;color:rgba(201,168,76,.5);">⚡ KERNBOTSCHAFTEN — WAS BLEIBT UNGESAGT?</div>
+      <div style="flex:1;height:1px;background:rgba(201,168,76,.15);"></div>
+    </div>
+
+    <!-- Intro-Satz -->
+    <div style="font-size:20px;color:rgba(255,255,255,.35);margin-bottom:28px;line-height:1.6;flex-shrink:0;">
+      Vier Sätze. Jeder klingt harmlos. Und doch steckt in jedem einer davon — der Kern dessen, worüber wir heute sprechen.
+    </div>
+
+    <!-- 4 Sätze als Karten -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;flex:1;min-height:0;">
+
+      <div style="border:1px solid rgba(230,57,70,.4);border-radius:16px;padding:28px 34px;background:rgba(230,57,70,.04);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:16px;right:20px;font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:900;color:rgba(230,57,70,.06);line-height:1;">1</div>
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(230,57,70,.6);margin-bottom:14px;">Führungskommunikation</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:rgba(255,255,255,.88);line-height:1.4;">
+          "Ich sage meiner Führungskraft nicht alles, was ich denke."
+        </div>
+      </div>
+
+      <div style="border:1px solid rgba(244,162,97,.4);border-radius:16px;padding:28px 34px;background:rgba(244,162,97,.04);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:16px;right:20px;font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:900;color:rgba(244,162,97,.06);line-height:1;">2</div>
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(244,162,97,.6);margin-bottom:14px;">Meeting-Verhalten</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:rgba(255,255,255,.88);line-height:1.4;">
+          "Im Meeting stimme ich manchmal zu, obwohl ich anderer Meinung bin."
+        </div>
+      </div>
+
+      <div style="border:1px solid rgba(42,157,143,.4);border-radius:16px;padding:28px 34px;background:rgba(42,157,143,.04);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:16px;right:20px;font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:900;color:rgba(42,157,143,.06);line-height:1;">3</div>
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(42,157,143,.6);margin-bottom:14px;">Informelle Kanäle</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:rgba(255,255,255,.88);line-height:1.4;">
+          "Es gibt Themen, die ich lieber mit Kollegen bespreche als mit dem Chef."
+        </div>
+      </div>
+
+      <div style="border:1px solid rgba(74,144,217,.4);border-radius:16px;padding:28px 34px;background:rgba(74,144,217,.04);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:16px;right:20px;font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:900;color:rgba(74,144,217,.06);line-height:1;">4</div>
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(74,144,217,.6);margin-bottom:14px;">Konfliktvermeidung</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:rgba(255,255,255,.88);line-height:1.4;">
+          "Ich halte manchmal Informationen zurück, um Konflikte zu vermeiden."
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer-Frage -->
+    <div style="margin-top:22px;flex-shrink:0;text-align:center;font-size:17px;color:rgba(201,168,76,.6);font-style:italic;letter-spacing:.5px;">
+      Welcher dieser Sätze trifft dich am meisten — und warum?
+    </div>
+  </div>
+</div>
+
 <!-- == GFK INFO SCREEN == -->
 <div class="screen" id="sGfkInfo">
   <div style="flex:1;display:flex;flex-direction:column;padding:40px 70px 32px;background:#060610;min-height:100vh;">
@@ -858,7 +917,7 @@ const MODULE_META = {
   was_sage_ich_nicht:   { screen:'sFeed', icon:'🤫', label:'Stille Reflexion', title:'Was sage ich nicht?', question:'Was sagst du im Team nicht — obwohl du es solltest? (anonym)' },
   gfk_coaching:         { screen:'sGeneric', icon:'🏋', title:'GFK Coaching läuft...', desc:'Alle üben individuell auf ihrem Gerät. Gib 10–15 Minuten Zeit.' },
   intro_question:       { screen:'sFeed',    icon:'💬', label:'Einstieg',          title:'Einstiegsfrage',             question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?' },
-  kernbotschaften_info: { screen:'sGeneric', icon:'⚡', title:'Kernbotschaften',    desc:'Vier Sätze, die alles sagen.' },
+  kernbotschaften_info: { screen:'sKernbotschaften' },
   kernbotschaften:      { screen:'sFeed',    icon:'⚡', label:'Kernbotschaft',      title:'Welcher Satz trifft dich?',  question:'Wähle den Satz, der dich am meisten anspricht – und erkläre warum.' },
   johari_erklaerung:       { screen:'sJohari' },
   johari_fallbeispiele:          { screen:'sFallbeispiele' },
