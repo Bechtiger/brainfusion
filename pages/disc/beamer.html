@@ -353,7 +353,7 @@ body{font-family:'IBM Plex Sans',sans-serif}
   font-size:13px;color:var(--muted);
 }
 .dr-body{
-  display:grid;grid-template-columns:1fr 340px;
+  display:grid;grid-template-columns:1fr 280px 380px;
   gap:0;flex:1;overflow:hidden;
 }
 /* LEFT: Team-Konstellation */
@@ -408,69 +408,95 @@ body{font-family:'IBM Plex Sans',sans-serif}
   display:flex;flex-direction:column;
   overflow:hidden;
 }
-.dr-stats{
-  padding:28px 28px 20px;
-  display:flex;flex-direction:column;gap:14px;
-  border-bottom:1px solid var(--border);
+/* MIDDLE: Team-DNA */
+.dr-dna{
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:28px 24px;gap:20px;overflow:hidden;
 }
-.dr-stats-title{
+.dr-dna-title{
   font-family:'IBM Plex Mono',monospace;
   font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);
-  margin-bottom:4px;
 }
-.dr-dim-bar-row{
-  display:grid;grid-template-columns:18px 1fr 36px;gap:8px;align-items:center;
+.dr-type-dist-row{
+  display:grid;grid-template-columns:22px 1fr 40px;gap:8px;align-items:center;
+  margin-bottom:6px;
 }
-.dr-dim-bar-letter{
-  font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;text-align:center;
+.dr-type-dist-badge{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;color:#fff;
 }
-.dr-dim-bar-track{
-  height:10px;background:var(--surf2);border-radius:5px;overflow:hidden;position:relative;
+.dr-type-dist-track{
+  height:9px;background:var(--surf2);border-radius:5px;overflow:hidden;
 }
-.dr-dim-bar-fill{
-  height:100%;border-radius:5px;transition:width 1.2s cubic-bezier(0.16,1,0.3,1);
-  position:absolute;top:0;left:0;
+.dr-type-dist-fill{
+  height:100%;border-radius:5px;
+  transition:width 1.2s cubic-bezier(0.16,1,0.3,1);
 }
-.dr-dim-bar-fill.natural{ opacity:.5; }
-.dr-dim-bar-fill.role{ opacity:.9; }
-.dr-dim-bar-val{
+.dr-type-dist-pct{
   font-family:'IBM Plex Mono',monospace;
-  font-size:12px;color:var(--muted);text-align:right;
+  font-size:11px;color:var(--muted);text-align:right;
 }
-/* KI Analysis */
+.dr-stress-chips{
+  display:flex;flex-wrap:wrap;gap:7px;margin-top:4px;
+}
+.dr-stress-chip{
+  padding:4px 10px;border-radius:10px;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;
+}
+.dr-stress-chip.low  { background:rgba(42,157,143,.15);color:var(--S);border:1px solid rgba(42,157,143,.3); }
+.dr-stress-chip.mid  { background:rgba(244,162,97,.13);color:var(--I);border:1px solid rgba(244,162,97,.3); }
+.dr-stress-chip.high { background:rgba(230,57,70,.13);color:var(--D);border:1px solid rgba(230,57,70,.3); }
+.dr-avg-stress{
+  font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;
+  margin-top:2px;
+}
+.dr-dna-divider{
+  border:none;border-top:1px solid var(--border);margin:0;
+}
+/* KI Analysis — rechte Spalte */
 .dr-ki{
   flex:1;padding:24px;
-  display:flex;flex-direction:column;gap:14px;
-  overflow:hidden;
+  display:flex;flex-direction:column;gap:12px;
+  overflow-y:auto;
 }
 .dr-ki-title{
   font-family:'IBM Plex Mono',monospace;
   font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);
+  flex-shrink:0;
 }
-.dr-ki-output{
-  flex:1;overflow-y:auto;
-  font-size:13px;color:var(--text);line-height:1.7;
+/* KI strukturierte Blöcke */
+.dr-ki-block{
   background:var(--surf);border:1px solid var(--border);
-  border-radius:12px;padding:16px;
+  border-radius:12px;padding:14px 16px;
+  display:flex;flex-direction:column;gap:6px;
 }
-.dr-ki-output.empty{
-  display:flex;align-items:center;justify-content:center;
-  color:var(--muted);font-size:13px;text-align:center;
+.dr-ki-block-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
 }
-.dr-ki-typing{
-  display:inline-block;
-  animation:blink 1s infinite;
-  color:var(--S);
-  font-size:18px;
+.dr-ki-block-text{
+  font-size:13px;color:var(--text);line-height:1.65;
 }
+.dr-ki-loading{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
+  color:var(--muted);font-size:13px;
+}
+.dr-ki-spinner{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--border2);
+  border-top-color:var(--S);
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
 .dr-ki-btn{
   background:linear-gradient(135deg,rgba(42,157,143,.2),rgba(74,144,217,.2));
   border:1px solid rgba(42,157,143,.4);
-  color:var(--S);
-  padding:10px 18px;border-radius:10px;cursor:pointer;
+  color:var(--S);padding:10px 18px;border-radius:10px;cursor:pointer;
   font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1px;
-  transition:all .2s;text-transform:uppercase;
-  flex-shrink:0;
+  transition:all .2s;text-transform:uppercase;flex-shrink:0;
 }
 .dr-ki-btn:hover{ background:rgba(42,157,143,.3);border-color:var(--S); }
 .dr-ki-btn:disabled{ opacity:.4;cursor:not-allowed; }
@@ -524,22 +550,39 @@ body:hover #fsBtn{ opacity:1; }
     <div class="dr-constellation" id="drConstellation">
       <!-- wird dynamisch befüllt -->
     </div>
-    <!-- RIGHT: Stats + KI -->
-    <div class="dr-sidebar">
-      <div class="dr-stats">
-        <div class="dr-stats-title">⌀ Team-Profil</div>
-        <div id="drDimBars">
-          <!-- wird dynamisch befüllt -->
-        </div>
+    <!-- MIDDLE: Team-DNA -->
+    <div class="dr-dna" id="drDna">
+      <div class="dr-dna-title">Team-DNA</div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Typ-Verteilung</div>
+        <div id="drTypeDist"><!-- dynamisch --></div>
       </div>
+      <hr class="dr-dna-divider">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Stilspannung</div>
+        <div id="drStressChips" class="dr-stress-chips"><!-- dynamisch --></div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Team-Durchschnitt</div>
+        <div id="drAvgStress" class="dr-avg-stress">—</div>
+      </div>
+      <hr class="dr-dna-divider">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Profil-Durchschnitt (Kern)</div>
+        <div id="drDimBars"><!-- dynamisch --></div>
+      </div>
+    </div>
+    <!-- RIGHT: KI-Teamanalyse -->
+    <div class="dr-sidebar">
       <div class="dr-ki">
-        <div class="dr-ki-title">✦ KI-Teamanalyse</div>
-        <div class="dr-ki-output empty" id="drKiOutput">
-          KI-Analyse noch nicht gestartet
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+          <div class="dr-ki-title">KI-Teamanalyse</div>
+          <button class="dr-ki-btn" id="drKiBtn" onclick="runDiscKiAnalysis()" style="padding:6px 14px;font-size:10px;">Neu analysieren</button>
         </div>
-        <button class="dr-ki-btn" id="drKiBtn" onclick="runDiscKiAnalysis()">
-          ✦ Analyse starten
-        </button>
+        <div id="drKiContent">
+          <div class="dr-ki-loading" id="drKiLoading">
+            <div class="dr-ki-spinner"></div>
+            <div>KI analysiert Team…</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1852,34 +1895,37 @@ function showDiscResults(data) {
   document.getElementById('drWorkshopTitle').textContent = session?.title || 'Swisstronics';
   renderDiscConstellation();
   show('sDiscResults');
+  // KI automatisch starten sobald Teilnehmer da sind
+  drKiRunning = false;
+  setTimeout(() => runDiscKiAnalysis(), 800);
 }
 
 function renderDiscConstellation() {
   const cons = document.getElementById('drConstellation');
   const bars = document.getElementById('drDimBars');
+  const typeDist = document.getElementById('drTypeDist');
+  const stressChips = document.getElementById('drStressChips');
+  const avgStressEl = document.getElementById('drAvgStress');
+
   if (!participants.length) {
     cons.innerHTML = '<div style="color:var(--muted);font-size:18px;margin:auto;">Noch keine Ergebnisse vorhanden</div>';
     return;
   }
   document.getElementById('drCount').textContent = participants.length;
 
-  // Gruppiere nach dominantem NATÜRLICHEM Typ
+  // ── Gruppiere nach dominantem NATÜRLICHEM Typ ─────
   const groups = { D:[], I:[], S:[], C:[] };
-  participants.forEach(p => {
-    const t = p.naturalType || 'D';
-    if (groups[t]) groups[t].push(p);
-  });
+  participants.forEach(p => { const t = p.naturalType||'D'; if(groups[t]) groups[t].push(p); });
 
-  // Stress-Farbe
   function stressColor(s) {
     if (s < 15) return '#2a9d8f';
-    if (s < 30) return '#f4a261';
+    if (s < 34) return '#f4a261';
     return '#e63946';
   }
 
-  // Avatare rendern
+  // ── Avatare ───────────────────────────────────────
   cons.innerHTML = ['D','I','S','C'].map(dim => {
-    const col   = DIM_COLORS_B[dim];
+    const col = DIM_COLORS_B[dim];
     const pList = groups[dim];
     if (!pList.length) return '';
     const avatars = pList.map(p => {
@@ -1888,7 +1934,7 @@ function renderDiscConstellation() {
       return `<div class="dr-avatar">
         <div class="dr-avatar-ball" style="background:${col};">
           ${dim}
-          ${showStress ? `<div class="dr-avatar-stress" style="background:${sc}" title="Stilspannung ${Math.round(p.stress||0)}%">!</div>` : ''}
+          ${showStress ? `<div class="dr-avatar-stress" style="background:${sc}">!</div>` : ''}
         </div>
         <div class="dr-avatar-name">${escapeHtml(p.alias||'?')}</div>
       </div>`;
@@ -1902,9 +1948,9 @@ function renderDiscConstellation() {
     </div>`;
   }).join('');
 
-  // Team-Durchschnitt berechnen
+  // ── Team-Durchschnitt ─────────────────────────────
   const dims = ['D','I','S','C'];
-  const avg = (arr) => arr.length ? Math.round(arr.reduce((s,v)=>s+v,0)/arr.length) : 0;
+  const avg = arr => arr.length ? Math.round(arr.reduce((s,v)=>s+v,0)/arr.length) : 0;
   const teamNatural = {};
   const teamRole    = {};
   dims.forEach(d => {
@@ -1919,71 +1965,117 @@ function renderDiscConstellation() {
     return `<div class="dr-dim-bar-row">
       <div class="dr-dim-bar-letter" style="color:${col};">${d}</div>
       <div class="dr-dim-bar-track">
-        <div class="dr-dim-bar-fill natural" style="background:${col};width:${n}%;"></div>
-        <div class="dr-dim-bar-fill role" style="background:${col};width:${r}%;height:4px;top:3px;"></div>
+        <div class="dr-dim-bar-fill" style="background:${col};opacity:.55;width:${n}%;height:10px;border-radius:5px;transition:width 1.2s cubic-bezier(0.16,1,0.3,1);"></div>
       </div>
-      <div class="dr-dim-bar-val">${r}%</div>
+      <div class="dr-dim-bar-val">${n}%</div>
     </div>`;
   }).join('');
+
+  // ── Typ-Verteilung (Mitte) ────────────────────────
+  const total = participants.length;
+  typeDist.innerHTML = dims.map(d => {
+    const col = DIM_COLORS_B[d];
+    const cnt = groups[d].length;
+    const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
+    if (!cnt) return '';
+    return `<div class="dr-type-dist-row">
+      <div class="dr-type-dist-badge" style="background:${col};">${d}</div>
+      <div class="dr-type-dist-track">
+        <div class="dr-type-dist-fill" style="background:${col};opacity:.8;width:${pct}%;"></div>
+      </div>
+      <div class="dr-type-dist-pct">${cnt}×</div>
+    </div>`;
+  }).join('');
+
+  // ── Stress-Chips (Mitte) ──────────────────────────
+  const stressLow  = participants.filter(p => (p.stress||0) <  34).length;
+  const stressMid  = participants.filter(p => (p.stress||0) >= 34 && (p.stress||0) < 67).length;
+  const stressHigh = participants.filter(p => (p.stress||0) >= 67).length;
+  const avgStress  = avg(participants.map(p => p.stress||0));
+
+  stressChips.innerHTML = [
+    stressLow  ? `<div class="dr-stress-chip low">${stressLow}× gering</div>`  : '',
+    stressMid  ? `<div class="dr-stress-chip mid">${stressMid}× mittel</div>`  : '',
+    stressHigh ? `<div class="dr-stress-chip high">${stressHigh}× hoch</div>` : '',
+  ].join('');
+
+  const stressCol = avgStress < 34 ? 'var(--S)' : avgStress < 67 ? 'var(--I)' : 'var(--D)';
+  avgStressEl.style.color = stressCol;
+  avgStressEl.textContent = avgStress + '%';
 }
 
 async function runDiscKiAnalysis() {
   if (drKiRunning || !participants.length) return;
   drKiRunning = true;
-  const btn = document.getElementById('drKiBtn');
-  const out  = document.getElementById('drKiOutput');
-  btn.disabled = true;
-  btn.textContent = '✦ Analysiere...';
-  out.classList.remove('empty');
-  out.innerHTML = '<span class="dr-ki-typing">▌</span>';
+  const btn     = document.getElementById('drKiBtn');
+  const content = document.getElementById('drKiContent');
+  if (btn) btn.disabled = true;
 
-  // Team-Summary aufbauen
+  content.innerHTML = `<div class="dr-ki-loading" id="drKiLoading">
+    <div class="dr-ki-spinner"></div>
+    <div>KI analysiert Team…</div>
+  </div>`;
+
   const dims = ['D','I','S','C'];
-  const avg = arr => arr.length ? Math.round(arr.reduce((s,v)=>s+v,0)/arr.length) : 0;
+  const avg  = arr => arr.length ? Math.round(arr.reduce((s,v)=>s+v,0)/arr.length) : 0;
   const teamNatural = {};
   dims.forEach(d => { teamNatural[d] = avg(participants.map(p=>p.natural?.[d]||0)); });
-  const highStress = participants.filter(p=>(p.stress||0)>=25).map(p=>p.alias);
-  const types = participants.map(p=>p.naturalType).join(', ');
+  const highStress = participants.filter(p=>(p.stress||0)>=34).map(p=>p.alias);
+  const typeSummary = ['D','I','S','C'].map(d => {
+    const cnt = participants.filter(p=>p.naturalType===d).length;
+    return cnt ? `${d}:${cnt}` : '';
+  }).filter(Boolean).join(', ');
 
-  const prompt = `Du analysierst ein R&D-Team aus ${participants.length} Ingenieuren anhand ihrer DISC-Profile (Reflexionsinstrument).
+  const prompt = `Du analysierst ein R&D-Engineering-Team (${participants.length} Personen) anhand ihrer DISC-Profile. Dies ist ein Reflexionsinstrument — keine klinische Diagnostik.
 
-Team-Typenverteilung: ${types}
-Team-Durchschnitt (natürlicher Stil): D=${teamNatural.D}% I=${teamNatural.I}% S=${teamNatural.S}% C=${teamNatural.C}%
-${highStress.length ? `Personen mit erhöhter Stilspannung: ${highStress.join(', ')}` : 'Keine Person mit auffälliger Stilspannung.'}
+Team-Typenverteilung: ${typeSummary}
+Team-Profil-Durchschnitt (natürlicher Stil): D=${teamNatural.D}% I=${teamNatural.I}% S=${teamNatural.S}% C=${teamNatural.C}%
+${highStress.length ? `Erhöhte Stilspannung bei: ${highStress.join(', ')}` : 'Keine Person mit hoher Stilspannung.'}
 
-Gib eine prägnante Teamanalyse in 3 Abschnitten (je 2-3 Sätze):
-1. 💪 Teamstärken
-2. ⚠️ Mögliche Spannungsfelder  
-3. 💡 Empfehlung fürs Team
-
-Schreibe direkt, klar, ohne Floskeln. Keine langen Einleitungen.`;
+Antworte EXAKT in diesem JSON-Format, kein Markdown, keine Backticks:
+{
+  "staerken": "2-3 Sätze über die konkreten Stärken dieser Teamkonstellation",
+  "spannungsfelder": "2-3 Sätze über mögliche Reibungspunkte oder blinde Flecken",
+  "blindeFlecken": "1-2 Sätze was diesem Team fehlt oder was es unterschätzt",
+  "empfehlung": "1-2 konkrete, umsetzbare Empfehlungen für den Alltag"
+}`;
 
   try {
     const resp = await fetch(SB_URL + '/functions/v1/ki-analyze', {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY },
       body: JSON.stringify({
-        system: 'Du bist ein Experte für Teamentwicklung und DISC-Persönlichkeitsmodelle. Antworte auf Deutsch, prägnant und direkt.',
+        system: 'Du bist Experte für Teamentwicklung und DISC. Antworte ausschliesslich als JSON-Objekt, kein Text davor oder danach, kein Markdown.',
         userPrompt: prompt,
-        maxTokens: 1000
+        maxTokens: 900
       })
     });
     const json = await resp.json();
-    if (json.error) throw new Error(json.error);
-    const text = json.text || 'Keine Antwort erhalten.';
-    // Formatiert ausgeben
-    out.innerHTML = text
-      .replace(/\n\n/g,'</p><p>')
-      .replace(/\n/g,'<br>')
-      .replace(/^/,'<p>')
-      .replace(/$/,'</p>');
-    btn.textContent = '↺ Neu analysieren';
+    const raw  = (json.text||'').replace(/```json|```/g,'').trim();
+    const d    = JSON.parse(raw);
+
+    const blocks = [
+      { key:'staerken',       label:'Team-Staerken',    color:'var(--S)',    border:'rgba(42,157,143,.3)'  },
+      { key:'spannungsfelder',label:'Spannungsfelder',  color:'var(--I)',    border:'rgba(244,162,97,.3)'  },
+      { key:'blindeFlecken',  label:'Blinde Flecken',   color:'var(--C)',    border:'rgba(74,144,217,.3)'  },
+      { key:'empfehlung',     label:'Empfehlung',       color:'var(--gold)', border:'rgba(201,168,76,.3)'  },
+    ];
+
+    content.innerHTML = blocks.map(b => `
+      <div class="dr-ki-block" style="border-color:${b.border};margin-bottom:10px;">
+        <div class="dr-ki-block-label" style="color:${b.color};">${b.label}</div>
+        <div class="dr-ki-block-text">${escapeHtml(d[b.key]||'—')}</div>
+      </div>`).join('');
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Neu analysieren'; }
   } catch(e) {
-    out.innerHTML = `<span style="color:var(--D);">Fehler: ${e.message}</span>`;
-    btn.textContent = '↺ Erneut versuchen';
+    content.innerHTML = `<div class="dr-ki-block" style="border-color:rgba(230,57,70,.3);">
+      <div class="dr-ki-block-label" style="color:var(--D);">Fehler</div>
+      <div class="dr-ki-block-text" style="color:var(--muted);">${e.message}</div>
+    </div>`;
+    if (btn) { btn.disabled = false; btn.textContent = 'Erneut versuchen'; }
   }
   drKiRunning = false;
-  btn.disabled = false;
 }
 
 /* ══════════════════════════════════════════════
