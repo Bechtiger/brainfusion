@@ -791,33 +791,33 @@ body:hover #fsBtn{ opacity:1; }
 
       <div style="border:1px solid rgba(230,57,70,.4);border-radius:16px;padding:28px 34px;background:rgba(230,57,70,.04);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
         <div style="position:absolute;top:16px;right:20px;font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:900;color:rgba(230,57,70,.06);line-height:1;">1</div>
-        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(230,57,70,.6);margin-bottom:14px;">Führungskommunikation</div>
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(230,57,70,.6);margin-bottom:14px;">Teamdynamik</div>
         <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:rgba(255,255,255,.88);line-height:1.4;">
-          "Ich sage meiner Führungskraft nicht alles, was ich denke."
+          "Der Langsamste im Team bestimmt das Tempo."
         </div>
       </div>
 
       <div style="border:1px solid rgba(244,162,97,.4);border-radius:16px;padding:28px 34px;background:rgba(244,162,97,.04);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
         <div style="position:absolute;top:16px;right:20px;font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:900;color:rgba(244,162,97,.06);line-height:1;">2</div>
-        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(244,162,97,.6);margin-bottom:14px;">Meeting-Verhalten</div>
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(244,162,97,.6);margin-bottom:14px;">Unverzichtbarkeit</div>
         <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:rgba(255,255,255,.88);line-height:1.4;">
-          "Im Meeting stimme ich manchmal zu, obwohl ich anderer Meinung bin."
+          "Jeder Einzelne ist unverzichtbar."
         </div>
       </div>
 
       <div style="border:1px solid rgba(42,157,143,.4);border-radius:16px;padding:28px 34px;background:rgba(42,157,143,.04);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
         <div style="position:absolute;top:16px;right:20px;font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:900;color:rgba(42,157,143,.06);line-height:1;">3</div>
-        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(42,157,143,.6);margin-bottom:14px;">Informelle Kanäle</div>
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(42,157,143,.6);margin-bottom:14px;">Kollektive Leistung</div>
         <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:rgba(255,255,255,.88);line-height:1.4;">
-          "Es gibt Themen, die ich lieber mit Kollegen bespreche als mit dem Chef."
+          "Die Gesamtleistung ist wichtiger als die Leistung des Einzelnen."
         </div>
       </div>
 
-      <div style="border:1px solid rgba(74,144,217,.4);border-radius:16px;padding:28px 34px;background:rgba(74,144,217,.04);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:16px;right:20px;font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:900;color:rgba(74,144,217,.06);line-height:1;">4</div>
-        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(74,144,217,.6);margin-bottom:14px;">Konfliktvermeidung</div>
-        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:rgba(255,255,255,.88);line-height:1.4;">
-          "Ich halte manchmal Informationen zurück, um Konflikte zu vermeiden."
+      <div style="border:1px solid rgba(201,168,76,.5);border-radius:16px;padding:28px 34px;background:rgba(201,168,76,.06);display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:16px;right:20px;font-family:'Rajdhani',sans-serif;font-size:64px;font-weight:900;color:rgba(201,168,76,.06);line-height:1;">4</div>
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:14px;">Das Ungesagte</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:600;color:rgba(255,255,255,.92);line-height:1.4;">
+          "Was ungesagt bleibt, wirkt trotzdem."
         </div>
       </div>
 
@@ -918,7 +918,8 @@ const MODULE_META = {
   gfk_coaching:         { screen:'sGeneric', icon:'🏋', title:'GFK Coaching läuft...', desc:'Alle üben individuell auf ihrem Gerät. Gib 10–15 Minuten Zeit.' },
   intro_question:       { screen:'sFeed',    icon:'💬', label:'Einstieg',          title:'Einstiegsfrage',             question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?' },
   kernbotschaften_info: { screen:'sKernbotschaften' },
-  kernbotschaften:      { screen:'sFeed',    icon:'⚡', label:'Kernbotschaft',      title:'Welcher Satz trifft dich?',  question:'Wähle den Satz, der dich am meisten anspricht – und erkläre warum.' },
+  kernbotschaften_info: { screen:'sKernbotschaften' },
+  kernbotschaften:      { screen:'sFeed',    icon:'⚡', label:'Kernbotschaft',      title:'Welcher Satz trifft dich?',  question:'Welche Kernbotschaft resoniert bei dir am stärksten — und warum?' },
   johari_erklaerung:       { screen:'sJohari' },
   johari_fallbeispiele:          { screen:'sFallbeispiele' },
   kognitive_verzerrungen_info:   { screen:'sVerzerrungen' },
