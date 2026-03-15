@@ -918,7 +918,6 @@ const MODULE_META = {
   gfk_coaching:         { screen:'sGeneric', icon:'🏋', title:'GFK Coaching läuft...', desc:'Alle üben individuell auf ihrem Gerät. Gib 10–15 Minuten Zeit.' },
   intro_question:       { screen:'sFeed',    icon:'💬', label:'Einstieg',          title:'Einstiegsfrage',             question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?' },
   kernbotschaften_info: { screen:'sKernbotschaften' },
-  kernbotschaften_info: { screen:'sKernbotschaften' },
   kernbotschaften:      { screen:'sFeed',    icon:'⚡', label:'Kernbotschaft',      title:'Welcher Satz trifft dich?',  question:'Welche Kernbotschaft resoniert bei dir am stärksten — und warum?' },
   johari_erklaerung:       { screen:'sJohari' },
   johari_fallbeispiele:          { screen:'sFallbeispiele' },
@@ -987,6 +986,7 @@ async function handleModule(mod, data) {
     case 'sMutInfo':        showMutInfo(); break;
     case 'sGfkInfo':        showGfkInfo(); break;
     case 'sGfkQuiz':        showGfkQuiz(data); break;
+    case 'sKernbotschaften': show('sKernbotschaften'); break;
     case 'sGeneric':  showGeneric(meta, data); break;
     case 'sClosing':  showClosing(); break;
     default:          showGeneric(meta, data);
