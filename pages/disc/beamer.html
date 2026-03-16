@@ -2149,7 +2149,7 @@ function showGeneric(meta, data) {
 /* ═══════════════════════════════════════════════════════
    CLOSING
 ═══════════════════════════════════════════════════════ */
-function showBiasStoryBeamer(data) {
+async function showBiasStoryBeamer(data) {
   show('sBiasStory');
   const phase = data?.phase || 'story';
   const el = document.getElementById('biasBeamerContent');
@@ -2175,7 +2175,7 @@ function showBiasStoryBeamer(data) {
     startBiasPolling();
 
   } else if (phase === 'locked' || phase === 'results') {
-    renderBiasBeamerResults(el, data);
+    await renderBiasBeamerResults(el, data);
 
   } else if (phase === 'reveal') {
     el.innerHTML = `
@@ -2225,16 +2225,16 @@ async function startBiasPolling() {
 async function pollBiasCount() {
   if (currentModule !== 'bias_story') { clearInterval(biasBeamerPoll); return; }
   try {
-    const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=id&module=eq.bias_story&workshop_id=eq.${session.workshopId}`, { headers: { apikey: SB_KEY } });
+    const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=id&module=eq.bias_story&workshop_id=eq.${session.workshopId}`, { headers: HDR });
     const data = await res.json();
     const el = document.getElementById('biasCounter');
-    if (el) el.textContent = data.length || 0;
+    if (el) el.textContent = Array.isArray(data) ? data.length : 0;
   } catch(e) {}
 }
 
 async function renderBiasBeamerResults(el, data) {
   try {
-    const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=content&module=eq.bias_story&response_type=eq.bias_decision&workshop_id=eq.${session.workshopId}`, { headers: { apikey: SB_KEY } });
+    const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=content&module=eq.bias_story&response_type=eq.bias_decision&workshop_id=eq.${session.workshopId}`, { headers: HDR });
     const rows = await res.json();
     const counts = {A:0, B:0, C:0};
     const confs = [];
