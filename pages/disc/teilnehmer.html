@@ -2459,7 +2459,7 @@ async function submitBiasStory() {
         content: JSON.stringify({ cause: selectedBiasCause, action: actions[selectedBiasAction], confidence, reasoning })
       })
     });
-    if (!res.ok) throw new Error('HTTP '+res.status);
+    if (!res.ok && res.status !== 409) throw new Error('HTTP '+res.status);
     biasSubmitted = true;
     renderBiasWait('Danke — deine Einschätzung wurde gespeichert. Warte auf die Auflösung.');
     toast('Antwort gespeichert ✓', 'success');
