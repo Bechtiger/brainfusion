@@ -2349,8 +2349,9 @@ function renderBiasStoryScreen() {
       <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:18px;color:var(--text);">${s.title}</div>
       <div style="font-size:16px;line-height:1.8;color:rgba(228,228,240,.85);">${s.text}</div>
     </div>
-    <div style="padding:16px 24px;border-top:1px solid var(--border);">
-      <button class="btn btn-primary" onclick="${isLast ? 'renderBiasQuestion()' : 'biasNextScreen()'}" style="width:100%;">
+    <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;">
+      ${biasStoryPage > 0 ? `<button class="btn btn-ghost" onclick="biasPrevScreen()" style="width:auto;padding:14px 20px;">← Zurück</button>` : ''}
+      <button class="btn btn-primary" onclick="${isLast ? 'renderBiasQuestion()' : 'biasNextScreen()'}" style="flex:1;">
         ${isLast ? 'Zur Entscheidung →' : 'Weiter →'}
       </button>
     </div>`;
@@ -2359,6 +2360,14 @@ function renderBiasStoryScreen() {
 function biasNextScreen() {
   if (biasStoryPage < BIAS_SCREENS.length - 1) {
     biasStoryPage++;
+    renderBiasStoryScreen();
+    document.getElementById('sBiasStory')?.scrollTo({top:0});
+  }
+}
+
+function biasPrevScreen() {
+  if (biasStoryPage > 0) {
+    biasStoryPage--;
     renderBiasStoryScreen();
     document.getElementById('sBiasStory')?.scrollTo({top:0});
   }
