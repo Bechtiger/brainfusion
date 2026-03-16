@@ -2350,6 +2350,11 @@ function initRealtime() {
           if (data.reveal !== undefined) { gfkRevealed = data.reveal; updateGfkBars(); }
           return;
         }
+        // Bias Story: Phase-Wechsel live (question→locked→reveal→reflection)
+        if (mod === 'bias_story' && currentModule === 'bias_story') {
+          showBiasStoryBeamer(data);
+          return;
+        }
         handleModule(mod, data);
       })
     .subscribe();
