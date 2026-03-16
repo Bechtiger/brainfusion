@@ -350,6 +350,7 @@ const MODULE_PHASES=[
     {id:'intro_question',    icon:'💬',name:'Einstiegsfrage',  sub:'Live-Feed'},
     {id:'johari_erklaerung', icon:'🪟',name:'Johari Fenster',  sub:'Beamer-Grafik'},
     {id:'johari_fallbeispiele',         icon:'🎭',name:'Fallbeispiele',    sub:'MC-Voting'},
+    {id:'bias_story',              icon:'🕵',name:'Bias-Story',      sub:'Bestätigungsfehler'},
     {id:'kognitive_verzerrungen_info',  icon:'🧠',name:'Verzerrungen',     sub:'Info/Beamer'},
     {id:'verzerrungen_quiz',            icon:'🎯',name:'Verzerr. Quiz',    sub:'MC-Voting'},
     {id:'johari_reflexion',  icon:'🔍',name:'Johari Reflexion',sub:'Live-Feed'},
@@ -506,6 +507,18 @@ const MODULE_DETAILS={
       '&#220;berleitung: \"Warum ist das so schwer — auch bei uns im Team?\"'],
     beamer:'Beamer zeigt Szenario-Text + Live-Abstimmungsbalken',
     dataType:'johari_fallbeispiele'
+  },
+  bias_story:{
+    desc:'Teilnehmer erleben den Bestätigungsfehler am eigenen Leib — bevor die Theorie kommt.',
+    hints:[
+      'Kein Spoiler! Wörter wie "Bias" oder "Bestätigungsfehler" NICHT vor der Auflösung verwenden',
+      'Phase 1 "Story starten": Teilnehmer lesen 8 Story-Screens auf ihrem Gerät',
+      'Phase 2 "Fragen freigeben": Jeder entscheidet ALLEIN — keine Diskussion!',
+      'Phase 3 "Sperren": Beamer zeigt Verteilung A/B/C + Sicherheit',
+      'Phase 4 "Auflösung": Erst jetzt die echte Ursache zeigen',
+      'Phase 5 "Reflexion": Transfer zum Arbeitsalltag — "Wo passiert uns das wirklich?"'],
+    beamer:'Beamer zeigt je nach Phase: Fortschritt / Verteilung / Auflösung',
+    dataType:'bias_story'
   },
   kognitive_verzerrungen_info:{
     desc:'Kognitive Verzerrungen — Erkl&#228;rung der 4 wichtigsten Denkmuster.',
@@ -824,6 +837,7 @@ async function renderModuleContent(moduleId){
     case'raci':      dataHTML=renderRaciSection();break;
     case'johari_static':       dataHTML=renderJohariStaticSection();break;
     case'johari_fallbeispiele':dataHTML=renderJohariFallbeispieleSection();break;
+    case'bias_story':          dataHTML=renderBiasStorySection();break;
     case'verzerrungen_quiz':   dataHTML=renderVerzerrungsQuizSection();break;
     case'verzerrungen_info':   dataHTML=renderVerzerrungsInfoSection();break;
     case'mut_info':            dataHTML=renderMutInfoSection();break;
@@ -1415,6 +1429,93 @@ const VZ_SCENARIOS_MOD = [
 ];
 
 let vzKiResult = null;
+
+function renderBiasStorySection() {
+  const phase = onlineSession?.biasPhase || 'intro';
+  const responses = liveResponses.filter(r => r.response_type === 'bias_decision');
+  const total = allJoined.length || 22;
+
+  // Auswertung
+  const counts = {A:0, B:0, C:0};
+  const confidences = [];
+  responses.forEach(r => {
+    try {
+      const c = JSON.parse(r.content);
+      if (counts[c.cause] !== undefined) counts[c.cause]++;
+      if (c.confidence !== undefined) confidences.push(Number(c.confidence));
+    } catch(e) {}
+  });
+  const avgConf = confidences.length ? Math.round(confidences.reduce((s,v)=>s+v,0)/confidences.length) : 0;
+
+  const phaseButtons = `
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <button class="btn ${phase==='story'?'primary':''}" onclick="setBiasPhase('story')">📖 Story starten</button>
+      <button class="btn ${phase==='question'?'primary':''}" onclick="setBiasPhase('question')">❓ Fragen freigeben</button>
+      <button class="btn ${phase==='locked'?'primary':''}" onclick="setBiasPhase('locked')">🔒 Sperren + Beamer</button>
+      <button class="btn ${phase==='reveal'?'gold':''}" onclick="setBiasPhase('reveal')">💡 Auflösung</button>
+      <button class="btn ${phase==='reflection'?'primary':''}" onclick="setBiasPhase('reflection')">💬 Reflexion</button>
+    </div>`;
+
+  const statusBar = `
+    <div style="display:flex;gap:16px;align-items:center;padding:10px 14px;background:var(--surf2);border-radius:10px;margin-bottom:14px;font-size:13px;">
+      <span>Phase: <strong style="color:var(--S);">${phase}</strong></span>
+      <span>Antworten: <strong style="color:var(--C);">${responses.length} / ${total}</strong></span>
+      ${phase==='locked'||phase==='reveal'||phase==='reflection' ? `<span>Ø Sicherheit: <strong style="color:var(--gold);">${avgConf}%</strong></span>` : ''}
+    </div>`;
+
+  let resultsHTML = '';
+  if (phase === 'locked' || phase === 'reveal' || phase === 'reflection') {
+    const opts = [
+      {id:'A', label:'UI / Software-Layer', color:'var(--D)'},
+      {id:'B', label:'Firmware / Komponenten', color:'var(--I)'},
+      {id:'C', label:'Hardware / Last', color:'var(--C)'},
+    ];
+    resultsHTML = `
+      <div class="section-title">Ergebnisverteilung</div>
+      ${opts.map(o => {
+        const pct = responses.length ? Math.round((counts[o.id]/responses.length)*100) : 0;
+        return `<div style="display:grid;grid-template-columns:160px 1fr 40px;gap:8px;align-items:center;margin-bottom:8px;">
+          <span style="font-size:13px;color:${o.color};">${o.id}: ${o.label}</span>
+          <div style="background:var(--surf3);border-radius:6px;height:12px;overflow:hidden;">
+            <div style="width:${pct}%;height:100%;background:${o.color};border-radius:6px;transition:width .5s;"></div>
+          </div>
+          <span style="font-size:12px;color:var(--muted);">${counts[o.id]} (${pct}%)</span>
+        </div>`;
+      }).join('')}`;
+
+    if (phase === 'reveal' || phase === 'reflection') {
+      resultsHTML += `
+        <div style="margin-top:14px;padding:12px 16px;background:rgba(42,157,143,.1);border:1px solid rgba(42,157,143,.4);border-radius:10px;font-size:13px;line-height:1.6;">
+          <strong style="color:var(--S);">Auflösung:</strong> Die richtige Antwort ist <strong style="color:var(--C);">B/C</strong> — sporadisches Hardware-/Firmware-Problem unter Last.<br>
+          Die UI-Hinweise waren real, aber nicht die Hauptursache. Die Gruppe hat die plausibelste Geschichte bevorzugt.
+        </div>`;
+    }
+  }
+
+  return `
+    <div class="section-title">🕵 Bias-Story — Bestätigungsfehler live erleben</div>
+    ${phaseButtons}${statusBar}${resultsHTML}
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;">
+      Reflexionsfragen nach der Auflösung:<br>
+      • Welche Hinweise waren für euch am stärksten?<br>
+      • Wer hat aktiv nach einer alternativen Erklärung gesucht?<br>
+      • Wo passiert uns das in echten Projekten?
+    </div>`;
+}
+
+async function setBiasPhase(phase) {
+  if (!onlineSession?.workshopId) return;
+  onlineSession.biasPhase = phase;
+  initSupabase();
+  await sb.rpc('set_workshop_module', {
+    p_workshop_id: onlineSession.workshopId,
+    p_admin_token: onlineSession.adminToken,
+    p_module: 'bias_story',
+    p_module_data: { phase }
+  });
+  liveResponses = [];
+  renderModuleContent('bias_story');
+}
 
 function renderVerzerrungsInfoSection(){
   const cards=[

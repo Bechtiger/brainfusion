@@ -1,7 +1,7 @@
 # Wahrheitsfähigkeit im Team - Workshop-Plattform
 > Projektgedächtnis für Claude Code / Claude Chat Sessions
-> Letzte Aktualisierung: 2026-03-15 (Nachmittag — PDF/Print Session)
-> Status: Session 15.03.2026 (2) abgeschlossen ✅ | Nächster Workshop: 22./23. April 2026
+> Letzte Aktualisierung: 2026-03-15 (Abend — Workflow & Beamer Session)
+> Status: Session 15.03.2026 (3) abgeschlossen ✅ | Nächster Workshop: 22./23. April 2026
 
 ---
 
@@ -331,15 +331,17 @@ Zwischen Profil-Cards und Balkendiagramm - erklärt visuell warum gleicher Typ t
 
 ---
 
-## 13. Aktuelle Modul-Reihenfolge (korrekt, Stand 15.03.2026 nachmittag)
+## 13. Aktuelle Modul-Reihenfolge (korrekt, Stand 15.03.2026 abend)
 
 ```
-[Tag 1 – Johari & GFK]
-intro_question → johari_erklaerung → johari_fallbeispiele
-→ kognitive_verzerrungen_info → verzerrungen_quiz → johari_reflexion
-→ was_sage_ich_nicht          ← HIERHER verschoben (war nach pairing_karten — passt zu Johari/Fassade)
+[Tag 1 – Johari & GFK & Kernbotschaften]
+waiting → intro_question
+→ johari_erklaerung → johari_fallbeispiele
+→ kognitive_verzerrungen_info → verzerrungen_quiz
+→ johari_reflexion
+→ was_sage_ich_nicht     ← hierher verschoben (Johari/Fassade)
 → mut_info → gfk_info → gfk_fallbeispiel → gfk_coaching → gfk
-→ kernbotschaften_info → kernbotschaften  ← HIERHER verschoben (Brücke GFK → DISC)
+→ kernbotschaften_info → kernbotschaften  ← hierher verschoben (Brücke GFK→DISC)
 
 [Tag 1 – DISC]
 disc_test → disc_map → disc_results → disc_role_profile → pairing_karten
@@ -420,9 +422,51 @@ Start-Process "cmd.exe" -ArgumentList '/c cd /d "E:\Programme\Homepage Brainfusi
 - KEINE Emojis in jsPDF (✓ ⚡ 💡 → werden als Leerraum gerendert)
 - Button-ID: `pairingPdfBtn` (im `#sPairingKarten` Screen) — die Funktion sucht beide IDs
 
----
+## 17. NEU in Session 15.03.2026 (Abend)
 
-## 15. Notizen zu Christof
+### 17.1 DISC Resultate Beamer — vollständiges Redesign (`disc_results`)
+
+**3-Spalten-Layout (1fr | 210px | 480px):**
+- Links: Avatar-Gruppen nach Typ (unverändert, kompakter)
+- Mitte: **Team-DNA** (NEU) — Typ-Verteilung als Balken mit Anzahl, Stress-Chips (gering/mittel/hoch), Ø-Stilspannung gross in Farbe, Profil-Durchschnitt Balken
+- Rechts: **KI-Teamanalyse** (massiv erweitert) — 4 strukturierte Blöcke: Stärken / Spannungsfelder / Blinde Flecken / Empfehlung
+
+**KI Auto-Start:** beim Screen-Laden automatisch (800ms Delay), kein Button auf Beamer
+**Robustes JSON-Parsing:** 3 Strategien (JSON.parse → Regex-Extraktion → Fallback), `finally`-Block für drKiRunning, Auto-Retry nach 10s bei Fehler
+**No-Scroll garantiert:** `height:100vh` + `overflow:hidden` + `min-height:0` auf allen Flex-Kindern, `-webkit-line-clamp` entfernt
+
+### 17.2 Feed-Screen — dynamisches Grid-Layout für 22 Teilnehmer
+
+**Automatisches Layout je nach Anzahl Antworten:**
+- 1–6 Antworten → 1 Spalte, grosse Karten (font-size:18px)
+- 7–14 Antworten → 2 Spalten, mittlere Karten (font-size:15px)
+- 15+ Antworten → 3 Spalten, kompakte Karten (font-size:13px, line-clamp:3)
+
+Layout wechselt **live** wenn neue Antworten reinkommen. Kein Scroll, alles auf Schirm.
+
+### 17.3 Modul-Workflow Umstrukturierung
+
+**Neu — Modul-Reihenfolge (siehe Abschnitt 13)**
+- `was_sage_ich_nicht` → zu Johari-Block verschoben (direkt nach `johari_reflexion`)
+- `kernbotschaften_info` + `kernbotschaften` → als Brücke zwischen GFK und DISC
+- DISC-Block jetzt rein: `disc_test → disc_map → disc_results → disc_role_profile → pairing_karten`
+
+### 17.4 Kernbotschaften Beamer-Screen (`sKernbotschaften`)
+
+**Neuer Screen** mit 4 Botschaften als 2×2 Grid — jede Karte farbig (rot/orange/türkis/gold):
+1. "Der Langsamste im Team bestimmt das Tempo." (rot)
+2. "Jeder Einzelne ist unverzichtbar." (orange)
+3. "Die Gesamtleistung ist wichtiger als die Leistung des Einzelnen." (türkis)
+4. "Was ungesagt bleibt, wirkt trotzdem." (gold) ← hypnotisch wirksam: Yes-Set-Brecher
+
+**Routing:** `MODULE_META['kernbotschaften_info'] = { screen:'sKernbotschaften' }` + `case 'sKernbotschaften': show('sKernbotschaften')` im Switch
+
+**Kritisch:** Beim Routing-Fehler immer prüfen:
+1. Ist der Screen-Name in `MODULE_META` eingetragen?
+2. Ist der Screen-Name im `switch(meta.screen)` als `case` vorhanden?
+3. Gibt es doppelte Keys in `MODULE_META`? (JavaScript ignoriert zweiten still!)
+
+---
 
 - Deutsch, informelles Du, sehr warmherzig im Umgang mit Claude
 - 27 Jahre HR, Elektronik-Techniker, Hypnotherapeut, NLP-Practitioner

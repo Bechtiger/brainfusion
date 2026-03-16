@@ -868,6 +868,13 @@ textarea { resize: none; line-height: 1.6; min-height: 130px; }
     </div>
   </div>
 
+  <!-- BIAS STORY SCREEN -->
+  <div id="sBiasStory" class="screen">
+    <div id="biasStoryContent" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      <!-- wird dynamisch befüllt -->
+    </div>
+  </div>
+
   <!-- GFK COACHING SCREEN -->
   <div id="sGfkCoaching" class="screen">
     <div style="position:sticky;top:0;z-index:50;background:rgba(8,8,16,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 20px;">
@@ -993,6 +1000,8 @@ function leaveWorkshop() {
 function handleModule(mod, data) {
   switch(mod) {
     case 'waiting':               showWaiting(data); break;
+    case 'bias_story':
+      showBiasStory(data); break;
     case 'disc_test':             showDiscTest(); break;
     case 'disc_results':          /* stay on results screen */ break;
     case 'pairing_karten':        showPairingKarten(data); break;
@@ -2278,6 +2287,232 @@ const GFK_ROUNDS = [
 let gfkCoachRound = 0;
 let gfkCoachAnswers = [];
 let gfkCoachAnalyzing = false;
+
+/* ─── BIAS STORY ─────────────────────────────── */
+const BIAS_SCREENS = [
+  { id:1, title:'Ausgangslage',
+    text:'Ihr seid Teil eines Produktentwicklungsteams. Seit vielen Monaten arbeitet ihr an einem neuen intelligenten Gerät für den professionellen Einsatz. Das Produkt kombiniert Hardware, Embedded Software, Sensorik, eine lokale Bedienoberfläche und eine begleitende App. Der Marktstart ist in vier Wochen. Die grossen Tests sind im Wesentlichen gut gelaufen. Das Team hat das Gefühl: Wir sind auf der Zielgeraden.' },
+  { id:2, title:'Das letzte grosse Update',
+    text:'Vor etwa zehn Tagen wurde noch ein grösseres Update eingespielt. Vor allem die Bedienoberfläche wurde überarbeitet. Das UI-Team hat die Navigation vereinfacht, Ansichten neu strukturiert und zusätzliche Animationen eingebaut, damit das System moderner und flüssiger wirkt. Auch in der App gab es Anpassungen, damit die Bedienlogik auf beiden Seiten einheitlicher ist.' },
+  { id:3, title:'Erste Irritationen',
+    text:'Zwei Tage nach dem Update tauchen in den internen Tests erste Rückmeldungen auf. Ein Tester schreibt: "Das System fühlt sich manchmal träge an." Ein anderer meldet: "Einzelne Eingaben scheinen gelegentlich erst verzögert anzukommen." In einem weiteren Bericht steht: "Die Bedienung wirkt phasenweise hakelig. Nicht immer, aber spürbar."' },
+  { id:4, title:'Das Muster verdichtet sich',
+    text:'Zunächst nimmt das niemand allzu ernst. Doch in den nächsten Tagen häufen sich die Meldungen. Die Symptome ähneln sich: gelegentliche Verzögerungen, kurze Hänger, manche Werte erscheinen leicht verspätet. Im Daily entsteht schnell eine erste Vermutung: Vielleicht ist das neue UI-Update schuld.' },
+  { id:5, title:'Die Spur wirkt plausibel',
+    text:'Bei einer ersten Analyse findet das Team tatsächlich Dinge, die dazu passen. Im Profiling sieht man kurzfristige CPU-Spitzen. Bei bestimmten Übergängen zwischen Ansichten wird mehr neu gezeichnet als vorher. Zwei neue UI-Komponenten laufen im Hauptthread. Ein Testleiter sagt: "Seit dem letzten UI-Update wirkt das ganze System schwerfälliger." Mehrere in der Runde nicken.' },
+  { id:6, title:'Weitere Bestätigung',
+    text:'Am nächsten Tag schaut das Software-Team tiefer hinein. Es findet weitere Auffälligkeiten: einzelne Rendering-Zeiten liegen über dem Erwartungswert, die Speicherbelegung ist etwas höher und bei komplexeren Bedienabläufen scheint die Reaktionszeit eher schlechter zu werden. Das ist kein Totalschaden, aber genug, um zu sagen: Da ist schon etwas dran.' },
+  { id:7, title:'Leise Gegenhinweise',
+    text:'Währenddessen gibt es noch andere Hinweise. Ein Hardwaretester erwähnt eher nebenbei, dass die Probleme in einem Langzeittest besonders oft auftraten, als mehrere Komponenten gleichzeitig aktiv waren. Jemand aus dem Firmware-Team sagt, dass bei zwei Geräten im Testfeld vereinzelt kurze Kommunikationsauffälligkeiten zwischen Controller und Peripherie gesehen wurden. Ein ähnlicher Eingabefehler trat sogar einmal in einem stark reduzierten Testmodus auf.' },
+  { id:8, title:'Entscheidungsdruck',
+    text:'Am dritten Tag gibt es eine Taskforce-Sitzung. Das Management will bis morgen eine klare Einschätzung: Was ist die wahrscheinlichste Ursache — und worauf setzt das Team jetzt seine knappen Ressourcen? Für die UI-/Software-Hypothese sprechen mehrere sichtbare Auffälligkeiten. Für Firmware oder Hardware gibt es einzelne Indizien, aber nichts, das in der Sitzung so klar und greifbar wirkt. Ihr müsst euch jetzt festlegen.' }
+];
+
+let biasStoryPage = 0;
+let biasSubmitted = false;
+
+function showBiasStory(data) {
+  const phase = data?.phase || 'story';
+  show('sBiasStory');
+  if (phase === 'story') {
+    biasStoryPage = 0;
+    renderBiasStoryScreen();
+  } else if (phase === 'question') {
+    if (biasSubmitted) {
+      renderBiasWait('Deine Antwort wurde gespeichert. Warte auf die Auflösung.');
+    } else {
+      renderBiasQuestion();
+    }
+  } else if (phase === 'locked' || phase === 'results') {
+    renderBiasWait('Antwortphase abgeschlossen. Der Moderator zeigt gleich die Auswertung auf dem Beamer.');
+  } else if (phase === 'reveal') {
+    renderBiasReveal();
+  } else if (phase === 'reflection') {
+    renderBiasReflection();
+  }
+}
+
+function renderBiasStoryScreen() {
+  const el = document.getElementById('biasStoryContent');
+  const s = BIAS_SCREENS[biasStoryPage];
+  const isLast = biasStoryPage === BIAS_SCREENS.length - 1;
+  const dots = BIAS_SCREENS.map((_, i) =>
+    `<div style="height:3px;flex:1;border-radius:2px;background:${i < biasStoryPage ? 'var(--S)' : i === biasStoryPage ? 'var(--I)' : 'var(--border)'};"></div>`
+  ).join('');
+
+  el.innerHTML = `
+    <div style="position:sticky;top:0;z-index:10;background:rgba(8,8,16,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 20px;">
+      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Der Fehler kurz vor dem Release &nbsp;·&nbsp; ${biasStoryPage+1} / ${BIAS_SCREENS.length}</div>
+      <div style="display:flex;gap:4px;">${dots}</div>
+    </div>
+    <div style="flex:1;padding:28px 24px;overflow-y:auto;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:18px;color:var(--text);">${s.title}</div>
+      <div style="font-size:16px;line-height:1.8;color:rgba(228,228,240,.85);">${s.text}</div>
+    </div>
+    <div style="padding:16px 24px;border-top:1px solid var(--border);">
+      <button class="btn btn-primary" onclick="${isLast ? 'renderBiasQuestion()' : 'biasNextScreen()'}" style="width:100%;">
+        ${isLast ? 'Zur Entscheidung →' : 'Weiter →'}
+      </button>
+    </div>`;
+}
+
+function biasNextScreen() {
+  if (biasStoryPage < BIAS_SCREENS.length - 1) {
+    biasStoryPage++;
+    renderBiasStoryScreen();
+    document.getElementById('sBiasStory')?.scrollTo({top:0});
+  }
+}
+
+function renderBiasQuestion() {
+  const el = document.getElementById('biasStoryContent');
+  el.innerHTML = `
+    <div style="position:sticky;top:0;z-index:10;background:rgba(8,8,16,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 20px;">
+      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:var(--I);">Deine Einschätzung — individuell, ohne Absprache</div>
+    </div>
+    <div style="flex:1;padding:20px 24px;overflow-y:auto;">
+
+      <div style="font-size:15px;font-weight:600;margin-bottom:12px;">Was ist die wahrscheinlichste Hauptursache?</div>
+      <div id="biasCauseOpts" style="display:flex;flex-direction:column;gap:8px;margin-bottom:22px;">
+        ${[
+          {id:'A', label:'Das Hauptproblem liegt im neuen UI / Software-Layer'},
+          {id:'B', label:'Das Hauptproblem liegt in der Firmware / Komponentenkommunikation'},
+          {id:'C', label:'Das Hauptproblem liegt in der Hardware / elektrischen Stabilität unter Last'}
+        ].map(o => `
+          <div class="mc-option" id="biasOpt_${o.id}" onclick="selectBiasCause('${o.id}')">
+            <div class="mc-radio"></div>
+            <strong style="margin-right:8px;color:var(--C);">${o.id}</strong> ${o.label}
+          </div>`).join('')}
+      </div>
+
+      <div style="font-size:15px;font-weight:600;margin-bottom:12px;">Welche Massnahme würdest du priorisieren?</div>
+      <div id="biasActionOpts" style="display:flex;flex-direction:column;gap:8px;margin-bottom:22px;">
+        ${['UI vereinfachen und Performance optimieren','Firmware-Kommunikation detailliert analysieren','Last- und Spannungsverhalten gezielt testen','Zusätzliches Logging über HW/FW/SW einbauen','Taskforce aus HW, FW und SW bilden','Release-Risiko neu bewerten'].map((a,i) => `
+          <div class="mc-option" id="biasAction_${i}" onclick="selectBiasAction(${i})">
+            <div class="mc-radio"></div>
+            ${a}
+          </div>`).join('')}
+      </div>
+
+      <div style="font-size:15px;font-weight:600;margin-bottom:10px;">Wie sicher bist du? <span id="biasConfVal" style="color:var(--gold);font-family:'IBM Plex Mono',monospace;">50%</span></div>
+      <input type="range" id="biasConfSlider" min="0" max="100" step="5" value="50"
+        oninput="document.getElementById('biasConfVal').textContent=this.value+'%'"
+        style="width:100%;margin-bottom:22px;">
+
+      <div style="font-size:15px;font-weight:600;margin-bottom:8px;">Welche Hinweise haben dich am stärksten überzeugt? <span style="color:var(--muted);font-size:12px;">(optional)</span></div>
+      <textarea id="biasReasoning" maxlength="240" placeholder="Kurze Begründung…" style="width:100%;min-height:80px;background:var(--surf2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:14px;line-height:1.5;resize:none;font-family:inherit;margin-bottom:22px;"></textarea>
+
+      <div id="biasSubmitErr" style="color:var(--D);font-size:13px;min-height:18px;margin-bottom:8px;"></div>
+      <button class="btn btn-primary" onclick="submitBiasStory()">Antwort abgeben →</button>
+    </div>`;
+}
+
+let selectedBiasCause = null;
+let selectedBiasAction = null;
+
+function selectBiasCause(id) {
+  selectedBiasCause = id;
+  document.querySelectorAll('[id^=biasOpt_]').forEach(el => el.classList.remove('selected'));
+  const el = document.getElementById('biasOpt_'+id);
+  if (el) { el.classList.add('selected'); el.querySelector('.mc-radio').style.background='var(--S)'; }
+}
+
+function selectBiasAction(idx) {
+  selectedBiasAction = idx;
+  document.querySelectorAll('[id^=biasAction_]').forEach(el => {
+    el.classList.remove('selected');
+    el.querySelector('.mc-radio').style.background = '';
+  });
+  const el = document.getElementById('biasAction_'+idx);
+  if (el) { el.classList.add('selected'); el.querySelector('.mc-radio').style.background='var(--S)'; }
+}
+
+async function submitBiasStory() {
+  const errEl = document.getElementById('biasSubmitErr');
+  if (!selectedBiasCause) { errEl.textContent = 'Bitte wähle eine Hauptursache.'; return; }
+  if (selectedBiasAction === null) { errEl.textContent = 'Bitte wähle eine Massnahme.'; return; }
+  errEl.textContent = '';
+
+  const confidence = Number(document.getElementById('biasConfSlider')?.value || 50);
+  const reasoning  = document.getElementById('biasReasoning')?.value?.trim() || '';
+  const actions = ['UI optimieren','Firmware analysieren','Lasttests','Logging ausbauen','Taskforce','Release neu bewerten'];
+
+  try {
+    const res = await fetch(`${EDGE}/submit-exercise`, {
+      method:'POST', headers:HDR,
+      body: JSON.stringify({
+        participantId: session.participantId,
+        joinToken:     session.joinToken,
+        workshopId:    session.workshopId,
+        alias:         session.alias,
+        module:        'bias_story',
+        responseType:  'bias_decision',
+        content: JSON.stringify({ cause: selectedBiasCause, action: actions[selectedBiasAction], confidence, reasoning })
+      })
+    });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    biasSubmitted = true;
+    renderBiasWait('Danke — deine Einschätzung wurde gespeichert. Warte auf die Auflösung.');
+    toast('Antwort gespeichert ✓', 'success');
+  } catch(e) {
+    errEl.textContent = 'Fehler beim Speichern: ' + e.message;
+  }
+}
+
+function renderBiasWait(msg) {
+  const el = document.getElementById('biasStoryContent');
+  el.innerHTML = `
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;">
+      <div style="font-size:56px;margin-bottom:20px;">⏳</div>
+      <div style="font-size:16px;color:var(--muted);line-height:1.7;max-width:340px;">${msg}</div>
+      <div class="waiting-dots" style="margin-top:24px;"><span></span><span></span><span></span></div>
+    </div>`;
+}
+
+function renderBiasReveal() {
+  const el = document.getElementById('biasStoryContent');
+  el.innerHTML = `
+    <div style="flex:1;padding:28px 24px;overflow-y:auto;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;margin-bottom:6px;color:var(--S);">Auflösung</div>
+      <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;color:var(--muted);margin-bottom:20px;text-transform:uppercase;">Der Fehler kurz vor dem Release</div>
+
+      <div style="background:rgba(42,157,143,.08);border:1px solid rgba(42,157,143,.35);border-radius:14px;padding:18px 20px;margin-bottom:14px;">
+        <div style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--S);margin-bottom:8px;">Tatsächliche Ursache</div>
+        <div style="font-size:16px;line-height:1.7;color:var(--text);">Sporadisches Hardware-/Firmware-Problem unter bestimmten Lastbedingungen. Die Kommunikation zwischen Controller und Peripherie war unter Last instabil.</div>
+      </div>
+
+      <div style="background:rgba(244,162,97,.07);border:1px solid rgba(244,162,97,.3);border-radius:14px;padding:18px 20px;margin-bottom:14px;">
+        <div style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--I);margin-bottom:8px;">Die UI-Hinweise waren real — aber nicht die Ursache</div>
+        <div style="font-size:15px;line-height:1.7;color:var(--text);">CPU-Spitzen, höhere Render-Zeiten und subjektive Trägheit waren messbar. Sie passten perfekt zur frühen Vermutung "seit dem UI-Update". Das Gehirn hat die plausibelste Geschichte bevorzugt — und danach bevorzugt nach Bestätigung gesucht.</div>
+      </div>
+
+      <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.3);border-radius:14px;padding:18px 20px;border-left:3px solid var(--gold);">
+        <div style="font-size:15px;font-weight:600;color:var(--gold);margin-bottom:6px;">Wir haben nicht die Ursache gefunden.</div>
+        <div style="font-size:15px;color:var(--text);line-height:1.6;">Wir haben die plausibelste Geschichte bevorzugt.</div>
+      </div>
+    </div>`;
+}
+
+function renderBiasReflection() {
+  const el = document.getElementById('biasStoryContent');
+  el.innerHTML = `
+    <div style="flex:1;padding:28px 24px;overflow-y:auto;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:18px;">Reflexion</div>
+      ${[
+        'Welche Hinweise waren für dich am stärksten — und warum?',
+        'Hast du aktiv nach einer alternativen Erklärung gesucht?',
+        'Wann hattest du innerlich das Gefühl: Jetzt ist es klar?',
+        'Wo passiert dir das in echten Projekten?'
+      ].map((q,i) => `
+        <div style="background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:2px;">${i+1} von 4</div>
+          <div style="font-size:15px;line-height:1.6;color:var(--text);">${q}</div>
+        </div>`).join('')}
+      <div style="margin-top:8px;padding:12px 16px;background:rgba(42,157,143,.06);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.6;">
+        Ihr habt nicht dumm entschieden. Ihr habt menschlich entschieden.
+      </div>
+    </div>`;
+}
 
 function showGfkCoaching(data) {
   gfkCoachRound = 0;

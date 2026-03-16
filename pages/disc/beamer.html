@@ -873,6 +873,13 @@ body:hover #fsBtn{ opacity:1; }
   </div>
 </div>
 
+<!-- ══ BIAS STORY BEAMER ═══════════════════════ -->
+<div class="screen" id="sBiasStory">
+  <div id="biasBeamerContent" style="flex:1;display:flex;flex-direction:column;padding:40px 70px;background:#060610;height:100vh;overflow:hidden;">
+    <!-- wird dynamisch befüllt -->
+  </div>
+</div>
+
 <div class="screen" id="sClosing">
   <div class="closing-icon">🏆</div>
   <div class="closing-title">Herzlichen Dank!</div>
@@ -914,6 +921,7 @@ const MODULE_META = {
   disc_map:             { screen:'sMap' },
   disc_results:         { screen:'sDiscResults' },
   disc_role_profile:    { screen:'sRoleProfile' },
+  bias_story:           { screen:'sBiasStory' },
   was_sage_ich_nicht:   { screen:'sFeed', icon:'🤫', label:'Stille Reflexion', title:'Was sage ich nicht?', question:'Was sagst du im Team nicht — obwohl du es solltest? (anonym)' },
   gfk_coaching:         { screen:'sGeneric', icon:'🏋', title:'GFK Coaching läuft...', desc:'Alle üben individuell auf ihrem Gerät. Gib 10–15 Minuten Zeit.' },
   intro_question:       { screen:'sFeed',    icon:'💬', label:'Einstieg',          title:'Einstiegsfrage',             question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?' },
@@ -986,6 +994,7 @@ async function handleModule(mod, data) {
     case 'sMutInfo':        showMutInfo(); break;
     case 'sGfkInfo':        showGfkInfo(); break;
     case 'sGfkQuiz':        showGfkQuiz(data); break;
+    case 'sBiasStory':      showBiasStoryBeamer(data); break;
     case 'sKernbotschaften': show('sKernbotschaften'); break;
     case 'sGeneric':  showGeneric(meta, data); break;
     case 'sClosing':  showClosing(); break;
@@ -2140,6 +2149,117 @@ function showGeneric(meta, data) {
 /* ═══════════════════════════════════════════════════════
    CLOSING
 ═══════════════════════════════════════════════════════ */
+function showBiasStoryBeamer(data) {
+  show('sBiasStory');
+  const phase = data?.phase || 'story';
+  const el = document.getElementById('biasBeamerContent');
+  if (!el) return;
+
+  if (phase === 'story') {
+    el.innerHTML = `
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:32px;">Fallstudie · Produktentwicklung</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:56px;font-weight:700;margin-bottom:20px;line-height:1.1;">Der Fehler kurz<br>vor dem Release</div>
+      <div style="font-size:22px;color:rgba(255,255,255,.45);max-width:700px;line-height:1.7;margin-bottom:48px;">Lest die Geschichte auf eurem Gerät sorgfältig durch. Ihr werdet anschliessend eine Einschätzung abgeben.</div>
+      <div style="display:inline-flex;align-items:center;gap:10px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,.12);border:1px solid rgba(42,157,143,.35);">
+        <div class="pulse-dot"></div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:2px;color:var(--S);">Story läuft auf TN-Geräten</span>
+      </div>`;
+
+  } else if (phase === 'question') {
+    el.innerHTML = `
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:24px;">Entscheidungsphase</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;margin-bottom:16px;">Eure Einschätzung</div>
+      <div style="font-size:20px;color:rgba(255,255,255,.45);margin-bottom:40px;">Entscheidet jetzt individuell — ohne Absprache.</div>
+      <div id="biasCounter" style="font-family:'Rajdhani',sans-serif;font-size:80px;font-weight:700;color:var(--S);margin-bottom:8px;">0</div>
+      <div style="font-size:18px;color:rgba(255,255,255,.35);font-family:'IBM Plex Mono',monospace;">Antworten eingegangen</div>`;
+    startBiasPolling();
+
+  } else if (phase === 'locked' || phase === 'results') {
+    renderBiasBeamerResults(el, data);
+
+  } else if (phase === 'reveal') {
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;height:100%;">
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(42,157,143,.6);margin-bottom:16px;">Tatsächliche Ursache</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;margin-bottom:20px;line-height:1.2;">Sporadisches Hardware-/Firmware-Problem unter Last</div>
+          <div style="font-size:18px;line-height:1.7;color:rgba(255,255,255,.55);">Kommunikationsinstabilität zwischen Controller und Peripherie — besonders wenn mehrere Komponenten gleichzeitig aktiv waren.</div>
+          <div style="margin-top:28px;padding:18px 22px;background:rgba(201,168,76,.08);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;">
+            <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--gold);margin-bottom:6px;">Wir haben nicht die Ursache gefunden.</div>
+            <div style="font-size:17px;color:rgba(255,255,255,.65);">Wir haben die plausibelste Geschichte bevorzugt.</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(244,162,97,.6);margin-bottom:16px;">Die UI-Hinweise waren real — aber nicht die Hauptursache</div>
+          ${['CPU-Spitzen im Profiling waren messbar','Rendering-Zeiten über Erwartungswert','UI-Komponenten liefen im Hauptthread','Subjektive Trägheit wurde von mehreren bestätigt'].map(h =>
+            `<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--I);margin-top:7px;flex-shrink:0;"></div>
+              <div style="font-size:17px;color:rgba(255,255,255,.6);">${h}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+
+  } else if (phase === 'reflection') {
+    el.innerHTML = `
+      <div style="font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;margin-bottom:32px;">Reflexion</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        ${['Welche Hinweise waren für euch am stärksten — und warum?',
+           'Wer hat aktiv nach einer alternativen Erklärung gesucht?',
+           'Wann hattet ihr innerlich das Gefühl: Jetzt ist es klar?',
+           'Wo passiert uns das in echten Projekten?'
+          ].map((q,i) => `
+          <div style="border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:22px 26px;background:rgba(255,255,255,.03);">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.3);margin-bottom:10px;">${i+1} / 4</div>
+            <div style="font-size:20px;line-height:1.6;color:rgba(255,255,255,.8);">${q}</div>
+          </div>`).join('')}
+      </div>`;
+  }
+}
+
+let biasBeamerPoll = null;
+async function startBiasPolling() {
+  if (biasBeamerPoll) clearInterval(biasBeamerPoll);
+  await pollBiasCount();
+  biasBeamerPoll = setInterval(pollBiasCount, 3000);
+}
+async function pollBiasCount() {
+  if (currentModule !== 'bias_story') { clearInterval(biasBeamerPoll); return; }
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=id&module=eq.bias_story&workshop_id=eq.${session.workshopId}`, { headers: { apikey: SB_KEY } });
+    const data = await res.json();
+    const el = document.getElementById('biasCounter');
+    if (el) el.textContent = data.length || 0;
+  } catch(e) {}
+}
+
+async function renderBiasBeamerResults(el, data) {
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=content&module=eq.bias_story&response_type=eq.bias_decision&workshop_id=eq.${session.workshopId}`, { headers: { apikey: SB_KEY } });
+    const rows = await res.json();
+    const counts = {A:0, B:0, C:0};
+    const confs = [];
+    rows.forEach(r => {
+      try { const c = JSON.parse(r.content); if(counts[c.cause]!==undefined) counts[c.cause]++; if(c.confidence) confs.push(Number(c.confidence)); } catch(e){}
+    });
+    const total = rows.length || 1;
+    const avgConf = confs.length ? Math.round(confs.reduce((s,v)=>s+v,0)/confs.length) : 0;
+    const opts = [{id:'A',label:'UI / Software-Layer',col:'#e63946'},{id:'B',label:'Firmware / Komponenten',col:'#f4a261'},{id:'C',label:'Hardware / Last',col:'#4a90d9'}];
+    el.innerHTML = `
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:24px;">Ergebnisse · ${rows.length} Antworten · Ø Sicherheit: ${avgConf}%</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:40px;font-weight:700;margin-bottom:32px;">Wo liegt die Hauptursache?</div>
+      ${opts.map(o => {
+        const pct = Math.round((counts[o.id]/total)*100);
+        return `<div style="display:grid;grid-template-columns:320px 1fr 80px;gap:16px;align-items:center;margin-bottom:22px;">
+          <div style="font-size:20px;font-family:'Rajdhani',sans-serif;font-weight:600;color:${o.col};">${o.id} &nbsp; ${o.label}</div>
+          <div style="background:rgba(255,255,255,.08);border-radius:8px;height:22px;overflow:hidden;">
+            <div style="width:${pct}%;height:100%;background:${o.col};border-radius:8px;transition:width 1s;"></div>
+          </div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:${o.col};">${pct}%</div>
+        </div>`;
+      }).join('')}`;
+  } catch(e) { el.innerHTML = `<div style="color:var(--D);">Fehler beim Laden: ${e.message}</div>`; }
+}
+
 function showClosing() {
   document.getElementById('closingName').textContent = session?.title || WORKSHOP_NAME;
   show('sClosing');
