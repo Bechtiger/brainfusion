@@ -1,7 +1,7 @@
 # Wahrheitsfähigkeit im Team - Workshop-Plattform
 > Projektgedächtnis für Claude Code / Claude Chat Sessions
-> Letzte Aktualisierung: 2026-03-15 (Abend — Workflow & Beamer Session)
-> Status: Session 15.03.2026 (3) abgeschlossen ✅ | Nächster Workshop: 22./23. April 2026
+> Letzte Aktualisierung: 2026-03-16 (Abend — Bias-Story Modul Session)
+> Status: Session 16.03.2026 abgeschlossen ✅ | Nächster Workshop: 22./23. April 2026
 
 ---
 
@@ -331,17 +331,18 @@ Zwischen Profil-Cards und Balkendiagramm - erklärt visuell warum gleicher Typ t
 
 ---
 
-## 13. Aktuelle Modul-Reihenfolge (korrekt, Stand 15.03.2026 abend)
+## 13. Aktuelle Modul-Reihenfolge (korrekt, Stand 16.03.2026)
 
 ```
 [Tag 1 – Johari & GFK & Kernbotschaften]
 waiting → intro_question
 → johari_erklaerung → johari_fallbeispiele
+→ bias_story                ← NEU: Bestätigungsfehler live erleben (vor Theorie!)
 → kognitive_verzerrungen_info → verzerrungen_quiz
 → johari_reflexion
-→ was_sage_ich_nicht     ← hierher verschoben (Johari/Fassade)
+→ was_sage_ich_nicht        ← hierher verschoben (Johari/Fassade)
 → mut_info → gfk_info → gfk_fallbeispiel → gfk_coaching → gfk
-→ kernbotschaften_info → kernbotschaften  ← hierher verschoben (Brücke GFK→DISC)
+→ kernbotschaften_info → kernbotschaften  ← Brücke GFK→DISC
 
 [Tag 1 – DISC]
 disc_test → disc_map → disc_results → disc_role_profile → pairing_karten
@@ -465,6 +466,74 @@ Layout wechselt **live** wenn neue Antworten reinkommen. Kein Scroll, alles auf 
 1. Ist der Screen-Name in `MODULE_META` eingetragen?
 2. Ist der Screen-Name im `switch(meta.screen)` als `case` vorhanden?
 3. Gibt es doppelte Keys in `MODULE_META`? (JavaScript ignoriert zweiten still!)
+
+---
+
+## 18. NEU in Session 16.03.2026 (Abend — Bias-Story)
+
+### 18.1 Bias-Story Modul (`bias_story`) — Bestätigungsfehler live erleben
+
+**Konzept:** Von GPT entwickelt, von Claude umgesetzt. Teilnehmer lesen eine 8-teilige Story über einen Bug kurz vor dem Release und werden subtil in Richtung UI/Software-Hypothese geführt — obwohl die echte Ursache ein Hardware/Firmware-Problem unter Last ist. Erst danach kommt die Theorie (kognitive Verzerrungen).
+
+**Position im Workflow:** Direkt VOR `kognitive_verzerrungen_info` — erst selbst erleben, dann benennen, dann Theorie.
+
+**7 Phasen (Moderator steuert via Buttons):**
+```
+story → question → locked → reveal → reflection
+```
+
+**Teilnehmer-App (`sBiasStory`):**
+- 8 Story-Screens mit Fortschrittsbalken (Punkte-Dots oben)
+- Zurück-Button ab Screen 2 (damit niemand einen Screen verpasst)
+- Entscheidungsmaske: Hauptursache A/B/C + Massnahme (6 Optionen) + Sicherheits-Slider (0-100%) + optionale Begründung
+- Nach Abgabe: Wartescreen bis Moderator nächste Phase startet
+- Auflösungs-Screen + Reflexions-Screen je nach Phase
+
+**Beamer (`sBiasStory`):**
+- Phase `story`: Titel-Screen "Der Fehler kurz vor dem Release"
+- Phase `question`: Live-Zähler der eingegangenen Antworten (polling alle 3s)
+- Phase `locked`: Balkendiagramm A/B/C + Ø Sicherheit
+- Phase `reveal`: Tatsächliche Ursache (HW/FW unter Last) + warum UI-Hinweise täuschten
+- Phase `reflection`: 4 Reflexionsfragen als Grid
+
+**Moderator-Dashboard:**
+- 5 Phase-Buttons + Live-Status (Antworten / Ø Sicherheit)
+- Auflösungstext eingeblendet wenn Phase = reveal
+
+**Kritische Fallstricke:**
+- 🚨 `HTTP 409` = Teilnehmer hat schon gespeichert → als Erfolg behandeln! (`if (!res.ok && res.status !== 409)`)
+- 🚨 Realtime-Handler braucht speziellen Case für `bias_story` wenn nur `module_data.phase` sich ändert (nicht `current_module`):
+  ```javascript
+  if (mod === 'bias_story' && currentModule === 'bias_story') {
+    showBiasStoryBeamer(data); return;
+  }
+  ```
+- 🚨 `renderBiasBeamerResults` ist async → `showBiasStoryBeamer` muss `async` sein + `await` vor dem Aufruf
+- 🚨 Supabase REST im Beamer braucht `HDR` (apikey + Authorization), nicht nur `{apikey: SB_KEY}`
+- Beamer-Polling für Antwort-Zähler: `Array.isArray(data)` prüfen vor `.length`
+
+**Story-Auflösung (AHA-Moment):**
+"Die UI-Hinweise waren real — aber nicht die Hauptursache. Wir haben nicht die Ursache gefunden. Wir haben die plausibelste Geschichte bevorzugt."
+
+**Datenmodell:**
+```javascript
+// exercise_responses
+module: 'bias_story'
+responseType: 'bias_decision'
+content: JSON.stringify({
+  cause: 'A'|'B'|'C',
+  action: 'UI optimieren'|...,
+  confidence: 0-100,
+  reasoning: 'Freitext'
+})
+```
+
+### 18.2 Routing-Checkliste (gilt für alle neuen Module)
+
+Wenn ein neuer Beamer-Screen nicht erscheint, immer diese 3 Punkte prüfen:
+1. **MODULE_META** — `{ screen:'sNEUERSCREEN' }` eingetragen?
+2. **switch(meta.screen)** — `case 'sNEUERSCREEN':` vorhanden?
+3. **Realtime-Handler** — wenn nur `module_data` sich ändert (nicht `current_module`), braucht es einen speziellen if-Block im Realtime-Listener
 
 ---
 
