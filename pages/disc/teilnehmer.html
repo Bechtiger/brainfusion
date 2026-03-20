@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -2290,24 +2290,36 @@ let gfkCoachAnalyzing = false;
 
 /* ─── BIAS STORY ─────────────────────────────── */
 const BIAS_SCREENS = [
-  { id:1, title:'Ausgangslage',
-    text:'Ihr seid Teil eines Produktentwicklungsteams. Seit vielen Monaten arbeitet ihr an einem neuen intelligenten Gerät für den professionellen Einsatz. Das Produkt kombiniert Hardware, Embedded Software, Sensorik, eine lokale Bedienoberfläche und eine begleitende App. Der Marktstart ist in vier Wochen. Die grossen Tests sind im Wesentlichen gut gelaufen. Das Team hat das Gefühl: Wir sind auf der Zielgeraden.' },
-  { id:2, title:'Das letzte grosse Update',
-    text:'Vor etwa zehn Tagen wurde noch ein grösseres Update eingespielt. Vor allem die Bedienoberfläche wurde überarbeitet. Das UI-Team hat die Navigation vereinfacht, Ansichten neu strukturiert und zusätzliche Animationen eingebaut, damit das System moderner und flüssiger wirkt. Auch in der App gab es Anpassungen, damit die Bedienlogik auf beiden Seiten einheitlicher ist.' },
-  { id:3, title:'Erste Irritationen',
-    text:'Zwei Tage nach dem Update tauchen in den internen Tests erste Rückmeldungen auf. Ein Tester schreibt: "Das System fühlt sich manchmal träge an." Ein anderer meldet: "Einzelne Eingaben scheinen gelegentlich erst verzögert anzukommen." In einem weiteren Bericht steht: "Die Bedienung wirkt phasenweise hakelig. Nicht immer, aber spürbar."' },
-  { id:4, title:'Das Muster verdichtet sich',
-    text:'Zunächst nimmt das niemand allzu ernst. Doch in den nächsten Tagen häufen sich die Meldungen. Die Symptome ähneln sich: gelegentliche Verzögerungen, kurze Hänger, manche Werte erscheinen leicht verspätet. Im Daily entsteht schnell eine erste Vermutung: Vielleicht ist das neue UI-Update schuld.' },
-  { id:5, title:'Die Spur wirkt plausibel',
-    text:'Bei einer ersten Analyse findet das Team tatsächlich Dinge, die dazu passen. Im Profiling sieht man kurzfristige CPU-Spitzen. Bei bestimmten Übergängen zwischen Ansichten wird mehr neu gezeichnet als vorher. Zwei neue UI-Komponenten laufen im Hauptthread. Ein Testleiter sagt: "Seit dem letzten UI-Update wirkt das ganze System schwerfälliger." Mehrere in der Runde nicken.' },
-  { id:6, title:'Weitere Bestätigung',
-    text:'Am nächsten Tag schaut das Software-Team tiefer hinein. Es findet weitere Auffälligkeiten: einzelne Rendering-Zeiten liegen über dem Erwartungswert, die Speicherbelegung ist etwas höher und bei komplexeren Bedienabläufen scheint die Reaktionszeit eher schlechter zu werden. Das ist kein Totalschaden, aber genug, um zu sagen: Da ist schon etwas dran.' },
-  { id:7, title:'Leise Gegenhinweise',
-    text:'Währenddessen gibt es noch andere Hinweise. Ein Hardwaretester erwähnt eher nebenbei, dass die Probleme in einem Langzeittest besonders oft auftraten, als mehrere Komponenten gleichzeitig aktiv waren. Jemand aus dem Firmware-Team sagt, dass bei zwei Geräten im Testfeld vereinzelt kurze Kommunikationsauffälligkeiten zwischen Controller und Peripherie gesehen wurden. Ein ähnlicher Eingabefehler trat sogar einmal in einem stark reduzierten Testmodus auf.' },
-  { id:8, title:'Entscheidungsdruck',
-    text:'Am dritten Tag gibt es eine Taskforce-Sitzung. Das Management will bis morgen eine klare Einschätzung: Was ist die wahrscheinlichste Ursache — und worauf setzt das Team jetzt seine knappen Ressourcen? Für die UI-/Software-Hypothese sprechen mehrere sichtbare Auffälligkeiten. Für Firmware oder Hardware gibt es einzelne Indizien, aber nichts, das in der Sitzung so klar und greifbar wirkt. Ihr müsst euch jetzt festlegen.' }
-];
+  { id:1, title:'Das Produkt',
+    text:'Euer Team entwickelt seit 22 Monaten ein modulares Analyse- und Steuergerät für industrielle Anwendungen — zertifizierungsfähig nach IEC 62443 (Industrial Cybersecurity) und auf dem Weg zur IEC 60601-Variante für Medizinprodukte. Zusätzlich setzt ein Defence-Kunde eine spezifische Hardware-Revision im Feldtestprogramm ein.<br><br>Das Gerät basiert auf einer Dual-Processor-Architektur: Ein <b>Application-Processor</b> (NXP i.MX8M Plus, Cortex-A53, Embedded Linux 5.15) übernimmt HMI, Datenhaltung und Netzwerkkommunikation. Ein <b>Real-Time-Controller</b> (ST STM32H743, Cortex-M7 @ 480 MHz, FreeRTOS 10.4) ist zuständig für Sensorerfassung, Signalkonditionierung und sicherheitskritisches Monitoring. Beide Prozessoren tauschen Messdaten über einen dedizierten UART-Link mit proprietärem Binärprotokoll bei 2 Mbaud aus — der RT-Controller sendet mit 100 Hz, der Application-Processor visualisiert und archiviert.<br><br>In vier Wochen ist Markteinführung. Die grossen Systemtests sind bestanden.' },
 
+  { id:2, title:'Das letzte Update',
+    text:'Vor elf Tagen wurde der letzte grössere Entwicklungsstand eingecheckt — Commit-Tag <code style="color:var(--C);font-size:0.88em;">v0.9.4-rc2</code>. Zwei Bereiche wurden gleichzeitig aktualisiert.<br><br><b>Linux-Seite:</b> Das HMI-Team überarbeitete die Qt/QML-Oberfläche — flüssigere Ansichtsübergänge, eine neue Echtzeit-Datenvisualisierung (<code style="color:var(--C);font-size:0.88em;">MeasurementGraphView</code>) und Migration mehrerer Komponenten auf Qt Quick Controls 2. Ein Performance-Profiling auf dem Ziel-SoC wurde nicht durchgeführt — die Änderungen galten als risikoarm.<br><br><b>Firmware-Seite:</b> FreeRTOS-Task-Prioritäten wurden neu vergeben, die Sensor-Acquisition-Rate von 50 Hz auf 100 Hz erhöht — und der UART-IPC-Empfangspuffer von 512 auf 1024 Byte erweitert. Alle Unit-Tests und Hardware-in-the-Loop-Tests liefen durch.<br><br>Beide Änderungen wurden als voneinander unabhängig betrachtet. Ein gemeinsamer Integrationstest unter thermischer Last war für Sprint+1 geplant.' },
+
+  { id:3, title:'Erste Meldungen',
+    text:'Drei Tage nach dem Commit-Tag treffen die ersten internen Berichte ein — ausschliesslich aus der HMI-Verifikationsgruppe.<br><br><span style="color:var(--muted);font-size:13px;">Tester #1:</span> <i>"HMI reagiert gelegentlich träge, besonders beim Wechsel in die Messkampagnen-Ansicht."</i><br><br><span style="color:var(--muted);font-size:13px;">Tester #2:</span> <i>"Angezeigte Messwerte frieren kurz ein — 0.5 bis 2 Sekunden — dann springen sie vor auf den aktuellen Stand."</i><br><br><span style="color:var(--muted);font-size:13px;">Tester #3:</span> <i>"Subjektiv fühlt sich das Gerät langsamer an als auf dem letzten Build."</i><br><br>Alle drei Tester arbeiteten zum Zeitpunkt der Fehler in der neuen <code style="color:var(--C);font-size:0.88em;">MeasurementGraphView</code>. Die Hardware-Verifikationsgruppe hat in diesem Zeitraum keine Berichte eingereicht.' },
+
+  { id:4, title:'Das Daily — 08:15 Uhr',
+    text:'Montag, 08:15 Uhr. Stand-up in Raum B2.14. Fünf Personen, ein geteilter Bildschirm mit dem Jira-Board.<br><br><b style="color:var(--gold);">Markus</b> <span style="color:var(--muted);font-size:13px;">(SW-Lead):</span> „Ich hab mir die Testberichte angeschaut. Seit dem HMI-Update haben wir ein Performance-Thema im Display-Layer. Die Symptome passen zur neuen MeasurementGraphView — zu viele synchrone Property-Binding-Auflösungen im Render-Thread.“<br><br><b style="color:var(--muted);">Nora</b> <span style="color:var(--muted);font-size:13px;">(Test):</span> „Genau. Beim Wechsel in diese Ansicht ruckelt es am stärksten.“<br><br><b style="color:var(--S);">Isabel</b> <span style="color:var(--muted);font-size:13px;">(QML):</span> „Das könnte die direkte C++-Model-Bindung sein. Ich hab das mit 200 ms Refresh gebaut — besser wäre ein Timer-entkoppelter Notify.“<br><br><b style="color:var(--C);">Philipp</b> <span style="color:var(--muted);font-size:13px;">(Middleware):</span> „Im QML-Profiler hatte ich letzte Woche Frames bis 180 ms gesehen. Das ist Rendering, kein IPC-Problem.“<br><br><b style="color:var(--I);">Thomas</b> <span style="color:var(--muted);font-size:13px;">(Firmware):</span> „Ich wollte kurz erwähnen: In meinem Thermaltest tauchen die Aussetzer fast ausschliesslich nach längerer Betriebszeit auf — ab ungefähr 90 Minuten. Ich frage mich, ob—“<br><br><b style="color:var(--gold);">Markus:</b> „Guter Punkt. Thermisches Throttling auf dem A53 kann natürlich auch die UI beeinflussen. Isabel, kannst du heute den QML-Profiler strukturiert durchlaufen? Philipp, lass uns die Render-Thread-Priorisierung anschauen. Thomas, schreib deine Thermalbefunde kurz ins Confluence.“<br><br><span style="color:var(--muted);font-size:13px;font-style:italic;">Das Meeting endet nach neun Minuten.</span>' },
+
+  { id:5, title:'Was das Profiling zeigt',
+    text:'Isabel verbringt den Montagnachmittag mit Qt Creator Profiler und GammaRay 2.11. Die Zahlen sind eindeutig:<br><br><span style="font-size:14px;color:var(--muted);"><code style="color:var(--C);font-size:0.88em;">QQuickWindow::renderFrame()</code>: Median 13 ms — Ausreißer bis <b>184 ms</b> in ca. 4–6 % der Frames</span><br><br><span style="font-size:14px;color:var(--muted);"><code style="color:var(--C);font-size:0.88em;">MeasurementGraphView.qml</code>: 52 aktive QML-Property-Bindings, alle direkt an <code style="color:var(--C);font-size:0.88em;">QAbstractListModel</code> — kein Batching, kein Lazy Update</span><br><br><span style="font-size:14px;color:var(--muted);">CPU-Auslastung Core 0 (UI-Thread): Mittel 32 %, Spitzen bis <b>74 %</b> bei Ansichtswechseln</span><br><br><span style="font-size:14px;color:var(--muted);">Qt Quick Scene Graph RSS: 89 MB — für das eingesetzte SoC am oberen Limit</span><br><br>Isabel öffnet Jira-Ticket <code style="color:var(--C);font-size:0.88em;">HMI-PERF-211</code>: „Rendering-Optimierung MeasurementGraphView“. Die Zahlen sprechen für sich.' },
+
+  { id:6, title:'Die Analyse vertieft sich',
+    text:'Dienstagmorgen schaut Philipp tiefer in den Middleware-Layer.<br><br>Der IPC-Receive-Handler loggt gelegentlich einen <code style="color:var(--I);font-size:0.88em;">stale_data_flag</code> — gesetzt, wenn innerhalb von 50 ms kein neues Datenframe vom RT-Controller eintrifft. Philipp notiert: „UI-Thread blockiert IPC-Callback. Timeout-Handler feuert unnötig — erzeugt Lastspitzen auf Core 0.“<br><br>Im <code style="color:var(--C);font-size:0.88em;">/proc/interrupts</code>-Dump zeigt UART4 rund 3.400 Interrupts/Sekunde — statt der erwarteten ~1.200/s bei 100 Hz Datenrate. In <code style="color:var(--C);font-size:0.88em;">dmesg</code>: keine UART-Overrun-Fehler, keine Kernel-Panics.<br><br>„Die <code style="color:var(--I);font-size:0.88em;">stale_data_flags</code> und der erhöhte Interrupt-Count sind eine Folge des blockierten UI-Threads“, schreibt Philipp ins Ticket. „Kein eigenständiges Problem.“ Er setzt <code style="color:var(--C);font-size:0.88em;">HMI-PERF-211</code> als Root Cause.' },
+
+  { id:7, title:'Noch ein paar Dinge',
+    text:'Während das Software-Team Optimierungen plant, passieren im Hintergrund andere Dinge.<br><br>Thomas schreibt in den Engineering-Channel: „Update aus dem HW-Labor: Die <code style="color:var(--I);font-size:0.88em;">stale_data</code>-Events auf Unit #3 und #5 treten fast ausschliesslich bei T_case &gt; 47 °C auf. Unter 40 °C: in vier Stunden kein einziger Event. Könnte thermisches Throttling auf dem A53 sein — oder etwas anderes. Schaue mir morgen den SPI1-Bus an.“<br><br>Im Confluence-Verifikationsbericht von Nora, Abschnitt „Offene Punkte“, steht ein Halbsatz: <i>„Unit #7 zeigte einmalig identisches Symptom im Reduced-HMI-Modus (Qt-Minimal-Build, keine Animationen).“</i> Der Eintrag ist drei Tage alt. Kein Kommentar darauf.<br><br>In den STM32-Telemetrie-Logs von Unit #3 zeigt der <code style="color:var(--I);font-size:0.88em;">SPI1_RETRY_COUNT</code> ab Betriebsstunde 2 einen kontinuierlichen Anstieg: von 0 auf 4–9 Retries pro Minute. SPI1 verbindet den Hauptsensor mit dem Mikrocontroller.' },
+
+  { id:8, title:'Taskforce — 14:30 Uhr',
+    text:'Dienstag, 14:30 Uhr. Taskforce-Meeting. Sieben Personen, Projektleiter Rafael per Video zugeschaltet.<br><br><b>Rafael</b> <span style="color:var(--muted);font-size:13px;">(PL):</span> „Was haben wir?“<br><br><b style="color:var(--gold);">Markus:</b> „Klares Bild. Das HMI-Update erhöht die Render-Last auf dem A53. QML-Profiling zeigt Frame-Drops bis 184 ms, der IPC-Timeout-Handler erzeugt Lastspitzen. Massnahmenplan: Property-Bindings entkoppeln, Render-Thread entlasten. Zeitrahmen zwei Tage.“<br><br><b>Rafael:</b> „Risiko für den Release?“<br><br><b style="color:var(--S);">Isabel:</b> „Beherrschbar. Der Patch ist überschaubar. Nach Refaktorierung erwarte ich normale Frame-Zeiten.“<br><br><b style="color:var(--I);">Thomas:</b> „Ich möchte nochmal auf meine Thermaldaten hinweisen. Die Events korrelieren stärker mit der Gerätetemperatur als mit der CPU-Auslastung. Und der SPI1-Retry-Counter steigt ab Betriebsstunde 2 kontinuierlich an. Wenn es ein reines UI-Problem wäre, würde ich das nicht erwarten.“<br><br><b style="color:var(--gold);">Markus:</b> „Thomas, der Zusammenhang ist klar: Wärme erhöht die Prozessorlatenzen — das verstärkt das UI-Problem. Aber wir haben drei Tage Profiling-Daten, die direkt auf den Render-Thread zeigen. Das ist unsere Hauptursache. Thermische Einflüsse schauen wir nach dem Fix an.“<br><br><b style="color:var(--I);">Thomas</b> <span style="color:var(--muted);font-style:italic;font-size:13px;">(nickt, sagt nichts mehr).</span><br><br><b>Rafael:</b> „Isabel und Philipp arbeiten am Patch. Thomas, deine Thermaltests laufen im Hintergrund weiter. Ich brauche bis Donnerstag 10 Uhr eine klare Aussage für das Management.“' },
+
+  { id:9, title:'Was auf dem Tisch liegt',
+    text:'Mittwochmorgen. Rafael sendet eine Kalendereinladung: „Management-Briefing Donnerstag 10:00 — Release-Entscheidung“.<br><br><b style="color:var(--S);">Für die HMI/UI-Hypothese spricht:</b><br>Drei Tage QML-Profiling. Konkrete Frame-Drop-Messungen. CPU-Traces. Eine plausible, geschlossene Erklärungskette. Ein Patch ist bereits in Arbeit.<br><br><b style="color:var(--I);">Für eine tiefere HW/FW-Untersuchung spräche:</b><br>Thomas’ Temperaturdaten — Events fast ausschliesslich bei T_case &gt; 47 °C. Unit #7s Symptom im Qt-Minimal-Build ohne Animationen. Der steigende <code style="color:var(--I);font-size:0.88em;">SPI1_RETRY_COUNT</code>. Und: Die <code style="color:var(--I);font-size:0.88em;">stale_data_flags</code> treten nicht zufällig auf — sie kommen in Clustern, meist nach 50–120 Minuten Betriebszeit.<br><br>Für Oszilloskop-Messungen auf dem UART-IPC-Bus und einen kontrollierten Thermaltest wäre der nächste Laborslot übermorgen. Bis dahin: kein direkter Profiling-Beweis, kein reproduzierbares Fehlerszenario unter kontrollierten Bedingungen.<br><br>Das Management erwartet morgen früh eine Entscheidung.' },
+
+  { id:10, title:'Bis morgen früh',
+    text:'Mittwochabend. Isabel hat den ersten Patch eingecheckt — Timer-entkoppelter QML-Notify, reduzierte Binding-Anzahl. In einem ersten Kurztest laufen die Frames deutlich glätter. „Das bestätigt, wo das Problem liegt“, schreibt Philipp im Slack.<br><br>Thomas hat heute Nachmittag still einen eigenen Test durchgeführt. Er reduzierte die UART-Baudrate auf 460.800 Baud — ein Viertel des Produktionswerts — und betrieb Unit #3 zwei Stunden lang bei 50 °C.<br><br>In diesem Testlauf: kein einziger <code style="color:var(--I);font-size:0.88em;">stale_data_event</code>. Null.<br><br>Er schickt Markus eine Nachricht: „Ich hab etwas, das ich dir zeigen möchte. Bevor morgen die Entscheidung fällt.“<br><br>Markus antwortet um 21:47 Uhr: „Zeig mir das morgen früh vor dem Meeting. Zehn Minuten.“<br><br>Ihr müsst euch jetzt festlegen.' }
+];
 let biasStoryPage = 0;
 let biasSubmitted = false;
 
@@ -2482,22 +2494,22 @@ function renderBiasReveal() {
   const el = document.getElementById('biasStoryContent');
   el.innerHTML = `
     <div style="flex:1;padding:28px 24px;overflow-y:auto;">
-      <div style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;margin-bottom:6px;color:var(--S);">Auflösung</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;margin-bottom:6px;color:var(--S);">Aufl\u00f6sung</div>
       <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;color:var(--muted);margin-bottom:20px;text-transform:uppercase;">Der Fehler kurz vor dem Release</div>
 
       <div style="background:rgba(42,157,143,.08);border:1px solid rgba(42,157,143,.35);border-radius:14px;padding:18px 20px;margin-bottom:14px;">
-        <div style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--S);margin-bottom:8px;">Tatsächliche Ursache</div>
-        <div style="font-size:16px;line-height:1.7;color:var(--text);">Sporadisches Hardware-/Firmware-Problem unter bestimmten Lastbedingungen. Die Kommunikation zwischen Controller und Peripherie war unter Last instabil.</div>
+        <div style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--S);margin-bottom:8px;">Tats\u00e4chliche Ursache</div>
+        <div style="font-size:15px;line-height:1.7;color:var(--text);">Thermischer Drift des HSE-Quarzoszillators im STM32H743. Ab ca.\u00a047\u00a0\u00b0C weicht die Taktfrequenz des Quarzes messbar ab \u2014 der Taktfehler \u00fcberschreitet bei 2\u00a0Mbaud UART die Framing-Toleranz. Der Linux-IPC-Receiver verliert sporadisch Datenpakete. Genau diese fehlenden Frames erzeugen die <code style="font-size:0.88em;">stale_data_flags</code> \u2014 und der UI-Thread beginnt, Timeout-Handler zu feuern und Bindings neu zu evaluieren.</div>
       </div>
 
       <div style="background:rgba(244,162,97,.07);border:1px solid rgba(244,162,97,.3);border-radius:14px;padding:18px 20px;margin-bottom:14px;">
-        <div style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--I);margin-bottom:8px;">Die UI-Hinweise waren real — aber nicht die Ursache</div>
-        <div style="font-size:15px;line-height:1.7;color:var(--text);">CPU-Spitzen, höhere Render-Zeiten und subjektive Trägheit waren messbar. Sie passten perfekt zur frühen Vermutung "seit dem UI-Update". Das Gehirn hat die plausibelste Geschichte bevorzugt — und danach bevorzugt nach Bestätigung gesucht.</div>
+        <div style="font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--I);margin-bottom:8px;">Die UI-Messdaten waren real \u2014 aber nur ein Symptom</div>
+        <div style="font-size:15px;line-height:1.7;color:var(--text);">Frame-Drops bis 184\u00a0ms, CPU-Spitzen bis 74\u00a0%, erh\u00f6hte Interrupt-Rate \u2014 alles stimmte. Aber all das war eine direkte Folge des Paketverlustes auf dem UART-IPC-Bus. Der QML-Profiler zeigte den Brand \u2014 nicht den Brandherd. Thomas\u2019 Baudrate-Test hat die Wurzel gefunden: 460.800\u00a0Baud, kein Framing-Fehler, kein einziger stale_data_event.</div>
       </div>
 
       <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.3);border-radius:14px;padding:18px 20px;border-left:3px solid var(--gold);">
         <div style="font-size:15px;font-weight:600;color:var(--gold);margin-bottom:6px;">Wir haben nicht die Ursache gefunden.</div>
-        <div style="font-size:15px;color:var(--text);line-height:1.6;">Wir haben die plausibelste Geschichte bevorzugt.</div>
+        <div style="font-size:15px;color:var(--text);line-height:1.6;">Wir haben die plausibelste Geschichte bevorzugt \u2014 und danach nur noch nach ihrer Best\u00e4tigung gesucht.</div>
       </div>
     </div>`;
 }
@@ -2508,17 +2520,17 @@ function renderBiasReflection() {
     <div style="flex:1;padding:28px 24px;overflow-y:auto;">
       <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:18px;">Reflexion</div>
       ${[
-        'Welche Hinweise waren für dich am stärksten — und warum?',
-        'Hast du aktiv nach einer alternativen Erklärung gesucht?',
-        'Wann hattest du innerlich das Gefühl: Jetzt ist es klar?',
-        'Wo passiert dir das in echten Projekten?'
+        'Ab welchem Moment hatte sich in dir eine Meinung gebildet \u2014 und hast du danach noch aktiv nach Gegenbeweisen gesucht?',
+        'Thomas\u2019 Hinweise lagen offen auf dem Tisch. Was hat dazu beigetragen, dass sie nicht die gleiche Aufmerksamkeit bekamen wie die Profiling-Daten?',
+        'Markus hat Thomas nicht unterbrochen \u2014 er hat seine Aussage in einen anderen Rahmen gestellt. F\u00e4llt dir das in euren eigenen Meetings auch auf?',
+        'Wo passiert euch das als Team im Projektalltag \u2014 und welche Konsequenzen hat das?'
       ].map((q,i) => `
         <div style="background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">
           <div style="font-size:13px;color:var(--muted);margin-bottom:2px;">${i+1} von 4</div>
           <div style="font-size:15px;line-height:1.6;color:var(--text);">${q}</div>
         </div>`).join('')}
       <div style="margin-top:8px;padding:12px 16px;background:rgba(42,157,143,.06);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.6;">
-        Ihr habt nicht dumm entschieden. Ihr habt menschlich entschieden.
+        Ihr habt nicht falsch entschieden. Ihr habt menschlich entschieden \u2014 wie jedes Team es tut.
       </div>
     </div>`;
 }
