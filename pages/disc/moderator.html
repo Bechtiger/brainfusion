@@ -1458,7 +1458,7 @@ function renderBiasStorySection() {
     </div>
     ${phase==='debrief' ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
       <span style="font-size:12px;color:var(--muted);margin-right:4px;">Frage:</span>
-      ${[0,1,2,3].map(i=>`<button class="btn" style="font-size:12px;padding:4px 10px;${(onlineSession?.debriefStep??0)===i?'background:var(--C);color:#fff;border-color:var(--C);':''}" onclick="setBiasPhase('debrief',${i})">${i+1}</button>`).join('')}
+      ${[0,1,2,3].map(i=>`<button class="btn" style="font-size:12px;padding:4px 10px;${(onlineSession?.debriefStep??0)===i?'background:var(--C);color:#fff;border-color:var(--C);':''}" onclick="setDebriefStep(${i})">${i+1}</button>`).join('')}
     </div>` : ''}\``;
 
   const statusBar = `
@@ -1521,6 +1521,18 @@ async function setBiasPhase(phase) {
     p_module_data: { phase }
   });
   liveResponses = [];
+  renderModuleContent('bias_story');
+}
+
+async function setDebriefStep(step) {
+  onlineSession.debriefStep = step;
+  try {
+    await fetch(SB_URL + '/rest/v1/workshops?id=eq.' + onlineSession.workshopId, {
+      method: 'PATCH',
+      headers: Object.assign({}, HDR, {'Content-Type': 'application/json', 'Prefer': 'return=minimal'}),
+      body: JSON.stringify({ module_data: { phase: 'debrief', debriefStep: step } })
+    });
+  } catch(e) { console.warn('setDebriefStep patch failed', e); }
   renderModuleContent('bias_story');
 }
 
