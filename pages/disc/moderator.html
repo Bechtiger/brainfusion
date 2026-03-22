@@ -2198,7 +2198,7 @@ async function refreshOnlineWorkshop(){
     // 3. Aktuelle Modul-Antworten laden (alle interaktiven Module)
     const INTERACTIVE=['intro_question','johari_quiz','johari_reflexion','kernbotschaften',
       'morgen_reflexion','gfk','raci','steckbrief_feiern','steckbrief_grenzen',
-      'steckbrief_zumuten','ritual','verzerrungen_quiz'];
+      'steckbrief_zumuten','ritual','verzerrungen_quiz','teamnormen_analyse'];
     const mod=onlineSession?.currentModule;
     if(onlineSession?.workshopId&&mod&&INTERACTIVE.includes(mod)){
       const{data:ex,error:exErr}=await sb.from('exercise_responses')
