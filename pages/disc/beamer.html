@@ -880,6 +880,10 @@ body:hover #fsBtn{ opacity:1; }
   </div>
 </div>
 
+<div class="screen" id="sTeamNormen">
+  <div id="normenBeamerContent" style="flex:1;display:flex;flex-direction:column;padding:40px 70px;background:#060610;height:100vh;overflow:hidden;"></div>
+</div>
+
 <div class="screen" id="sClosing">
   <div class="closing-icon">🏆</div>
   <div class="closing-title">Herzlichen Dank!</div>
@@ -922,6 +926,7 @@ const MODULE_META = {
   disc_results:         { screen:'sDiscResults' },
   disc_role_profile:    { screen:'sRoleProfile' },
   bias_story:           { screen:'sBiasStory' },
+  teamnormen_analyse:   { screen:'sTeamNormen' },
   was_sage_ich_nicht:   { screen:'sFeed', icon:'🤫', label:'Stille Reflexion', title:'Was sage ich nicht?', question:'Was sagst du im Team nicht — obwohl du es solltest? (anonym)' },
   gfk_coaching:         { screen:'sGeneric', icon:'🏋', title:'GFK Coaching läuft...', desc:'Alle üben individuell auf ihrem Gerät. Gib 10–15 Minuten Zeit.' },
   intro_question:       { screen:'sFeed',    icon:'💬', label:'Einstieg',          title:'Einstiegsfrage',             question:'Was macht es in eurem Alltag manchmal schwer, etwas direkt anzusprechen?' },
@@ -2269,6 +2274,94 @@ async function showBiasStoryBeamer(data) {
   }
 }
 
+
+function showTeamNormenBeamer(data) {
+  show('sTeamNormen');
+  const phase = data?.phase || 'sammeln';
+  const el = document.getElementById('normenBeamerContent');
+  if (!el) return;
+
+  if (phase === 'sammeln') {
+    const count = data?.count || 0;
+    const total = data?.total || '?';
+    el.innerHTML = `
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:32px;">Team-Normen \u00b7 Analyse</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:56px;font-weight:700;margin-bottom:20px;line-height:1.1;">Wie laufen die Dinge<br>wirklich bei euch?</div>
+      <div style="font-size:20px;color:rgba(255,255,255,.4);max-width:700px;line-height:1.7;margin-bottom:48px;">Beantwortet alle 24 Fragen ehrlich auf eurem Ger\u00e4t. Eure Antworten sind vollst\u00e4ndig anonym.</div>
+      <div style="display:inline-flex;align-items:center;gap:10px;padding:10px 22px;border-radius:20px;background:rgba(42,157,143,.12);border:1px solid rgba(42,157,143,.35);">
+        <div class="pulse-dot"></div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:2px;color:var(--S);" id="normenCounter">${count} / ${total} Antworten eingegangen</span>
+      </div>`;
+
+  } else if (phase === 'auswertung') {
+    const scores  = data?.scores  || [3,3,3,3,3,3];
+    const kiText  = data?.kiText  || '';
+    const normen  = data?.normen  || [];
+    const staerke = data?.staerke || '';
+    const dimNames = ['Konflikt &\nDissens','Fehler &\nVerantwortung','Feedback &\nAnerkennung','Entscheidungen\nunter Unsicherheit','Hilfe &\nVerletzlichkeit','Unausgesprochene\nErwartungen'];
+    const colors   = ['#e63946','#f4a261','#2a9d8f','#4a90d9','#9b5de5','#f77f00'];
+
+    // Radar SVG
+    const cx=300, cy=300, r=200, N=6;
+    const pts = (vals) => vals.map((v,i)=>{
+      const angle = (Math.PI*2*i/N) - Math.PI/2;
+      const d = (v/5)*r;
+      return [cx+d*Math.cos(angle), cy+d*Math.sin(angle)];
+    });
+    const polyStr = pts(scores).map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    const bgStr5  = pts([5,5,5,5,5,5]).map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    const bgStr3  = pts([3,3,3,3,3,3]).map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+    const bgStr1  = pts([1,1,1,1,1,1]).map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+
+    const spokes = Array.from({length:N},(_,i)=>{
+      const angle=(Math.PI*2*i/N)-Math.PI/2;
+      return `<line x1="${cx}" y1="${cy}" x2="${(cx+r*Math.cos(angle)).toFixed(1)}" y2="${(cy+r*Math.sin(angle)).toFixed(1)}" stroke="rgba(255,255,255,.1)" stroke-width="1"/>`;
+    }).join('');
+
+    const dotPts = pts(scores);
+    const dots = dotPts.map((p,i)=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="5" fill="${colors[i]}"/>`).join('');
+
+    const labels = Array.from({length:N},(_,i)=>{
+      const angle=(Math.PI*2*i/N)-Math.PI/2;
+      const lx=(cx+(r+42)*Math.cos(angle)).toFixed(1);
+      const ly=(cy+(r+42)*Math.sin(angle)).toFixed(1);
+      const lines = dimNames[i].split('\n');
+      const anchor = lx>cx+10?'start':lx<cx-10?'end':'middle';
+      return lines.map((l,li)=>`<text x="${lx}" y="${(parseFloat(ly)+li*16-((lines.length-1)*8)).toFixed(1)}" text-anchor="${anchor}" fill="${colors[i]}" font-size="12" font-family="IBM Plex Mono,monospace">${l}</text>`).join('');
+    }).join('');
+
+    const scoreLabels = dotPts.map((p,i)=>`<text x="${p[0].toFixed(1)}" y="${(p[1]-10).toFixed(1)}" text-anchor="middle" fill="${colors[i]}" font-size="13" font-weight="bold" font-family="Rajdhani,sans-serif">${scores[i].toFixed(1)}</text>`).join('');
+
+    const svg = `<svg viewBox="0 0 600 600" width="520" height="520" style="flex-shrink:0;">
+      <polygon points="${bgStr5}" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+      <polygon points="${bgStr3}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1" stroke-dasharray="4,4"/>
+      <polygon points="${bgStr1}" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+      ${spokes}
+      <polygon points="${polyStr}" fill="rgba(42,157,143,.18)" stroke="rgba(42,157,143,.7)" stroke-width="2"/>
+      ${dots}${scoreLabels}${labels}
+    </svg>`;
+
+    const normHtml = normen.map(n => `
+      <div style="margin-bottom:16px;padding:18px 20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;border-left:3px solid ${n.color};">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${n.color};margin-bottom:8px;">${n.typ === 'dysfunktional' ? '\u26a0\ufe0f Dysfunktionales Muster' : '\u2705 Funktionale St\u00e4rke'} \u00b7 ${n.titel}</div>
+        <div style="font-size:17px;line-height:1.7;color:rgba(255,255,255,.75);">${n.text}</div>
+      </div>`).join('');
+
+    el.innerHTML = `
+      <div style="display:flex;gap:48px;align-items:flex-start;height:100%;">
+        <div style="flex-shrink:0;">${svg}</div>
+        <div style="flex:1;overflow-y:auto;height:100%;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:16px;">Norm-Profil \u00b7 Team-Analyse</div>
+          <div style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;margin-bottom:24px;color:rgba(255,255,255,.9);">Was wir \u00fcber uns gelernt haben:</div>
+          ${normHtml}
+          ${staerke ? `<div style="margin-top:20px;padding:16px 20px;background:rgba(201,168,76,.08);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;">
+            <div style="font-size:15px;font-weight:600;color:var(--gold);margin-bottom:4px;">Kernbotschaft</div>
+            <div style="font-size:17px;color:rgba(255,255,255,.7);line-height:1.6;">${staerke}</div></div>` : ''}
+        </div>
+      </div>`;
+  }
+}
+
 let biasBeamerPoll = null;
 async function startBiasPolling() {
   if (biasBeamerPoll) clearInterval(biasBeamerPoll);
@@ -2402,6 +2495,10 @@ function initRealtime() {
           }
           if (data.reveal !== undefined) { gfkRevealed = data.reveal; updateGfkBars(); }
           return;
+        }
+        // Team-Normen: Phase-Wechsel
+        if (mod === 'teamnormen_analyse' && currentModule === 'teamnormen_analyse') {
+          showTeamNormenBeamer(data); return;
         }
         // Bias Story: Phase-Wechsel live (question→locked→reveal→reflection)
         if (mod === 'bias_story' && currentModule === 'bias_story') {

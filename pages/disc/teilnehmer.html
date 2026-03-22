@@ -1022,10 +1022,135 @@ function handleModule(mod, data) {
       showGfkVote(data); break;
     case 'gfk_coaching':
       showGfkCoaching(data); break;
+    case 'teamnormen_analyse':
+      showTeamNormenAnalyse(data); break;
     default:
       if (MODULE_DEFS[mod]) showModule(mod, data);
       else showWaiting(data);
   }
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   TEAM-NORMEN-ANALYSE
+═══════════════════════════════════════════════════════ */
+const TNA_QUESTIONS = [
+  {id:'d1q1',dim:1,type:'ich',    q:'Wenn ich in einem Meeting eine andere Meinung habe als die Mehrheit, spreche ich sie offen aus.'},
+  {id:'d1q2',dim:1,type:'spiegel',q:'Bei uns gilt: Wer zu oft widerspricht oder bremst, gilt als schwierig.'},
+  {id:'d1q3',dim:1,type:'ich',    q:'Ich bringe Bedenken auch dann ein, wenn ich noch keinen Beweis habe \u2014 nur ein Gef\u00fchl.'},
+  {id:'d1q4',dim:1,type:'spiegel',q:'Bei uns werden Entscheidungen manchmal getroffen, obwohl ich innerlich weiss, dass nicht alle wirklich dahinterstehen.'},
+  {id:'d2q1',dim:2,type:'ich',    q:'Wenn ich einen Fehler mache, der das Team betrifft, spreche ich ihn aktiv an.'},
+  {id:'d2q2',dim:2,type:'spiegel',q:'Bei uns werden Fehler eher still behoben als offen angesprochen \u2014 um niemanden blosszustellen.'},
+  {id:'d2q3',dim:2,type:'ich',    q:'Wenn ein Kollege einen Fehler macht, der mich oder das Team betrifft, spreche ich ihn direkt darauf an.'},
+  {id:'d2q4',dim:2,type:'spiegel',q:'Bei uns \u00fcbernimmt selten jemand pers\u00f6nliche Verantwortung f\u00fcr ein Scheitern \u2014 es war immer irgendwie die Situation.'},
+  {id:'d3q1',dim:3,type:'ich',    q:'Wenn ein Kollege gute Arbeit geleistet hat, sage ich ihm das direkt \u2014 nicht nur im Stillen.'},
+  {id:'d3q2',dim:3,type:'spiegel',q:'Bei uns ist es ungew\u00f6hnt, jemandem offen zu sagen was man an seiner Arbeit sch\u00e4tzt \u2014 das f\u00fchlt sich fast seltsam an.'},
+  {id:'d3q3',dim:3,type:'ich',    q:'Wenn mich etwas an der Arbeitsweise eines Kollegen st\u00f6rt, spreche ich es irgendwann direkt an.'},
+  {id:'d3q4',dim:3,type:'spiegel',q:'Bei uns erf\u00e4hrt man Kritik eher indirekt \u2014 \u00fcber Umwege, nicht von Angesicht zu Angesicht.'},
+  {id:'d4q1',dim:4,type:'ich',    q:'Wenn ich bei einer Entscheidung ein ungutes Gef\u00fchl habe, sage ich es \u2014 auch wenn ich es nicht belegen kann.'},
+  {id:'d4q2',dim:4,type:'spiegel',q:'Bei uns z\u00e4hlt vor allem wer die st\u00e4rksten Daten hat \u2014 ein Bauchgef\u00fchl ohne Beweis wird kaum ernst genommen.'},
+  {id:'d4q3',dim:4,type:'ich',    q:'Ich habe das Gef\u00fchl, dass meine Einsch\u00e4tzung im Team geh\u00f6rt wird \u2014 auch wenn andere eine andere Meinung haben.'},
+  {id:'d4q4',dim:4,type:'spiegel',q:'Bei uns haben Entscheidungen manchmal mehr Gewicht, wenn sie von bestimmten Personen kommen \u2014 unabh\u00e4ngig vom Inhalt.'},
+  {id:'d5q1',dim:5,type:'ich',    q:'Ich bitte Kollegen um Hilfe, wenn ich nicht weiterkomme \u2014 ohne das Gef\u00fchl, dadurch schw\u00e4cher zu wirken.'},
+  {id:'d5q2',dim:5,type:'spiegel',q:'Bei uns gilt stillschweigend: Wer Hilfe braucht, sollte das m\u00f6glichst nicht zeigen \u2014 das sieht nach Schw\u00e4che aus.'},
+  {id:'d5q3',dim:5,type:'ich',    q:'Ich kann in diesem Team sagen "ich weiss es nicht" \u2014 ohne dass ich das Gef\u00fchl habe, damit an Ansehen zu verlieren.'},
+  {id:'d5q4',dim:5,type:'spiegel',q:'Bei uns erwartet man von jedem, dass er seinen Bereich im Griff hat \u2014 Unsicherheit zeigen passt nicht ins Bild.'},
+  {id:'d6q1',dim:6,type:'ich',    q:'Ich weiss genau, was in diesem Team erwartet wird \u2014 auch wenn es nirgends geschrieben steht.'},
+  {id:'d6q2',dim:6,type:'spiegel',q:'Bei uns gibt es unausgesprochene Regeln dar\u00fcber, wer was sagen darf \u2014 und wer lieber schweigt.'},
+  {id:'d6q3',dim:6,type:'ich',    q:'Wenn ich das Gef\u00fchl habe, dass etwas im Team nicht stimmt, spreche ich es an \u2014 auch wenn es unbequem ist.'},
+  {id:'d6q4',dim:6,type:'spiegel',q:'Bei uns ist Harmonie wichtiger als Klarheit \u2014 lieber schweigen als eine unangenehme Wahrheit aussprechen.'},
+];
+const TNA_DIM_NAMES = ['','Konflikt & Dissens','Fehler & Verantwortung','Feedback & Anerkennung','Entscheidungen unter Unsicherheit','Hilfe & Verletzlichkeit','Unausgesprochene Erwartungen'];
+const TNA_DIM_ICONS = ['','\u26a1','\ud83d\udd25','\ud83d\udcac','\ud83e\udded','\ud83e\udd1d','\ud83c\udf2b\ufe0f'];
+let tnaAnswers = {};
+let tnaSubmitted = false;
+
+function showTeamNormenAnalyse(data) {
+  const phase = data?.phase || 'sammeln';
+  if (phase === 'auswertung' || tnaSubmitted) {
+    show('sGeneric');
+    document.getElementById('genericIcon').textContent = '\ud83d\udcca';
+    document.getElementById('genericTitle').textContent = 'Auswertung l\u00e4uft';
+    document.getElementById('genericDesc').textContent  = 'Die KI analysiert gerade die Teamnormen. Schau auf den Beamer.';
+    return;
+  }
+  show('sModule');
+  document.getElementById('moduleContent').innerHTML = renderTnaForm();
+}
+
+function renderTnaForm() {
+  let html = `<div style="padding:4px 0 20px;">
+    <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:8px;">Team-Normen \u00b7 Anonym</div>
+    <div style="font-size:18px;font-weight:600;margin-bottom:6px;">Wie l\u00e4uft es bei euch wirklich?</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:20px;line-height:1.5;">Beantworte alle 24 Aussagen ehrlich \u2014 Skala 1 (stimmt gar nicht) bis 5 (stimmt vollst\u00e4ndig). Deine Antworten sind anonym.</div>`;
+  let curDim = 0;
+  TNA_QUESTIONS.forEach(q => {
+    if (q.dim !== curDim) {
+      if (curDim > 0) html += '</div>';
+      curDim = q.dim;
+      html += `<div style="margin-bottom:8px;margin-top:${curDim>1?'22px':'0'};padding:10px 14px;background:rgba(255,255,255,.04);border-radius:10px;border-left:3px solid rgba(255,255,255,.15);">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:2px;">${TNA_DIM_ICONS[curDim]} Dimension ${curDim}</div>
+        <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.55);">${TNA_DIM_NAMES[curDim]}</div></div><div>`;
+    }
+    const sp = q.type==='spiegel';
+    html += `<div id="tnaq_${q.id}" style="margin-bottom:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;">
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;">
+        <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.06);color:rgba(255,255,255,.4);flex-shrink:0;margin-top:2px;">${sp?'Wir':'Ich'}</span>
+        <div style="font-size:14px;line-height:1.5;color:rgba(255,255,255,.8);">${q.q}</div></div>
+      <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;">
+        <span style="font-size:10px;color:rgba(255,255,255,.25);min-width:70px;">stimmt gar nicht</span>
+        <div style="display:flex;gap:6px;">${[1,2,3,4,5].map(v=>`
+          <button onclick="tnaSelect('${q.id}',${v})" id="tnab_${q.id}_${v}"
+            style="width:38px;height:38px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:rgba(255,255,255,.6);font-size:14px;font-weight:600;cursor:pointer;transition:.2s;">${v}</button>`).join('')}
+        </div>
+        <span style="font-size:10px;color:rgba(255,255,255,.25);min-width:60px;text-align:right;">vollst\u00e4ndig</span></div></div>`;
+  });
+  html += `</div>
+  <div id="tnaErr" style="color:var(--D);font-size:13px;margin-bottom:8px;min-height:20px;"></div>
+  <button onclick="submitTeamNormen()" style="width:100%;padding:14px;border-radius:12px;background:var(--S);border:none;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;">Antworten abschicken \u2192</button></div>`;
+  return html;
+}
+
+function tnaSelect(qid, val) {
+  tnaAnswers[qid] = val;
+  [1,2,3,4,5].forEach(v => {
+    const btn = document.getElementById(`tnab_${qid}_${v}`);
+    if (!btn) return;
+    if (v===val) { btn.style.background='var(--S)'; btn.style.color='#fff'; btn.style.borderColor='var(--S)'; }
+    else { btn.style.background='rgba(255,255,255,.04)'; btn.style.color='rgba(255,255,255,.6)'; btn.style.borderColor='rgba(255,255,255,.15)'; }
+  });
+}
+
+async function submitTeamNormen() {
+  const missing = TNA_QUESTIONS.filter(q => !tnaAnswers[q.id]);
+  if (missing.length > 0) {
+    document.getElementById('tnaErr').textContent = `Noch ${missing.length} Frage${missing.length>1?'n':''} nicht beantwortet.`;
+    const el = document.getElementById(`tnaq_${missing[0].id}`);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  document.getElementById('tnaErr').textContent = '';
+  try {
+    const res = await fetch(`${EDGE}/submit-exercise`, {
+      method:'POST', headers:HDR,
+      body: JSON.stringify({
+        participantId: session.participantId,
+        joinToken:     session.joinToken,
+        workshopId:    session.workshopId,
+        alias:         null,
+        module:        'teamnormen_analyse',
+        responseType:  'normen_answers',
+        content:       JSON.stringify(tnaAnswers)
+      })
+    });
+    if (res.ok || res.status===409) {
+      tnaSubmitted = true;
+      show('sGeneric');
+      document.getElementById('genericIcon').textContent = '\u2713';
+      document.getElementById('genericTitle').textContent = 'Danke \u2014 Antworten gespeichert';
+      document.getElementById('genericDesc').textContent  = 'Deine Antworten wurden anonym \u00fcbermittelt. Schau auf den Beamer.';
+    }
+  } catch(e) { document.getElementById('tnaErr').textContent = 'Fehler: '+e.message; }
 }
 
 function showWaiting(data) {

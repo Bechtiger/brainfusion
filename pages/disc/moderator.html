@@ -371,6 +371,7 @@ const MODULE_PHASES=[
     {id:'pairing_karten',      icon:'🤝',name:'Pairing-Karten', sub:'Freigabe an TN'},
   ]},
   {label:'▸ Tag 2 – Vertiefen',modules:[
+    {id:'teamnormen_analyse',  icon:'🧭',name:'Normen-Analyse', sub:'24 Fragen'},
     {id:'morgen_reflexion',    icon:'🌅',name:'Morgen-Check',   sub:'Live-Feed'},
     {id:'raci_info',           icon:'📋',name:'RACI Info',      sub:'Beamer'},
     {id:'raci',                icon:'📋',name:'RACI',           sub:'Auswahl'},
@@ -507,6 +508,18 @@ const MODULE_DETAILS={
       '&#220;berleitung: \"Warum ist das so schwer — auch bei uns im Team?\"'],
     beamer:'Beamer zeigt Szenario-Text + Live-Abstimmungsbalken',
     dataType:'johari_fallbeispiele'
+  },
+  teamnormen_analyse:{
+    desc:'Team erkennt seine informellen Normen — anonym, ehrlich, schonungslos.',
+    hints:[
+      'Sage vorher: "Keine richtigen oder falschen Antworten — nur eure ehrliche Wahrnehmung"',
+      'Wichtig: Absolute Anonymität — kein Name, kein Profilbild, keine Zuordnung möglich',
+      'Lass 15–20 Minuten Zeit — die Fragen brauchen echtes Nachdenken',
+      'Nach der KI-Analyse: kurz Stille lassen bevor du sprichst',
+      'Dein Satz dazu: "Das beansprucht nicht absolute Wahrheit — es spiegelt eure Antworten"',
+    ],
+    beamer:'Beamer zeigt Sammlung + KI-Auswertung mit Radar-Profil und Norm-Texten',
+    dataType:'teamnormen_analyse'
   },
   bias_story:{
     desc:'Teilnehmer erleben den Bestätigungsfehler am eigenen Leib — bevor die Theorie kommt.',
@@ -837,6 +850,7 @@ async function renderModuleContent(moduleId){
     case'raci':      dataHTML=renderRaciSection();break;
     case'johari_static':       dataHTML=renderJohariStaticSection();break;
     case'johari_fallbeispiele':dataHTML=renderJohariFallbeispieleSection();break;
+    case'teamnormen_analyse':  dataHTML=renderTeamNormenSection();break;
     case'bias_story':          dataHTML=renderBiasStorySection();break;
     case'verzerrungen_quiz':   dataHTML=renderVerzerrungsQuizSection();break;
     case'verzerrungen_info':   dataHTML=renderVerzerrungsInfoSection();break;
@@ -1535,6 +1549,142 @@ async function setDebriefStep(step) {
     p_module_data: { phase: 'debrief', debriefStep: step }
   });
   renderModuleContent('bias_story');
+}
+
+
+function renderTeamNormenSection() {
+  const phase = onlineSession?.tnaPhase || 'sammeln';
+  const responses = liveResponses.filter(r => r.response_type === 'normen_answers');
+  const total = allJoined.length || 22;
+
+  const phaseButtons = `
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+      <button class="btn ${phase==='sammeln'?'primary':''}" onclick="setTnaPhase('sammeln')">&#x1F4CB; Analyse starten</button>
+      <button class="btn ${phase==='auswertung'?'gold':''}" onclick="triggerTnaAuswertung()" style="${responses.length<2?'opacity:.5;':''}">&#x1F9E0; KI-Auswertung</button>
+    </div>`;
+
+  const statusBar = `
+    <div style="display:flex;gap:16px;align-items:center;padding:10px 14px;background:var(--surf2);border-radius:10px;margin-bottom:14px;font-size:13px;">
+      <span>Phase: <strong style="color:var(--S);">${phase}</strong></span>
+      <span>Antworten: <strong style="color:var(--C);">${responses.length} / ${total}</strong></span>
+    </div>`;
+
+  const kiStatus = onlineSession?.tnaKiStatus || '';
+  const kiHTML = kiStatus ? `
+    <div style="margin-top:12px;padding:12px 16px;background:rgba(42,157,143,.1);border:1px solid rgba(42,157,143,.3);border-radius:10px;font-size:13px;line-height:1.6;color:var(--muted);">
+      ${kiStatus}
+    </div>` : '';
+
+  const hintsInfo = `
+    <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.7;">
+      <strong style="color:var(--text);">6 Dimensionen</strong> je 4 Fragen (Ich-Form + Spiegel):<br>
+      1 Konflikt &amp; Dissens &nbsp;&middot;&nbsp; 2 Fehler &amp; Verantwortung &nbsp;&middot;&nbsp; 3 Feedback &amp; Anerkennung<br>
+      4 Entscheidungen &nbsp;&middot;&nbsp; 5 Hilfe &amp; Verletzlichkeit &nbsp;&middot;&nbsp; 6 Unausgesprochene Erwartungen
+    </div>`;
+
+  return `
+    <div class="section-title">&#x1F9ED; Team-Normen-Analyse</div>
+    ${phaseButtons}${statusBar}${kiHTML}${hintsInfo}`;
+}
+
+async function setTnaPhase(phase) {
+  if (!onlineSession?.workshopId) return;
+  onlineSession.tnaPhase = phase;
+  initSupabase();
+  await sb.rpc('set_workshop_module', {
+    p_workshop_id: onlineSession.workshopId,
+    p_admin_token: onlineSession.adminToken,
+    p_module: 'teamnormen_analyse',
+    p_module_data: { phase, total: allJoined.length || 22 }
+  });
+  renderModuleContent('teamnormen_analyse');
+}
+
+async function triggerTnaAuswertung() {
+  onlineSession.tnaKiStatus = '&#x23F3; KI analysiert...';
+  renderModuleContent('teamnormen_analyse');
+
+  const responses = liveResponses.filter(r => r.response_type === 'normen_answers');
+  if (responses.length < 1) {
+    onlineSession.tnaKiStatus = '&#x26A0;&#xFE0F; Noch keine Antworten vorhanden.';
+    renderModuleContent('teamnormen_analyse');
+    return;
+  }
+
+  // Aggregate scores per dimension
+  const dimSums = {1:[],2:[],3:[],4:[],5:[],6:[]};
+  const DIM_SPIEGEL = ['d1q2','d1q4','d2q2','d2q4','d3q2','d3q4','d4q2','d4q4','d5q2','d5q4','d6q2','d6q4'];
+  responses.forEach(r => {
+    try {
+      const ans = JSON.parse(r.content);
+      for (let d=1; d<=6; d++) {
+        ['q1','q2','q3','q4'].forEach(q => {
+          const key = `d${d}${q}`;
+          if (ans[key] !== undefined) {
+            let v = Number(ans[key]);
+            if (DIM_SPIEGEL.includes(key)) v = 6 - v; // invert spiegel
+            dimSums[d].push(v);
+          }
+        });
+      }
+    } catch(e) {}
+  });
+
+  const scores = [1,2,3,4,5,6].map(d => {
+    const arr = dimSums[d];
+    return arr.length ? Math.round((arr.reduce((s,v)=>s+v,0)/arr.length)*10)/10 : 3;
+  });
+
+  const dimNames = ['Konflikt & Dissens','Fehler & Verantwortung','Feedback & Anerkennung','Entscheidungen unter Unsicherheit','Hilfe & Verletzlichkeit','Unausgesprochene Erwartungen'];
+  const scoreText = scores.map((s,i) => `${dimNames[i]}: ${s}/5`).join(', ');
+
+  const systemPrompt = `Du bist ein erfahrener Organisationspsychologe und Workshop-Coach. Analysiere Team-Normen schonungslos und direkt. Schreibe auf Deutsch. Antworte NUR im JSON-Format, kein Markdown.`;
+
+  const userPrompt = `Team-Normen-Analyse. ${responses.length} anonyme Antworten.
+Durchschnittliche Dimension-Scores (1=dysfunktional, 5=gesund): ${scoreText}
+
+Analysiere die Scores und identifiziere:
+1. Dysfunktionale Muster (Score < 3.0) und funktionale Staerken (Score > 3.8)
+2. Den praegnantesten Satz der das Kernmuster benennt
+
+Antworte AUSSCHLIESSLICH als JSON ohne Markdown:
+{
+  "normen": [
+    {"typ": "dysfunktional", "titel": "Kurzer Titel", "text": "Bei uns haben wir gelernt: ... (Ich-Perspektive des Teams, schonungslos, 2-3 Saetze)", "color": "#e63946"},
+    {"typ": "funktional", "titel": "Kurzer Titel", "text": "In diesem Team ist ... (positiv, konkret, 1-2 Saetze)", "color": "#2a9d8f"}
+  ],
+  "staerke": "Ein praegnanter Kernsatz der alles zusammenfasst."
+}`;
+
+  try {
+    const res = await fetch('https://dnoecftuybkoqvrkfvei.supabase.co/functions/v1/ki-analyze', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
+      body: JSON.stringify({ system: systemPrompt, userPrompt })
+    });
+    const raw = await res.json();
+    const txt = (raw.text || raw.content?.[0]?.text || '').replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(txt);
+
+    onlineSession.tnaKiStatus = '&#x2705; KI-Auswertung abgeschlossen.';
+    onlineSession.tnaPhase = 'auswertung';
+    initSupabase();
+    await sb.rpc('set_workshop_module', {
+      p_workshop_id: onlineSession.workshopId,
+      p_admin_token: onlineSession.adminToken,
+      p_module: 'teamnormen_analyse',
+      p_module_data: {
+        phase: 'auswertung',
+        scores,
+        normen:   parsed.normen   || [],
+        staerke:  parsed.staerke  || '',
+        kiText:   parsed.staerke  || ''
+      }
+    });
+  } catch(e) {
+    onlineSession.tnaKiStatus = '&#x274C; Fehler: ' + e.message;
+  }
+  renderModuleContent('teamnormen_analyse');
 }
 
 function renderVerzerrungsInfoSection(){
