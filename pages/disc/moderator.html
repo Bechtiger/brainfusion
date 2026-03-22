@@ -1605,14 +1605,16 @@ async function setNormenInfoStep(step) {
   if (!onlineSession?.workshopId) return;
   step = Math.max(0, Math.min(6, step));
   onlineSession.normenInfoStep = step;
-  initSupabase();
-  await sb.rpc('set_workshop_module', {
-    p_workshop_id: onlineSession.workshopId,
-    p_admin_token: onlineSession.adminToken,
-    p_module: 'normen_info',
-    p_module_data: { step }
-  });
   renderModuleContent('normen_info');
+  try {
+    initSupabase();
+    await sb.rpc('set_workshop_module', {
+      p_workshop_id: onlineSession.workshopId,
+      p_admin_token: onlineSession.adminToken,
+      p_module: 'normen_info',
+      p_module_data: { step }
+    });
+  } catch(e) { console.warn('setNormenInfoStep RPC error:', e); }
 }
 
 function renderTeamNormenSection() {
