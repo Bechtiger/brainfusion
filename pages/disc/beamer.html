@@ -2203,15 +2203,68 @@ async function showBiasStoryBeamer(data) {
     el.innerHTML = `
       <div style="font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;margin-bottom:32px;">Reflexion</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-        ${['Welche Hinweise waren für euch am stärksten — und warum?',
-           'Wer hat aktiv nach einer alternativen Erklärung gesucht?',
-           'Wann hattet ihr innerlich das Gefühl: Jetzt ist es klar?',
-           'Wo passiert uns das in echten Projekten?'
+        ${['Ab welchem Moment hatte sich in dir eine Meinung gebildet — und hast du danach noch aktiv nach Gegenbeweisen gesucht?',
+           'Thomas’ Hinweise lagen offen auf dem Tisch. Was hat dazu beigetragen, dass sie nicht die gleiche Aufmerksamkeit bekamen wie die Profiling-Daten?',
+           'Markus hat Thomas nicht unterbrochen — er hat seine Aussage in einen anderen Rahmen gestellt. Fällt dir das in euren eigenen Meetings auch auf?',
+           'Wo passiert euch das als Team im Projektalltag — und welche Konsequenzen hat das?'
           ].map((q,i) => `
           <div style="border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:22px 26px;background:rgba(255,255,255,.03);">
             <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.3);margin-bottom:10px;">${i+1} / 4</div>
             <div style="font-size:20px;line-height:1.6;color:rgba(255,255,255,.8);">${q}</div>
           </div>`).join('')}
+      </div>`;
+
+  } else if (phase === 'debrief') {
+    const step = data?.debriefStep ?? 0;
+    const DEBRIEF = [
+      {
+        q: 'Ab welchem Moment hatte sich in dir eine Meinung gebildet — und hast du danach noch aktiv nach Gegenbeweisen gesucht?',
+        label: 'Persönliche Innenschau',
+        color: 'var(--S)',
+        why: 'Der Bestätigungsfehler beginnt still und früh. Sobald eine erste Hypothese da ist, sucht das Gehirn unbewusst nach Bestätigung — nicht nach Widerlegung. Die Frage macht diesen Moment sichtbar.',
+        moment: 'Screen 3 — Erste Meldungen: Nur UI-Tester berichten. Das Bild entstand, bevor jemand gefragt hat.'
+      },
+      {
+        q: 'Thomas’ Hinweise lagen offen auf dem Tisch. Was hat dazu beigetragen, dass sie nicht die gleiche Aufmerksamkeit bekamen?',
+        label: 'Gruppendiagnose',
+        color: 'var(--I)',
+        why: 'Keine Schuldfrage — sondern eine Systemfrage. Drei Tage Profiling-Daten haben Namen, Tickets, Zahlen, Graphen. Thomas’ Beobachtungen hatten — einen Halbsatz im Confluence und eine Slack-Nachricht. Gewicht entsteht durch Dokumentation, nicht durch Wahrheit.',
+        moment: 'Screen 7 — Noch ein paar Dinge: Alles liegt offen. Niemand schaut hin.'
+      },
+      {
+        q: 'Markus hat Thomas nicht unterbrochen — er hat seine Aussage in einen anderen Rahmen gestellt. Fällt dir das in euren Meetings auch auf?',
+        label: 'Das subtilste Muster',
+        color: 'var(--gold)',
+        why: '"Guter Punkt — und das passt natürlich zu meiner These." Der Dissens verschwindet, ohne dass jemand unhöflich war. Kein Konflikt, keine Unterbrechung. Nur: freundliche Integration. Das ist der gefährlichste Gesprächspattern in jedem Team.',
+        moment: 'Screen 4 — Das Daily: Thomas wird weggelobt, nicht gehört. Screen 8 — Taskforce: Er nickt und sagt nichts mehr.'
+      },
+      {
+        q: 'Wo passiert euch das als Team im Projektalltag — und welche Konsequenzen hat das?',
+        label: 'Transfer in die eigene Realität',
+        color: 'var(--C)',
+        why: 'Die Geschichte ist Fiktion. Eure Projekte sind es nicht. Was sind eure "Thomas-Momente"? Wo werden bei euch Hinweise freundlich wegerklärt? Und was kostet das — in Zeit, Qualität, Vertrauen?',
+        moment: 'Jetzt. In diesem Raum.'
+      }
+    ];
+    const s = DEBRIEF[Math.min(step, 3)];
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);">Reflexion — Debrief</div>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,.1);"></div>
+        <div style="display:flex;gap:6px;">${[0,1,2,3].map(i=>`<div style="width:28px;height:4px;border-radius:2px;background:${i===step?s.color:'rgba(255,255,255,.15)'}"></div>`).join('')}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:rgba(255,255,255,.3);">${step+1} / 4</div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${s.color};margin-bottom:16px;">${s.label}</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:700;line-height:1.25;margin-bottom:36px;max-width:900px;">${s.q}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:1100px;">
+        <div style="padding:22px 26px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:14px;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${s.color};margin-bottom:12px;">Warum diese Frage?</div>
+          <div style="font-size:18px;line-height:1.7;color:rgba(255,255,255,.7);">${s.why}</div>
+        </div>
+        <div style="padding:22px 26px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px;">Moment in der Geschichte</div>
+          <div style="font-size:17px;line-height:1.7;color:rgba(255,255,255,.5);font-style:italic;">${s.moment}</div>
+        </div>
       </div>`;
   }
 }

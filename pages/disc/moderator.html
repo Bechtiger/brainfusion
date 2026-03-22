@@ -1454,7 +1454,12 @@ function renderBiasStorySection() {
       <button class="btn ${phase==='locked'?'primary':''}" onclick="setBiasPhase('locked')">🔒 Sperren + Beamer</button>
       <button class="btn ${phase==='reveal'?'gold':''}" onclick="setBiasPhase('reveal')">💡 Auflösung</button>
       <button class="btn ${phase==='reflection'?'primary':''}" onclick="setBiasPhase('reflection')">💬 Reflexion</button>
-    </div>`;
+      <button class="btn ${phase==='debrief'?'primary':''}" onclick="setBiasPhase('debrief',0)" style="border-color:var(--C);">🔍 Debrief</button>
+    </div>
+    ${phase==='debrief' ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+      <span style="font-size:12px;color:var(--muted);margin-right:4px;">Frage:</span>
+      ${[0,1,2,3].map(i=>`<button class="btn" style="font-size:12px;padding:4px 10px;${(onlineSession?.debriefStep??0)===i?'background:var(--C);color:#fff;border-color:var(--C);':''}" onclick="setBiasPhase('debrief',${i})">${i+1}</button>`).join('')}
+    </div>` : ''}\``;
 
   const statusBar = `
     <div style="display:flex;gap:16px;align-items:center;padding:10px 14px;background:var(--surf2);border-radius:10px;margin-bottom:14px;font-size:13px;">
@@ -1497,9 +1502,11 @@ function renderBiasStorySection() {
     ${phaseButtons}${statusBar}${resultsHTML}
     <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6;">
       Reflexionsfragen nach der Auflösung:<br>
-      • Welche Hinweise waren für euch am stärksten?<br>
-      • Wer hat aktiv nach einer alternativen Erklärung gesucht?<br>
-      • Wo passiert uns das in echten Projekten?
+      • Ab welchem Moment hatte sich eine Meinung gebildet?<br>
+      • Was hat dazu beigetragen, dass Thomas’ Hinweise untergingen?<br>
+      • Markus hat Thomas freundlich umgedeutet — fällt euch das in eigenen Meetings auf?<br>
+      • Wo passiert euch das als Team — und was kostet das?<br>
+      <span style="color:var(--C);">Tipp: Mit 🔍 Debrief kannst du jede Frage einzeln mit Erklärung auf dem Beamer zeigen.</span>
     </div>`;
 }
 
