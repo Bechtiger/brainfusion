@@ -2512,7 +2512,17 @@ function initRealtime() {
   // Live exercise responses
   exChannel = sb.channel('beamer-ex-' + session.workshopId)
     .on('postgres_changes', { event:'INSERT', schema:'public', table:'exercise_responses', filter:'workshop_id=eq.'+session.workshopId },
-      p => addFeedResponse(p.new))
+      p => {
+        if (p.new?.module === 'teamnormen_analyse' && currentModule === 'teamnormen_analyse') {
+          const el = document.getElementById('normenCounter');
+          if (el) {
+            const cur = parseInt(el.textContent) || 0;
+            el.textContent = (cur + 1) + el.textContent.replace(/^\d+/, '');
+          }
+          return;
+        }
+        addFeedResponse(p.new);
+      })
     .subscribe();
 }
 
