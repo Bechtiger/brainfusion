@@ -373,6 +373,7 @@ const MODULE_PHASES=[
   {label:'▸ Tag 2 – Vertiefen',modules:[
     {id:'morgen_reflexion',    icon:'🌅',name:'Morgen-Check',   sub:'Live-Feed'},
     {id:'teamnormen_analyse',  icon:'🧭',name:'Normen-Analyse', sub:'24 Fragen'},
+    {id:'normen_info',         icon:'📖',name:'Normen-Theorie', sub:'Beamer-Präsentation'},
     {id:'raci_info',           icon:'📋',name:'RACI Info',      sub:'Beamer'},
     {id:'raci',                icon:'📋',name:'RACI',           sub:'Auswahl'},
   ]},
@@ -508,6 +509,20 @@ const MODULE_DETAILS={
       '&#220;berleitung: \"Warum ist das so schwer — auch bei uns im Team?\"'],
     beamer:'Beamer zeigt Szenario-Text + Live-Abstimmungsbalken',
     dataType:'johari_fallbeispiele'
+  },
+  normen_info:{
+    desc:'Theoretische Grundlagen zu informellen Teamnormen — navigierbar auf dem Beamer.',
+    hints:[
+      'Navigiere die 7 Screens mit Zurück / Weiter',
+      'Screen 1: Was sind Normen? (formal vs. informal)',
+      'Screen 2: Wie entstehen informelle Normen?',
+      'Screen 3: Wie erkennt man sie? (3 Erkennungsfragen)',
+      'Screen 4: Funktional vs. dysfunktional',
+      'Screen 5: Das Harmonie-Paradox',
+      'Screen 6: Wie verändert man Normen?',
+      'Screen 7: Brücke zur Urkunde',
+    ],
+    beamer:'7 navigierbare Screens mit Fortschrittsbalken'
   },
   teamnormen_analyse:{
     desc:'Team erkennt seine informellen Normen — anonym, ehrlich, schonungslos.',
@@ -850,6 +865,7 @@ async function renderModuleContent(moduleId){
     case'raci':      dataHTML=renderRaciSection();break;
     case'johari_static':       dataHTML=renderJohariStaticSection();break;
     case'johari_fallbeispiele':dataHTML=renderJohariFallbeispieleSection();break;
+    case'normen_info':         dataHTML=renderNormenInfoSection();break;
     case'teamnormen_analyse':  dataHTML=renderTeamNormenSection();break;
     case'bias_story':          dataHTML=renderBiasStorySection();break;
     case'verzerrungen_quiz':   dataHTML=renderVerzerrungsQuizSection();break;
@@ -1551,6 +1567,53 @@ async function setDebriefStep(step) {
   renderModuleContent('bias_story');
 }
 
+
+
+function renderNormenInfoSection() {
+  const step = onlineSession?.normenInfoStep ?? 0;
+  const TOTAL = 7;
+  const TITLES = [
+    'Was sind Normen?',
+    'Wie entstehen informelle Normen?',
+    'Wie erkennt man sie?',
+    'Funktional oder dysfunktional?',
+    'Das Harmonie-Paradox',
+    'Wie ver\u00e4ndert man Normen?',
+    'Was jetzt kommt'
+  ];
+
+  const navButtons = Array.from({length: TOTAL}, (_,i) => `
+    <button class="btn" style="font-size:11px;padding:4px 8px;${step===i?'background:var(--C);color:#fff;border-color:var(--C);':''}"
+      onclick="setNormenInfoStep(${i})">${i+1}</button>`).join('');
+
+  return `
+    <div class="section-title">\ud83d\udcd6 Normen-Theorie \u2014 Beamer-Pr\u00e4sentation</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
+      <button class="btn" onclick="setNormenInfoStep(Math.max(0, ${step}-1))" ${step===0?'disabled':''}>&#8592; Zur\u00fcck</button>
+      <span style="font-size:13px;color:var(--muted);padding:0 4px;">${step+1} / ${TOTAL}</span>
+      <button class="btn primary" onclick="setNormenInfoStep(Math.min(${TOTAL-1}, ${step}+1))" ${step===TOTAL-1?'disabled':''}>Weiter &#8594;</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+      ${navButtons}
+    </div>
+    <div style="padding:10px 14px;background:var(--surf2);border-radius:10px;font-size:13px;color:var(--S);font-weight:600;">
+      Aktuell: ${TITLES[step]}
+    </div>`;
+}
+
+async function setNormenInfoStep(step) {
+  if (!onlineSession?.workshopId) return;
+  step = Math.max(0, Math.min(6, step));
+  onlineSession.normenInfoStep = step;
+  initSupabase();
+  await sb.rpc('set_workshop_module', {
+    p_workshop_id: onlineSession.workshopId,
+    p_admin_token: onlineSession.adminToken,
+    p_module: 'normen_info',
+    p_module_data: { step }
+  });
+  renderModuleContent('normen_info');
+}
 
 function renderTeamNormenSection() {
   const phase = onlineSession?.tnaPhase || 'sammeln';

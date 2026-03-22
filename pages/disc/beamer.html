@@ -694,6 +694,14 @@ body:hover #fsBtn{ opacity:1; }
     </div>
   </div>
 
+
+<!-- ══ NORMEN INFO SCREEN ══ -->
+<div class="screen" id="sNormenInfo">
+  <div id="normenInfoContent" style="flex:1;display:flex;flex-direction:column;padding:40px 70px 32px;background:#060610;min-height:100vh;overflow:hidden;">
+    <!-- wird dynamisch befuellt -->
+  </div>
+</div>
+
 <!-- == KOGNITIVE VERZERRUNGEN INFO SCREEN == -->
 <div class="screen" id="sVerzerrungen">
   <div style="flex:1;display:flex;flex-direction:column;padding:40px 70px 32px;background:#060610;min-height:100vh;">
@@ -934,6 +942,7 @@ const MODULE_META = {
   kernbotschaften:      { screen:'sFeed',    icon:'⚡', label:'Kernbotschaft',      title:'Welcher Satz trifft dich?',  question:'Welche Kernbotschaft resoniert bei dir am stärksten — und warum?' },
   johari_erklaerung:       { screen:'sJohari' },
   johari_fallbeispiele:          { screen:'sFallbeispiele' },
+  normen_info:                   { screen:'sNormenInfo' },
   kognitive_verzerrungen_info:   { screen:'sVerzerrungen' },
   verzerrungen_quiz:             { screen:'sVzQuiz' },
   mut_info:                      { screen:'sMutInfo' },
@@ -2362,6 +2371,205 @@ function showTeamNormenBeamer(data) {
   }
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   NORMEN-INFO BEAMER — 7 navigierbare Screens
+══════════════════════════════════════════════════════════ */
+function showNormenInfoBeamer(data) {
+  show('sNormenInfo');
+  const step = data?.step ?? 0;
+  const el = document.getElementById('normenInfoContent');
+  if (!el) return;
+
+  const SCREENS = [
+
+    // ── Screen 0: Was sind Normen? ───────────────────────────────────────
+    `<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:28px;">Teamnormen \u00b7 Theorie</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:54px;font-weight:700;line-height:1.1;margin-bottom:32px;">Was sind Normen?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;flex:1;">
+      <div style="border:1px solid rgba(74,144,217,.4);border-radius:16px;padding:30px 32px;background:rgba(74,144,217,.06);">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(74,144,217,.7);margin-bottom:14px;">\u2712 Formelle Normen</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:rgba(74,144,217,.9);margin-bottom:14px;">Geschrieben.<br>Beschlossen.<br>Sichtbar.</div>
+        <div style="font-size:17px;color:rgba(200,220,255,.7);line-height:1.7;">Vertr\u00e4ge, Stellenbeschriebe, Prozesse, Qualit\u00e4tsstandards.<br>Jeder weiss, dass sie existieren.</div>
+      </div>
+      <div style="border:1px solid rgba(244,162,97,.4);border-radius:16px;padding:30px 32px;background:rgba(244,162,97,.06);">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(244,162,97,.7);margin-bottom:14px;">\u26a1 Informelle Normen</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:rgba(244,162,97,.9);margin-bottom:14px;">Ungeschrieben.<br>Nie beschlossen.<br>Trotzdem wirksam.</div>
+        <div style="font-size:17px;color:rgba(255,230,200,.7);line-height:1.7;">Wer redet, wer schweigt. Was erlaubt ist und was nicht. Was als normal gilt.<br>Niemand hat es je beschlossen \u2014 aber alle halten sich daran.</div>
+      </div>
+    </div>`,
+
+    // ── Screen 1: Wie entstehen informelle Normen? ───────────────────────
+    `<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:28px;">Teamnormen \u00b7 Entstehung</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:50px;font-weight:700;line-height:1.1;margin-bottom:36px;">Wie entstehen<br>informelle Normen?</div>
+    <div style="display:flex;flex-direction:column;gap:16px;max-width:900px;">
+      <div style="display:flex;align-items:center;gap:20px;padding:20px 24px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:rgba(255,255,255,.2);min-width:48px;">01</div>
+        <div>
+          <div style="font-size:20px;font-weight:600;margin-bottom:4px;">Jemand macht etwas</div>
+          <div style="font-size:16px;color:rgba(255,255,255,.5);">Absichtlich oder zuf\u00e4llig. Ein Verhalten tritt auf.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:20px;padding:20px 24px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:rgba(255,255,255,.2);min-width:48px;">02</div>
+        <div>
+          <div style="font-size:20px;font-weight:600;margin-bottom:4px;">Andere beobachten \u2014 und reagieren</div>
+          <div style="font-size:16px;color:rgba(255,255,255,.5);">Keine Reaktion = stillschweigende Zustimmung. Eine Reaktion = soziales Signal.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:20px;padding:20px 24px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:rgba(255,255,255,.2);min-width:48px;">03</div>
+        <div>
+          <div style="font-size:20px;font-weight:600;margin-bottom:4px;">Das Verhalten wiederholt sich</div>
+          <div style="font-size:16px;color:rgba(255,255,255,.5);">Weil es keine negativen Konsequenzen hat \u2014 oder weil es bel\u00f6hnt wird.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:20px;padding:20px 24px;border-radius:14px;background:rgba(42,157,143,.08);border:1px solid rgba(42,157,143,.3);">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:rgba(42,157,143,.5);min-width:48px;">04</div>
+        <div>
+          <div style="font-size:20px;font-weight:600;color:rgba(42,157,143,.9);margin-bottom:4px;">Es wird zur Norm</div>
+          <div style="font-size:16px;color:rgba(200,240,235,.6);">Nicht durch Beschluss \u2014 durch Wiederholung. Es ist jetzt einfach so, wie man das hier macht.</div>
+        </div>
+      </div>
+    </div>`,
+
+    // ── Screen 2: Wie erkennt man sie? ──────────────────────────────────
+    `<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:28px;">Teamnormen \u00b7 Erkennung</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:50px;font-weight:700;line-height:1.1;margin-bottom:14px;">Wie erkennt man<br>informelle Normen?</div>
+    <div style="font-size:19px;color:rgba(255,255,255,.35);margin-bottom:32px;">Drei Fragen \u2014 die ihr euch stellen k\u00f6nnt.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;flex:1;">
+      <div style="border:1px solid rgba(201,168,76,.4);border-radius:16px;padding:26px 28px;background:rgba(201,168,76,.05);">
+        <div style="font-size:32px;margin-bottom:14px;">\ud83d\udc64</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:21px;font-weight:700;color:rgba(201,168,76,.9);margin-bottom:12px;">Die Neuling-Frage</div>
+        <div style="font-size:16px;color:rgba(255,240,200,.65);line-height:1.7;">"Was w\u00fcrde ein neues Teammitglied nach drei Monaten \u00fcber uns gelernt haben \u2014 ohne dass es jemand gesagt h\u00e4tte?"</div>
+      </div>
+      <div style="border:1px solid rgba(232,74,95,.4);border-radius:16px;padding:26px 28px;background:rgba(232,74,95,.05);">
+        <div style="font-size:32px;margin-bottom:14px;">\ud83e\udd4a</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:21px;font-weight:700;color:rgba(232,74,95,.9);margin-bottom:12px;">Die Unbehagen-Frage</div>
+        <div style="font-size:16px;color:rgba(255,210,215,.65);line-height:1.7;">"Wo entsteht ein merkw\u00fcrdiges Gef\u00fchl oder Unbehagen, wenn jemand etwas Bestimmtes tut oder sagt?"</div>
+      </div>
+      <div style="border:1px solid rgba(42,157,143,.4);border-radius:16px;padding:26px 28px;background:rgba(42,157,143,.05);">
+        <div style="font-size:32px;margin-bottom:14px;">\ud83e\udd2b</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:21px;font-weight:700;color:rgba(42,157,143,.9);margin-bottom:12px;">Die Stille-Frage</div>
+        <div style="font-size:16px;color:rgba(200,240,235,.65);line-height:1.7;">"Was wird bei uns nicht gesagt \u2014 obwohl alle es denken? Was bleibt systematisch unausgesprochen?"</div>
+      </div>
+    </div>`,
+
+    // ── Screen 3: Funktional vs. Dysfunktional ───────────────────────────
+    `<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:28px;">Teamnormen \u00b7 Bewertung</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:50px;font-weight:700;line-height:1.1;margin-bottom:32px;">Funktional oder<br>dysfunktional?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;flex:1;">
+      <div style="border:1px solid rgba(42,157,143,.4);border-radius:16px;padding:28px 32px;background:rgba(42,157,143,.06);display:flex;flex-direction:column;gap:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(42,157,143,.7);">\u2705 Funktionale Norm</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:rgba(42,157,143,.9);">Hilft dem Team seinen Zweck zu erf\u00fcllen.</div>
+        <div style="font-size:16px;color:rgba(200,240,235,.65);line-height:1.7;">Sie unterst\u00fctzt Leistung, Zusammenarbeit und Qualit\u00e4t. Man w\u00fcrde sie bew\u00fcsst w\u00e4hlen, wenn man sie heute neu einf\u00fchren k\u00f6nnte.</div>
+        <div style="margin-top:8px;padding:14px 18px;background:rgba(42,157,143,.1);border-radius:10px;font-size:15px;color:rgba(200,240,235,.8);line-height:1.6;font-style:italic;">"Bei uns sagt jeder seine Meinung \u2014 auch wenn sie unbequem ist."</div>
+      </div>
+      <div style="border:1px solid rgba(232,74,95,.4);border-radius:16px;padding:28px 32px;background:rgba(232,74,95,.06);display:flex;flex-direction:column;gap:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(232,74,95,.7);">\u26a0\ufe0f Dysfunktionale Norm</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:rgba(232,74,95,.9);">Sch\u00fctzt das System \u2014 nicht das Ziel.</div>
+        <div style="font-size:16px;color:rgba(255,210,215,.65);line-height:1.7;">Sie entstand, um Unbehagen zu vermeiden oder Konflikte zu reduzieren \u2014 aber sie kostet das Team langfristig Leistung und Vertrauen.</div>
+        <div style="margin-top:8px;padding:14px 18px;background:rgba(232,74,95,.1);border-radius:10px;font-size:15px;color:rgba(255,210,215,.8);line-height:1.6;font-style:italic;">"Bei uns sagt man lieber nichts \u2014 als eine unangenehme Diskussion auszul\u00f6sen."</div>
+      </div>
+    </div>
+    <div style="margin-top:20px;padding:16px 24px;background:rgba(201,168,76,.07);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;">
+      <div style="font-size:17px;color:rgba(255,240,200,.7);line-height:1.6;">Die entscheidende Frage: <strong style="color:rgba(201,168,76,.9);">"W\u00fcrden wir diese Norm bew\u00fcsst w\u00e4hlen, wenn wir sie heute neu einf\u00fchren k\u00f6nnten?"</strong></div>
+    </div>`,
+
+    // ── Screen 4: Das Harmonie-Paradox ───────────────────────────────────
+    `<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:28px;">Teamnormen \u00b7 Sonderfall</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:50px;font-weight:700;line-height:1.1;margin-bottom:32px;">Das Harmonie-Paradox</div>
+    <div style="display:grid;grid-template-columns:3fr 2fr;gap:32px;flex:1;align-items:start;">
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div style="padding:22px 26px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);">
+          <div style="font-size:18px;color:rgba(255,255,255,.75);line-height:1.7;">Wenn ein Team Harmonie zur wichtigsten informellen Norm erhebt, passiert etwas Paradoxes:</div>
+        </div>
+        <div style="padding:22px 26px;border-radius:14px;background:rgba(244,162,97,.06);border:1px solid rgba(244,162,97,.25);">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:rgba(244,162,97,.9);margin-bottom:8px;">Die Harmonie wird zur Vereinbarung</div>
+          <div style="font-size:17px;color:rgba(255,230,200,.7);line-height:1.7;">Nicht zur echten \u2014 sondern zur k\u00fcnstlichen. Alle wirken einig. Aber es ist eine Einigkeit des Schweigens, nicht des Vertrauens.</div>
+        </div>
+        <div style="padding:22px 26px;border-radius:14px;background:rgba(232,74,95,.06);border:1px solid rgba(232,74,95,.25);">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:rgba(232,74,95,.9);margin-bottom:8px;">Was wirklich verloren geht</div>
+          <div style="font-size:17px;color:rgba(255,210,215,.7);line-height:1.7;">Echte Diskussion. Korrigierende R\u00fcckmeldung. Die Sicherheit, Fehler anzusprechen. Das Vertrauen, dass man sagen kann was man denkt.</div>
+        </div>
+      </div>
+      <div style="padding:28px 28px;border-radius:16px;background:rgba(201,168,76,.06);border:2px solid rgba(201,168,76,.25);display:flex;flex-direction:column;gap:16px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,.5);">Kerngedanke</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:rgba(201,168,76,.9);line-height:1.3;">"Echte Harmonie ist eine Folge von Vertrauen."</div>
+        <div style="width:40px;height:2px;background:rgba(201,168,76,.3);"></div>
+        <div style="font-size:16px;color:rgba(255,240,200,.6);line-height:1.7;">"K\u00fcnstliche Harmonie ist eine Folge von Angst."</div>
+        <div style="margin-top:12px;font-size:14px;color:rgba(255,240,200,.4);line-height:1.6;">Man kann den Unterschied nicht von aussen sehen \u2014 aber man kann ihn f\u00fchlen.</div>
+      </div>
+    </div>`,
+
+    // ── Screen 5: Normen veraendern ──────────────────────────────────────
+    `<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:28px;">Teamnormen \u00b7 Ver\u00e4nderung</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:50px;font-weight:700;line-height:1.1;margin-bottom:14px;">Wie ver\u00e4ndert man<br>Normen?</div>
+    <div style="font-size:19px;color:rgba(255,255,255,.35);margin-bottom:28px;">Nicht durch einen Beschluss. Durch Verhalten.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="padding:20px 24px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);">
+          <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px;">Schritt 1</div>
+          <div style="font-size:20px;font-weight:600;margin-bottom:4px;">Benennen</div>
+          <div style="font-size:15px;color:rgba(255,255,255,.5);line-height:1.6;">Die Norm muss zuerst sichtbar gemacht werden. Was nie ausgesprochen wurde, kann nicht ver\u00e4ndert werden.</div>
+        </div>
+        <div style="padding:20px 24px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);">
+          <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px;">Schritt 2</div>
+          <div style="font-size:20px;font-weight:600;margin-bottom:4px;">Gemeinsam entscheiden</div>
+          <div style="font-size:15px;color:rgba(255,255,255,.5);line-height:1.6;">Nicht von oben verordnet. Jeder muss verstehen warum \u2014 und selbst dahinterstehen k\u00f6nnen.</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="padding:20px 24px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);">
+          <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:6px;">Schritt 3</div>
+          <div style="font-size:20px;font-weight:600;margin-bottom:4px;">Konsequent neues Verhalten</div>
+          <div style="font-size:15px;color:rgba(255,255,255,.5);line-height:1.6;">Eine neue Norm entsteht durch neue Wiederholung. Jedes Mal wenn jemand anders handelt, verst\u00e4rkt er sie.</div>
+        </div>
+        <div style="padding:20px 24px;border-radius:14px;background:rgba(42,157,143,.08);border:1px solid rgba(42,157,143,.25);">
+          <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:rgba(42,157,143,.6);margin-bottom:6px;">Schritt 4</div>
+          <div style="font-size:20px;font-weight:600;color:rgba(42,157,143,.9);margin-bottom:4px;">Soziale Verst\u00e4rkung</div>
+          <div style="font-size:15px;color:rgba(200,240,235,.6);line-height:1.6;">Wenn das neue Verhalten bemerkt, anerkannt und best\u00e4tigt wird \u2014 wird es zur neuen Norm.</div>
+        </div>
+      </div>
+    </div>`,
+
+    // ── Screen 6: Brücke zur Urkunde ─────────────────────────────────────
+    `<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:40px;">Teamnormen \u00b7 Was jetzt kommt</div>
+    <div style="max-width:900px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:56px;font-weight:700;line-height:1.1;margin-bottom:32px;">Was ihr jetzt tut,<br>ist aussergewöhnlich.</div>
+      <div style="font-size:22px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:40px;">Die meisten Teams arbeiten jahrelang unter informellen Normen, die niemand je beschlossen hat. Ihr benennt eure heute bewusst \u2014 und w\u00e4hlt neue.</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:40px;">
+        <div style="display:flex;align-items:center;gap:16px;padding:16px 22px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+          <div style="font-size:24px;">\ud83d\udd0d</div>
+          <div style="font-size:18px;color:rgba(255,255,255,.7);">Ihr habt eure informellen Normen analysiert \u2014 anonym, ehrlich, schonungslos.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;padding:16px 22px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);">
+          <div style="font-size:24px;">\ud83e\udde0</div>
+          <div style="font-size:18px;color:rgba(255,255,255,.7);">Ihr versteht jetzt wie Normen entstehen und was sie mit einem Team machen.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;padding:16px 22px;border-radius:12px;background:rgba(42,157,143,.08);border:1px solid rgba(42,157,143,.25);">
+          <div style="font-size:24px;">\u270d\ufe0f</div>
+          <div style="font-size:18px;color:rgba(200,240,235,.8);">Jetzt entscheidet ihr gemeinsam, welche Normen ihr bew\u00fcsst w\u00e4hlen wollt \u2014 und besiegelt sie.</div>
+        </div>
+      </div>
+      <div style="padding:20px 28px;border-left:4px solid var(--gold);border-radius:0 12px 12px 0;background:rgba(201,168,76,.06);">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:rgba(201,168,76,.9);line-height:1.4;">"Eine Norm die ihr gemeinsam beschlossen habt, ist st\u00e4rker als jede, die einfach entstanden ist."</div>
+      </div>
+    </div>`
+  ];
+
+  const s = SCREENS[Math.min(step, SCREENS.length - 1)];
+  const progress = SCREENS.map((_,i) =>
+    `<div style="height:3px;flex:1;border-radius:2px;background:${i===step?'rgba(255,255,255,.7)':i<step?'rgba(255,255,255,.25)':'rgba(255,255,255,.1)'}"></div>`
+  ).join('');
+
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:28px;">${progress}
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.25);margin-left:8px;white-space:nowrap;">${step+1} / ${SCREENS.length}</span>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;">${s}</div>`;
+}
+
 let biasBeamerPoll = null;
 async function startBiasPolling() {
   if (biasBeamerPoll) clearInterval(biasBeamerPoll);
@@ -2496,7 +2704,11 @@ function initRealtime() {
           if (data.reveal !== undefined) { gfkRevealed = data.reveal; updateGfkBars(); }
           return;
         }
-        // Team-Normen: Phase-Wechsel
+        // Normen-Info: Screen-Navigation
+        if (mod === 'normen_info' && currentModule === 'normen_info') {
+          showNormenInfoBeamer(data); return;
+        }
+        // Team-Normen: Phase-Wechsel (sammeln→auswertung)
         if (mod === 'teamnormen_analyse' && currentModule === 'teamnormen_analyse') {
           showTeamNormenBeamer(data); return;
         }
