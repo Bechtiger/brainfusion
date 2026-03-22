@@ -1571,33 +1571,22 @@ async function setDebriefStep(step) {
 
 function renderNormenInfoSection() {
   const step = onlineSession?.normenInfoStep ?? 0;
-  const TOTAL = 7;
-  const TITLES = [
-    'Was sind Normen?',
-    'Wie entstehen informelle Normen?',
-    'Wie erkennt man sie?',
-    'Funktional oder dysfunktional?',
-    'Das Harmonie-Paradox',
-    'Wie ver\u00e4ndert man Normen?',
-    'Was jetzt kommt'
-  ];
-
-  const navButtons = Array.from({length: TOTAL}, (_,i) => `
-    <button class="btn" style="font-size:11px;padding:4px 8px;${step===i?'background:var(--C);color:#fff;border-color:var(--C);':''}"
-      onclick="setNormenInfoStep(${i})">${i+1}</button>`).join('');
-
+  const TITLES = ['Was sind Normen?','Wie entstehen informelle Normen?','Wie erkennt man sie?','Funktional oder dysfunktional?','Das Harmonie-Paradox','Wie ver\u00e4ndert man Normen?','Was jetzt kommt'];
+  const prev = step > 0 ? step - 1 : 0;
+  const next = step < 6 ? step + 1 : 6;
+  const dots = TITLES.map((_,i) =>
+    `<button onclick="setNormenInfoStep(${i})" style="width:28px;height:28px;border-radius:6px;border:1px solid ${i===step?'var(--C)':'var(--border)'};background:${i===step?'var(--C)':'transparent'};color:${i===step?'#fff':'var(--muted)'};font-size:12px;cursor:pointer;">${i+1}</button>`
+  ).join('');
   return `
-    <div class="section-title">\ud83d\udcd6 Normen-Theorie \u2014 Beamer-Pr\u00e4sentation</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
-      <button class="btn" onclick="setNormenInfoStep(Math.max(0, ${step}-1))" ${step===0?'disabled':''}>&#8592; Zur\u00fcck</button>
-      <span style="font-size:13px;color:var(--muted);padding:0 4px;">${step+1} / ${TOTAL}</span>
-      <button class="btn primary" onclick="setNormenInfoStep(Math.min(${TOTAL-1}, ${step}+1))" ${step===TOTAL-1?'disabled':''}>Weiter &#8594;</button>
+    <div class="section-title" style="margin-bottom:10px;">\ud83d\udcd6 Normen-Theorie</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <button class="btn" onclick="setNormenInfoStep(${prev})" ${step===0?'disabled':''} style="min-width:80px;">\u2190 Zur\u00fcck</button>
+      <span style="font-size:12px;color:var(--muted);white-space:nowrap;">${step+1} / 7</span>
+      <button class="btn primary" onclick="setNormenInfoStep(${next})" ${step===6?'disabled':''} style="min-width:80px;">Weiter \u2192</button>
     </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
-      ${navButtons}
-    </div>
-    <div style="padding:10px 14px;background:var(--surf2);border-radius:10px;font-size:13px;color:var(--S);font-weight:600;">
-      Aktuell: ${TITLES[step]}
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">${dots}</div>
+    <div style="padding:8px 12px;background:var(--surf2);border-radius:8px;font-size:13px;color:var(--S);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+      \u25b6 ${TITLES[step]}
     </div>`;
 }
 
