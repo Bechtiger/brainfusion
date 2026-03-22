@@ -1525,8 +1525,11 @@ async function setBiasPhase(phase) {
 }
 
 async function setDebriefStep(step) {
+  if (!onlineSession?.workshopId) return;
   onlineSession.debriefStep = step;
-  await callRpc('set-module', {
+  initSupabase();
+  await sb.rpc('set_workshop_module', {
+    p_workshop_id: onlineSession.workshopId,
     p_admin_token: onlineSession.adminToken,
     p_module: 'bias_story',
     p_module_data: { phase: 'debrief', debriefStep: step }
