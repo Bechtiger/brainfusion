@@ -1526,13 +1526,11 @@ async function setBiasPhase(phase) {
 
 async function setDebriefStep(step) {
   onlineSession.debriefStep = step;
-  try {
-    await fetch(SB_URL + '/rest/v1/workshops?id=eq.' + onlineSession.workshopId, {
-      method: 'PATCH',
-      headers: Object.assign({}, HDR, {'Content-Type': 'application/json', 'Prefer': 'return=minimal'}),
-      body: JSON.stringify({ module_data: { phase: 'debrief', debriefStep: step } })
-    });
-  } catch(e) { console.warn('setDebriefStep patch failed', e); }
+  await callRpc('set-module', {
+    p_admin_token: onlineSession.adminToken,
+    p_module: 'bias_story',
+    p_module_data: { phase: 'debrief', debriefStep: step }
+  });
   renderModuleContent('bias_story');
 }
 
