@@ -381,7 +381,6 @@ const MODULE_PHASES=[
     {id:'steckbrief_vorschlaege', icon:'📝',name:'Norm-Vorschläge',sub:'Einzelarbeit'},
     {id:'steckbrief_normen',      icon:'📋',name:'Normen-Editor',  sub:'Moderator tippt'},
     {id:'steckbrief_urkunde',     icon:'🖊',name:'Urkunde',        sub:'Unterzeichnen'},
-    {id:'ritual',                 icon:'✍️',name:'Ritual',         sub:'Versprechen'},
     {id:'closing',                icon:'🏆',name:'Abschluss',      sub:'Ende'},
   ]}
 ];
@@ -808,6 +807,12 @@ async function activateModule(moduleId){
   if (moduleId === 'pairing_karten') {
     const teamTypes = [...new Set(participants.map(p=>p.naturalType).filter(t=>['D','I','S','C'].includes(t)))];
     moduleData = { teamTypes };
+  }
+  // Urkunde: Normen aus normenState mitschicken damit Beamer sie anzeigen kann
+  if (moduleId === 'steckbrief_urkunde') {
+    const allNormen = [];
+    NORMEN_KATEGORIEN.forEach(k => (normenState[k.id]||[]).forEach(t => allNormen.push(t)));
+    moduleData = { normen: allNormen };
   }
   try{
     const{data,error}=await sb.rpc('set_workshop_module',{
