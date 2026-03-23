@@ -2964,25 +2964,43 @@ async function pollUrkundeBeamer() {
   const el = document.getElementById('urkundeBeamerContent');
   if (!el) return;
   try {
-    const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=alias,content&module=eq.steckbrief_urkunde&workshop_id=eq.${session.workshopId}&order=created_at.asc`, { headers: HDR });
-    const rows = await res.json();
-    const normen = urkSavedData?.normen || [];
+    // Unterschriften laden
+    const resEx = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=alias,content&module=eq.steckbrief_urkunde&workshop_id=eq.${session.workshopId}&order=created_at.asc`, { headers: HDR });
+    const rows = await resEx.json();
+
+    // Normen: aus Cache ODER frisch aus DB holen
+    let normen = urkSavedData?.normen || [];
+    if (!normen.length) {
+      try {
+        const resWs = await fetch(`${SB_URL}/rest/v1/workshops?select=module_data&id=eq.${session.workshopId}`, { headers: HDR });
+        const wsRows = await resWs.json();
+        const md = wsRows?.[0]?.module_data;
+        if (md?.normen) {
+          // normen ist { kommunikation:[], fehler:[], ... } — flat machen
+          if (Array.isArray(md.normen)) {
+            normen = md.normen;
+          } else {
+            Object.values(md.normen).forEach(arr => { if(Array.isArray(arr)) normen.push(...arr); });
+          }
+          urkSavedData = { normen };
+        }
+      } catch(e) { console.warn('normen fallback fetch:', e); }
+    }
+
     const sigs = rows.map(r => {
       try { return JSON.parse(r.content); } catch(e) { return null; }
     }).filter(Boolean);
 
-    // Dynamische Grössen
-    const total    = participants?.length || 22;
-    const sigCount = sigs.length;
-    const normFs   = Math.max(11, 16 - normen.length * 0.4);
-    const normPad  = normFs <= 13 ? '6px 12px' : '9px 14px';
+    const total     = participants?.length || 22;
+    const sigCount  = sigs.length;
+    const normFs    = Math.max(11, 16 - normen.length * 0.4);
+    const normPad   = normFs <= 13 ? '6px 12px' : '9px 14px';
     const sigNameFs = sigCount > 16 ? 9 : 10;
     const sigImgH   = sigCount > 16 ? 30 : 38;
     const cols      = sigCount > 18 ? 3 : 2;
 
     el.innerHTML = `
       <div style="display:flex;gap:32px;height:100%;overflow:hidden;">
-        <!-- Links: Normen -->
         <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
           <div style="font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;margin-bottom:4px;flex-shrink:0;">Team-Steckbrief</div>
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.3);margin-bottom:14px;text-transform:uppercase;flex-shrink:0;">R&D Engineering · Swisstronics · ${new Date().getFullYear()}</div>
@@ -2992,7 +3010,6 @@ async function pollUrkundeBeamer() {
               : '<div style="font-size:14px;color:rgba(255,255,255,.25);font-style:italic;">Normen werden geladen…</div>'}
           </div>
         </div>
-        <!-- Rechts: Unterschriften -->
         <div style="width:440px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;">
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,168,76,.6);margin-bottom:10px;flex-shrink:0;">${sigCount} / ${total} Unterschriften</div>
           <div style="flex:1;overflow:hidden;display:grid;grid-template-columns:repeat(${cols},1fr);gap:7px;align-content:start;">
