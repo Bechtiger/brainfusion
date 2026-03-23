@@ -1903,11 +1903,11 @@ async function renderKategorienDiskussion(el, mod, cfg) {
   el.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:14px;">Vorschläge werden geladen…</div>`;
   show('sModule');
   try {
-    initSupabase();
-    const { data: rows } = await sb.from('exercise_responses')
-      .select('content')
-      .eq('workshop_id', session.workshopId)
-      .eq('module', mod);
+    const res = await fetch(
+      `${SB_URL}/rest/v1/exercise_responses?select=content&module=eq.${mod}&workshop_id=eq.${session.workshopId}`,
+      { headers: HDR }
+    );
+    const rows = await res.json();
     const byKat = {};
     const kats = cfg.kategorien || [];
     kats.forEach(k => byKat[k.id] = []);
