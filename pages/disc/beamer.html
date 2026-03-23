@@ -2967,12 +2967,24 @@ async function pollUrkundeBeamer() {
     const wsId = session?.workshopId;
     if (!wsId) { el.innerHTML='<div style="color:orange;padding:40px;">Session-Fehler: workshopId fehlt</div>'; return; }
 
-    // Unterschriften laden
+    // Unterschriften laden — mit workshop_id, Fallback ohne
+    let rows = [];
     const resEx = await fetch(
       `${SB_URL}/rest/v1/exercise_responses?select=alias,content&module=eq.steckbrief_urkunde&workshop_id=eq.${wsId}&order=created_at.asc`,
       { headers: HDR }
     );
-    const rows = await resEx.json();
+    const tryRows = await resEx.json();
+    if (Array.isArray(tryRows) && tryRows.length > 0) {
+      rows = tryRows;
+    } else {
+      // Fallback: ohne workshop_id Filter (nimmt alle)
+      const resFb = await fetch(
+        `${SB_URL}/rest/v1/exercise_responses?select=alias,content&module=eq.steckbrief_urkunde&order=created_at.asc`,
+        { headers: HDR }
+      );
+      const fbRows = await resFb.json();
+      if (Array.isArray(fbRows)) rows = fbRows;
+    }
 
     // Normen: aus Cache ODER aus persistierter exercise_response holen
     let normen = urkSavedData?.normen || [];
