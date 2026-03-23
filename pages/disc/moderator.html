@@ -2505,6 +2505,14 @@ async function refreshOnlineWorkshop(){
       // Fallbeispiele: KI-Panel ist da → nicht neu rendern
     }else if(document.getElementById('gfkKiPanel')&&curMod==='gfk_fallbeispiel'){
       // GFK Fallbeispiel: KI-Panel bleibt stehen
+    }else if(curMod==='steckbrief_normen'){
+      // Normen-Editor: NIEMALS neu rendern während Moderator tippt!
+      // Nur die Satz-Listen sanft updaten ohne Input-Felder anzutasten
+      NORMEN_KATEGORIEN.forEach(k => renderNormenList(k.id));
+      const info = document.getElementById('normenSaveInfo');
+      if (info && !info.textContent) {
+        // Status-Zeile nur updaten wenn leer (nicht gerade ein Save-Feedback zeigt)
+      }
     }else{
       renderModuleContent(curMod);
     }
