@@ -892,6 +892,21 @@ body:hover #fsBtn{ opacity:1; }
   <div id="normenBeamerContent" style="flex:1;display:flex;flex-direction:column;padding:40px 70px;background:#060610;height:100vh;overflow:hidden;"></div>
 </div>
 
+<!-- STECKBRIEF VORSCHLÄGE FEED -->
+<div class="screen" id="sSteckbriefFeed">
+  <div id="steckbriefFeedContent" style="display:flex;flex-direction:column;height:100vh;padding:40px 60px;background:#060610;overflow:hidden;"></div>
+</div>
+
+<!-- STECKBRIEF EDITOR (Normen eintippen) -->
+<div class="screen" id="sSteckbriefEditor">
+  <div id="steckbriefEditorContent" style="display:flex;flex-direction:column;height:100vh;padding:40px 70px;background:#060610;overflow:hidden;"></div>
+</div>
+
+<!-- URKUNDE LIVE-AUFBAU -->
+<div class="screen" id="sUrkundeBeamer">
+  <div id="urkundeBeamerContent" style="display:flex;flex-direction:column;height:100vh;padding:40px 70px;background:#060610;overflow:hidden;"></div>
+</div>
+
 <div class="screen" id="sClosing">
   <div class="closing-icon">🏆</div>
   <div class="closing-title">Herzlichen Dank!</div>
@@ -957,6 +972,9 @@ const MODULE_META = {
   steckbrief_feiern:    { screen:'sFeed',    icon:'🎉', label:'Team-Steckbrief',    title:'Was feiern wir?',            question:'Was läuft in unserem Team richtig gut?' },
   steckbrief_grenzen:   { screen:'sFeed',    icon:'🚫', label:'Team-Steckbrief',    title:'Was akzeptieren wir nicht?', question:'Welches Verhalten geht bei uns gar nicht?' },
   steckbrief_zumuten:   { screen:'sFeed',    icon:'💪', label:'Team-Steckbrief',    title:'Was dürfen wir uns zumuten?', question:'Wo können wir unbequem ehrlich miteinander sein?' },
+  steckbrief_vorschlaege: { screen:'sSteckbriefFeed', icon:'📝', label:'Steckbrief', title:'Team-Steckbrief: Vorschläge', question:'Alle tippen ihre Normvorschläge — schau auf den Feed.' },
+  steckbrief_normen:    { screen:'sSteckbriefEditor', icon:'📋', label:'Steckbrief', title:'Team-Steckbrief entsteht',    question:'Konsolidierte Normen erscheinen hier.' },
+  steckbrief_urkunde:   { screen:'sUrkundeBeamer',    icon:'🖊', label:'Urkunde',    title:'Team-Urkunde',                question:'Unterzeichnet wird live.' },
   ritual:               { screen:'sFeed',    icon:'✍️', label:'Ritual',             title:'Das persönliche Versprechen', question:'Jeder schreibt und unterschreibt seinen Beitrag zum Team.' },
   closing:              { screen:'sClosing' },
   closed:               { screen:'sClosing' },
@@ -1012,6 +1030,9 @@ async function handleModule(mod, data) {
     case 'sNormenInfo':     showNormenInfoBeamer(data); break;
     case 'sTeamNormen':     showTeamNormenBeamer(data); break;
     case 'sKernbotschaften': show('sKernbotschaften'); break;
+    case 'sSteckbriefFeed':   showSteckbriefFeed(mod, data); break;
+    case 'sSteckbriefEditor': showSteckbriefEditor(data); break;
+    case 'sUrkundeBeamer':    showUrkundeBeamer(data); break;
     case 'sGeneric':  showGeneric(meta, data); break;
     case 'sClosing':  showClosing(); break;
     default:          showGeneric(meta, data);
@@ -2719,6 +2740,14 @@ function initRealtime() {
           showBiasStoryBeamer(data);
           return;
         }
+        // Steckbrief Normen: live update wenn Moderator Sätze einträgt
+        if (mod === 'steckbrief_normen' && currentModule === 'steckbrief_normen') {
+          showSteckbriefEditor(data); return;
+        }
+        // Steckbrief Urkunde: live-data update (Polling übernimmt Signatures)
+        if (mod === 'steckbrief_urkunde' && currentModule === 'steckbrief_urkunde') {
+          pollUrkundeBeamer(data); return;
+        }
         handleModule(mod, data);
       })
     .subscribe();
@@ -2792,6 +2821,145 @@ window.addEventListener('resize', () => { if(currentModule==='disc_map'){ resize
 
 <script>
 // Fullscreen toggle
+/* ═══════════════════════════════════════════════════════
+   STECKBRIEF VORSCHLÄGE FEED
+═══════════════════════════════════════════════════════ */
+let steckbriefPollTimer = null;
+const KATEGORIEN_META = {
+  kommunikation:  { label:'Wie wir miteinander reden',           color:'#4a90d9' },
+  fehler:         { label:'Wie wir mit Fehlern umgehen',          color:'#e63946' },
+  entscheidungen: { label:'Wie wir Entscheidungen treffen',       color:'#f4a261' },
+  erwartungen:    { label:'Was wir voneinander erwarten dürfen',  color:'#2a9d8f' },
+};
+
+async function showSteckbriefFeed(mod, data) {
+  show('sSteckbriefFeed');
+  steckbriefPollTimer && clearInterval(steckbriefPollTimer);
+  await pollSteckbriefFeed(mod);
+  steckbriefPollTimer = setInterval(() => pollSteckbriefFeed(mod), 3000);
+}
+
+async function pollSteckbriefFeed(mod) {
+  if (currentModule !== mod) { clearInterval(steckbriefPollTimer); return; }
+  const el = document.getElementById('steckbriefFeedContent');
+  if (!el) return;
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=alias,content&module=eq.${mod}&workshop_id=eq.${session.workshopId}&order=created_at.asc`, { headers: HDR });
+    const rows = await res.json();
+    // Gruppiere nach Kategorien
+    const byKat = {};
+    rows.forEach(r => {
+      try {
+        const c = JSON.parse(r.content);
+        Object.entries(c).forEach(([kid, text]) => {
+          if (!byKat[kid]) byKat[kid] = [];
+          byKat[kid].push(text);
+        });
+      } catch(e) {}
+    });
+    const total = rows.length;
+    el.innerHTML = `
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:28px;">Team-Steckbrief · ${total} Vorschläge eingegangen</div>
+      <div style="font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;margin-bottom:32px;">Eure Normvorschläge</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;flex:1;overflow:hidden;">
+        ${Object.entries(KATEGORIEN_META).map(([kid, meta]) => `
+        <div style="border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);padding:20px 24px;overflow:hidden;">
+          <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:${meta.color};margin-bottom:14px;opacity:.8;">${meta.label}</div>
+          <div style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:hidden;">
+            ${(byKat[kid]||[]).slice(-5).map(t => `<div style="font-size:15px;color:rgba(255,255,255,.8);line-height:1.5;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,.04);">„${t}"</div>`).join('') || `<div style="font-size:14px;color:rgba(255,255,255,.2);font-style:italic;">Noch keine Vorschläge</div>`}
+          </div>
+        </div>`).join('')}
+      </div>`;
+  } catch(e) { console.warn('pollSteckbriefFeed:', e); }
+}
+
+/* ═══════════════════════════════════════════════════════
+   STECKBRIEF EDITOR (Moderator tippt, Beamer zeigt)
+═══════════════════════════════════════════════════════ */
+function showSteckbriefEditor(data) {
+  show('sSteckbriefEditor');
+  const el = document.getElementById('steckbriefEditorContent');
+  if (!el) return;
+  const normen    = data?.normen    || {};   // { kommunikation:[], fehler:[], ... }
+  const allNormen = [];
+  Object.entries(KATEGORIEN_META).forEach(([kid, meta]) => {
+    const list = normen[kid] || [];
+    list.forEach(text => allNormen.push({ kid, meta, text }));
+  });
+  if (allNormen.length === 0) {
+    el.innerHTML = `
+      <div style="font-family:'Rajdhani',sans-serif;font-size:40px;font-weight:700;margin-bottom:24px;">Team-Steckbrief entsteht…</div>
+      <div style="font-size:20px;color:rgba(255,255,255,.35);font-style:italic;">Der Moderator trägt die Normen ein.</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:24px;">Team-Steckbrief · ${allNormen.length} Normen</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;margin-bottom:28px;">Unser Team-Steckbrief</div>
+    ${Object.entries(KATEGORIEN_META).map(([kid, meta]) => {
+      const list = normen[kid] || [];
+      if (!list.length) return '';
+      return `<div style="margin-bottom:24px;">
+        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:${meta.color};margin-bottom:10px;opacity:.8;">${meta.label}</div>
+        ${list.map(t => `<div style="font-size:18px;color:rgba(255,255,255,.88);line-height:1.6;padding:12px 18px;margin-bottom:8px;border-radius:10px;border-left:3px solid ${meta.color};background:rgba(255,255,255,.03);">„${t}"</div>`).join('')}
+      </div>`;
+    }).join('')}`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   URKUNDE — LIVE-AUFBAU
+═══════════════════════════════════════════════════════ */
+let urkPollTimer = null;
+
+async function showUrkundeBeamer(data) {
+  show('sUrkundeBeamer');
+  urkPollTimer && clearInterval(urkPollTimer);
+  await pollUrkundeBeamer(data);
+  urkPollTimer = setInterval(() => pollUrkundeBeamer(data), 3000);
+}
+
+async function pollUrkundeBeamer(data) {
+  if (currentModule !== 'steckbrief_urkunde') { clearInterval(urkPollTimer); return; }
+  const el = document.getElementById('urkundeBeamerContent');
+  if (!el) return;
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=alias,content&module=eq.steckbrief_urkunde&workshop_id=eq.${session.workshopId}&order=created_at.asc`, { headers: HDR });
+    const rows = await res.json();
+    const normen = data?.normen || [];
+    const sigs = rows.map(r => {
+      try { return JSON.parse(r.content); } catch(e) { return null; }
+    }).filter(Boolean);
+    const total = participants?.length || 22;
+    el.innerHTML = `
+      <div style="display:flex;gap:40px;height:100%;overflow:hidden;">
+        <!-- Links: Normen -->
+        <div style="flex:1;overflow-y:auto;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:38px;font-weight:700;margin-bottom:6px;">Team-Steckbrief</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.3);margin-bottom:24px;text-transform:uppercase;">R&D Engineering · Swisstronics · ${new Date().getFullYear()}</div>
+          ${normen.length > 0
+            ? normen.map(n => `<div style="font-size:15px;color:rgba(255,255,255,.8);line-height:1.6;padding:10px 16px;margin-bottom:8px;border-radius:8px;border-left:3px solid rgba(201,168,76,.6);background:rgba(255,255,255,.03);">„${n}"</div>`).join('')
+            : '<div style="font-size:15px;color:rgba(255,255,255,.25);font-style:italic;">Normen werden geladen…</div>'}
+        </div>
+        <!-- Rechts: Unterschriften -->
+        <div style="width:480px;flex-shrink:0;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(201,168,76,.5);margin-bottom:16px;">${sigs.length} / ${total} Unterschriften</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            ${sigs.map(s => `
+            <div style="border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);padding:8px 12px;overflow:hidden;">
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px;font-family:'IBM Plex Mono',monospace;">${s.alias||'?'}</div>
+              ${s.signature ? `<img src="${s.signature}" style="width:100%;height:40px;object-fit:contain;opacity:.8;filter:invert(1);" />` : ''}
+            </div>`).join('')}
+            ${Array.from({length: Math.max(0, total - sigs.length)}).map(() =>
+              `<div style="border-radius:10px;border:1px dashed rgba(255,255,255,.08);height:64px;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:18px;opacity:.15;">✍️</span>
+              </div>`
+            ).join('')}
+          </div>
+          ${sigs.length >= total ? `<div style="margin-top:20px;padding:14px;border-radius:10px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);text-align:center;font-family:'Rajdhani',sans-serif;font-size:22px;color:#c9a84c;">✦ Alle haben unterzeichnet ✦</div>` : ''}
+        </div>
+      </div>`;
+  } catch(e) { console.warn('pollUrkundeBeamer:', e); }
+}
+
 function toggleFullscreen(){
   if(!document.fullscreenElement){
     document.documentElement.requestFullscreen().catch(()=>{});

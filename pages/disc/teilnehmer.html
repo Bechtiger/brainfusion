@@ -1209,6 +1209,21 @@ const MODULE_DEFS = {
   steckbrief_feiern:   { type:'freetext',  icon:'🎉', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was feiern wir als Team? Was läuft richtig gut?',                       placeholder:'Unsere Stärke, die wir feiern…' },
   steckbrief_grenzen:  { type:'freetext',  icon:'🚫', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was akzeptieren wir nicht? Welches Verhalten geht gar nicht?',            placeholder:'Das akzeptieren wir als Team nicht…' },
   steckbrief_zumuten:  { type:'freetext',  icon:'💪', title:'Team-Steckbrief',  allowAnon:false, maxLen:300, question:'Was dürfen wir Uns zumuten? Wo können wir unbequem ehrlich sein?',        placeholder:'Das können wir uns gegenseitig zumuten…' },
+  steckbrief_vorschlaege: { type:'kategorien_input', icon:'📝', title:'Team-Steckbrief aufbauen',
+    kategorien:[
+      { id:'kommunikation', label:'Wie wir miteinander reden', placeholder:'z.B. Wir sprechen Probleme direkt an, bevor wir darüber klagen…' },
+      { id:'fehler',        label:'Wie wir mit Fehlern umgehen', placeholder:'z.B. Wir analysieren Fehler gemeinsam, ohne jemanden zu beschuldigen…' },
+      { id:'entscheidungen',label:'Wie wir Entscheidungen treffen', placeholder:'z.B. Wir benennen Dissens offen, bevor wir uns committen…' },
+      { id:'erwartungen',   label:'Was wir voneinander erwarten dürfen', placeholder:'z.B. Jeder darf sagen: "Ich brauche Hilfe" — ohne Gesichtsverlust…' },
+    ]
+  },
+  steckbrief_urkunde: { type:'urkunde_ritual', icon:'🖊', title:'Team-Steckbrief unterzeichnen',
+    saetze:[
+      'Ich lebe diese Normen — jeden Tag, auch wenn es unbequem ist.',
+      'Ich stehe hinter diesem Steckbrief und trage ihn in unsere Arbeit.',
+      'Diese Normen sind mein Beitrag zum Vertrauen in diesem Team.',
+    ]
+  },
   ritual:              { type:'ritual',    icon:'✍️', title:'Dein Versprechen', maxLen:250, question:'Was trägst du zum Team bei? Schreib deinen persönlichen Satz und unterschreibe.', placeholder:'Ich verpflichte mich, in diesem Team…' },
   closing:             { type:'beamer_static', icon:'🏆', title:'Abschluss',         desc:'Der Workshop nähert sich dem Ende. Schau auf den Beamer.' },
   closed:              { type:'beamer_static', icon:'🔒', title:'Workshop beendet',   desc:'Herzlichen Dank für deine Teilnahme!' },
@@ -1550,10 +1565,12 @@ function showModule(mod, data) {
   const cfg = Object.assign({}, def, data);
   const el  = document.getElementById('moduleContent');
   switch(cfg.type) {
-    case 'freetext':      renderFreetext(el, mod, cfg);      break;
-    case 'multiple_choice': renderMC(el, mod, cfg);          break;
-    case 'selection':     renderSelection(el, mod, cfg);     break;
-    case 'ritual':        renderRitual(el, mod, cfg);        break;
+    case 'freetext':         renderFreetext(el, mod, cfg);         break;
+    case 'multiple_choice':  renderMC(el, mod, cfg);               break;
+    case 'selection':        renderSelection(el, mod, cfg);        break;
+    case 'kategorien_input': renderKategorienInput(el, mod, cfg);  break;
+    case 'urkunde_ritual':   renderUrkundeRitual(el, mod, cfg);    break;
+    case 'ritual':           renderRitual(el, mod, cfg);           break;
     case 'beamer_static': renderBeamerStatic(el, cfg);       break;
     default:              renderBeamerStatic(el, cfg);
   }
@@ -1731,6 +1748,174 @@ async function submitSelection(mod) {
     btn.style.display='none'; document.getElementById('submitOK').style.display='block';
     toast('Auswahl gespeichert ✓','success');
   } catch(e) { document.getElementById('modErr').textContent='Fehler: '+e.message; btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Bestätigen →'; }
+}
+
+/* ─── KATEGORIEN INPUT (Steckbrief Vorschläge) ──────── */
+function renderKategorienInput(el, mod, cfg) {
+  const kats = cfg.kategorien || [];
+  el.innerHTML = `
+    <div style="max-width:680px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <div style="font-size:36px;">${cfg.icon}</div>
+        <div>
+          <div class="label" style="margin-bottom:4px;">${cfg.title}</div>
+          <div style="font-size:13px;color:var(--S);">Deine persönlichen Vorschläge — anonym</div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:20px;border-color:rgba(42,157,143,.25);background:rgba(42,157,143,.04);padding:14px 18px;">
+        <p style="font-size:14px;color:var(--muted);line-height:1.6;">Schreib für jede Kategorie einen Vorschlag — wie soll euer Team in dieser Situation vorgehen? Konkret, ehrlich, mutig.</p>
+      </div>
+      ${kats.map((k,i) => `
+      <div class="input-group" style="margin-bottom:18px;">
+        <label style="color:var(--gold);font-size:13px;letter-spacing:.05em;">${k.label}</label>
+        <textarea id="kat_${k.id}" maxlength="280" placeholder="${k.placeholder}" rows="2"
+          oninput="updateKatCount('${k.id}',this.value)"
+          style="resize:none;font-size:14px;"></textarea>
+        <div class="char-row" id="kat_count_${k.id}" style="font-size:11px;">0 / 280</div>
+      </div>`).join('')}
+      <div id="katErr" style="color:var(--D);font-size:13px;margin-bottom:12px;min-height:16px;"></div>
+      <button class="btn btn-primary" id="submitKatBtn" onclick="submitKategorien('${mod}')">Vorschläge einreichen ✦</button>
+      <div id="katOK" style="display:none;text-align:center;padding:32px 0;">
+        <div style="font-size:56px;margin-bottom:16px;">📬</div>
+        <div class="display sm" style="color:var(--S);margin-bottom:10px;">Danke!</div>
+        <p style="color:var(--muted);font-size:14px;">Deine Vorschläge sind eingegangen.<br>Schau auf den Beamer.</p>
+      </div>
+    </div>`;
+}
+
+function updateKatCount(id, val) {
+  const el = document.getElementById('kat_count_'+id);
+  if (el) el.textContent = val.length + ' / 280';
+}
+
+async function submitKategorien(mod) {
+  const kats = (MODULE_DEFS[mod]?.kategorien || []);
+  const errEl = document.getElementById('katErr');
+  const btn   = document.getElementById('submitKatBtn');
+  errEl.textContent = '';
+  const result = {};
+  let filled = 0;
+  kats.forEach(k => {
+    const v = (document.getElementById('kat_'+k.id)?.value||'').trim();
+    if (v) { result[k.id] = v; filled++; }
+  });
+  if (filled === 0) { errEl.textContent = 'Bitte fülle mindestens eine Kategorie aus.'; return; }
+  btn.disabled = true; btn.classList.add('loading'); btn.textContent = '';
+  try {
+    const res = await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({
+      participantId: session.participantId, joinToken: session.joinToken,
+      module: mod, content: JSON.stringify(result),
+      responseType: 'kategorien', alias: null
+    })});
+    if (!res.ok && res.status !== 409) throw new Error('HTTP '+res.status);
+    document.getElementById('katOK').style.display = 'block';
+    btn.style.display = 'none';
+    kats.forEach(k => { const f = document.getElementById('kat_'+k.id); if(f) f.style.display='none'; });
+    document.querySelectorAll('[id^=kat_count_]').forEach(e => e.style.display='none');
+    document.querySelector('[style*="Deine persönlichen Vorschläge"]')?.closest('.card')?.style.setProperty('display','none');
+    toast('Vorschläge eingereicht ✓','success');
+  } catch(e) { errEl.textContent = 'Fehler: '+e.message; btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Vorschläge einreichen ✦'; }
+}
+
+/* ─── URKUNDE RITUAL ────────────────────────────────── */
+let urkSigCanvas=null, urkSigCtx=null, urkIsDrawing=false, urkHasSig=false;
+function renderUrkundeRitual(el, mod, cfg) {
+  const saetze = cfg.saetze || [];
+  const normen = cfg.normen || [];  // kommen via module_data vom Moderator
+  el.innerHTML = `
+    <div style="max-width:660px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <div style="font-size:40px;">${cfg.icon}</div>
+        <div>
+          <div class="label" style="margin-bottom:4px;">${cfg.title}</div>
+          <div style="font-size:13px;color:var(--gold);">Das Finale — dein persönliches Commitment</div>
+        </div>
+      </div>
+      ${normen.length > 0 ? `
+      <div class="card" style="margin-bottom:20px;border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.04);padding:16px 20px;">
+        <div style="font-size:12px;color:var(--gold);letter-spacing:.08em;margin-bottom:10px;text-transform:uppercase;">Unser Team-Steckbrief</div>
+        ${normen.map(n => `<div style="font-size:13px;color:var(--text);margin-bottom:6px;padding-left:10px;border-left:2px solid rgba(201,168,76,.4);">„${n}"</div>`).join('')}
+      </div>` : ''}
+      <div class="card" style="margin-bottom:20px;border-color:rgba(42,157,143,.2);background:rgba(42,157,143,.03);padding:14px 18px;">
+        <p style="font-size:14px;color:var(--muted);">Sprich deinen gewählten Satz laut aus — dann unterschreibe.</p>
+      </div>
+      <div class="input-group" style="margin-bottom:6px;">
+        <label>Wähle deinen Satz</label>
+        ${saetze.map((s,i) => `
+        <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;margin-bottom:8px;border-radius:8px;border:1px solid var(--border2);cursor:pointer;transition:.15s;" id="satz_lbl_${i}" onclick="selectUrkSatz(${i})">
+          <input type="radio" name="urkSatz" value="${i}" style="margin-top:3px;accent-color:var(--gold);">
+          <span style="font-size:14px;color:var(--text);line-height:1.5;">${s}</span>
+        </label>`).join('')}
+      </div>
+      <div class="label" style="margin-bottom:8px;margin-top:16px;">Unterschrift</div>
+      <div class="signature-wrap" id="urkSigWrap">
+        <canvas id="urkSigCanvas" height="140"></canvas>
+        <div class="sig-hint" id="urkSigHint">✦ Hier unterschreiben ✦</div>
+      </div>
+      <div style="margin-bottom:18px;">
+        <button class="btn btn-ghost" onclick="clearUrkSig()" style="width:auto;padding:9px 18px;font-size:12px;">Löschen</button>
+      </div>
+      <div id="urkErr" style="color:var(--D);font-size:13px;margin-bottom:12px;min-height:16px;"></div>
+      <button class="btn btn-primary" id="urkSubmitBtn" onclick="submitUrkunde('${mod}')">Jetzt unterzeichnen ✦</button>
+      <div id="urkOK" style="display:none;text-align:center;padding:40px 0;">
+        <div style="font-size:68px;margin-bottom:20px;">🎖️</div>
+        <div class="display sm" style="color:var(--gold);margin-bottom:12px;">Danke, ${session.alias}!</div>
+        <p style="color:var(--muted);">Deine Unterschrift ist Teil der Urkunde.</p>
+      </div>
+    </div>`;
+  setTimeout(() => {
+    urkSigCanvas = document.getElementById('urkSigCanvas');
+    if (!urkSigCanvas) return;
+    urkSigCtx = urkSigCanvas.getContext('2d');
+    urkSigCanvas.width = urkSigCanvas.offsetWidth;
+    urkSigCtx.strokeStyle='#e4e4f0'; urkSigCtx.lineWidth=2.5; urkSigCtx.lineCap='round'; urkSigCtx.lineJoin='round';
+    const getPos = e => {
+      const r=urkSigCanvas.getBoundingClientRect(), s=e.touches?e.touches[0]:e;
+      return { x:(s.clientX-r.left)*(urkSigCanvas.width/r.width), y:(s.clientY-r.top)*(urkSigCanvas.height/r.height) };
+    };
+    urkSigCanvas.addEventListener('mousedown', e => { urkIsDrawing=true; const p=getPos(e); urkSigCtx.beginPath(); urkSigCtx.moveTo(p.x,p.y); document.getElementById('urkSigHint').style.opacity='0'; urkHasSig=true; });
+    urkSigCanvas.addEventListener('mousemove', e => { if(!urkIsDrawing) return; const p=getPos(e); urkSigCtx.lineTo(p.x,p.y); urkSigCtx.stroke(); });
+    urkSigCanvas.addEventListener('mouseup',   () => urkIsDrawing=false);
+    urkSigCanvas.addEventListener('mouseleave',() => urkIsDrawing=false);
+    urkSigCanvas.addEventListener('touchstart',e=>{ e.preventDefault(); urkIsDrawing=true; const p=getPos(e); urkSigCtx.beginPath(); urkSigCtx.moveTo(p.x,p.y); document.getElementById('urkSigHint').style.opacity='0'; urkHasSig=true; },{passive:false});
+    urkSigCanvas.addEventListener('touchmove', e=>{ e.preventDefault(); if(!urkIsDrawing) return; const p=getPos(e); urkSigCtx.lineTo(p.x,p.y); urkSigCtx.stroke(); },{passive:false});
+    urkSigCanvas.addEventListener('touchend',  ()=> urkIsDrawing=false);
+  }, 100);
+}
+
+function selectUrkSatz(i) {
+  document.querySelectorAll('[id^=satz_lbl_]').forEach((l,j) => {
+    l.style.borderColor = j===i ? 'var(--gold)' : 'var(--border2)';
+    l.style.background  = j===i ? 'rgba(201,168,76,.08)' : '';
+  });
+}
+
+function clearUrkSig() {
+  if(urkSigCtx){ urkSigCtx.clearRect(0,0,urkSigCanvas.width,urkSigCanvas.height); urkHasSig=false; document.getElementById('urkSigHint').style.opacity='1'; }
+}
+
+async function submitUrkunde(mod) {
+  const errEl = document.getElementById('urkErr');
+  const btn   = document.getElementById('urkSubmitBtn');
+  errEl.textContent = '';
+  const selected = document.querySelector('input[name="urkSatz"]:checked');
+  if (!selected) { errEl.textContent = 'Bitte wähle einen Satz aus.'; return; }
+  if (!urkHasSig) { errEl.textContent = 'Bitte unterschreibe im Unterschriftsfeld.'; return; }
+  const saetze = MODULE_DEFS[mod]?.saetze || [];
+  const satz   = saetze[parseInt(selected.value)] || '';
+  btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
+  try {
+    const res = await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({
+      participantId: session.participantId, joinToken: session.joinToken,
+      module: mod, responseType: 'urkunde',
+      content: JSON.stringify({ satz, signature: urkSigCanvas.toDataURL('image/png'), alias: session.alias }),
+      alias: session.alias
+    })});
+    if (!res.ok && res.status !== 409) throw new Error('HTTP '+res.status);
+    document.getElementById('urkOK').style.display='block';
+    btn.style.display='none';
+    toast('Unterschrift abgegeben ✓','success');
+  } catch(e) { errEl.textContent='Fehler: '+e.message; btn.disabled=false; btn.classList.remove('loading'); btn.textContent='Jetzt unterzeichnen ✦'; }
 }
 
 /* ─── RITUAL ───────────────────────────────────────── */

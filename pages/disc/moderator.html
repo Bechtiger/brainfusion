@@ -378,11 +378,14 @@ const MODULE_PHASES=[
     {id:'raci',                icon:'📋',name:'RACI',           sub:'Auswahl'},
   ]},
   {label:'▸ Tag 2 – Abschluss',modules:[
-    {id:'steckbrief_feiern', icon:'🎉',name:'Steckbrief',sub:'Feiern'},
-    {id:'steckbrief_grenzen',icon:'🚫',name:'Steckbrief',sub:'Grenzen'},
-    {id:'steckbrief_zumuten',icon:'💪',name:'Steckbrief',sub:'Zumuten'},
-    {id:'ritual',            icon:'✍️',name:'Ritual',     sub:'Versprechen'},
-    {id:'closing',           icon:'🏆',name:'Abschluss',  sub:'Ende'},
+    {id:'steckbrief_feiern',      icon:'🎉',name:'Steckbrief',     sub:'Feiern'},
+    {id:'steckbrief_grenzen',     icon:'🚫',name:'Steckbrief',     sub:'Grenzen'},
+    {id:'steckbrief_zumuten',     icon:'💪',name:'Steckbrief',     sub:'Zumuten'},
+    {id:'steckbrief_vorschlaege', icon:'📝',name:'Norm-Vorschläge',sub:'Einzelarbeit'},
+    {id:'steckbrief_normen',      icon:'📋',name:'Normen-Editor',  sub:'Moderator tippt'},
+    {id:'steckbrief_urkunde',     icon:'🖊',name:'Urkunde',        sub:'Unterzeichnen'},
+    {id:'ritual',                 icon:'✍️',name:'Ritual',         sub:'Versprechen'},
+    {id:'closing',                icon:'🏆',name:'Abschluss',      sub:'Ende'},
   ]}
 ];
 const MODULES=MODULE_PHASES.flatMap(p=>p.modules);
@@ -685,6 +688,33 @@ const MODULE_DETAILS={
     beamer:'Beamer zeigt Live-Feed',
     dataType:'live_feed'
   },
+  steckbrief_vorschlaege:{
+    desc:'Jeder tippt anonym Normvorschläge nach 4 Kategorien — Einzelarbeit, 10 Min.',
+    hints:['Einführung: "Denk an die Analyse und die Bias-Story — was braucht unser Team wirklich?"',
+      'Alle tippen alleine — kein Austausch in dieser Phase',
+      'Beamer zeigt die eingehenden Vorschläge live nach Kategorie gegliedert',
+      'Gib genug Zeit — Tiefe entsteht, wenn niemand hetzen muss'],
+    beamer:'Beamer zeigt Live-Feed der Vorschläge nach Kategorie',
+    dataType:'live_feed'
+  },
+  steckbrief_normen:{
+    desc:'Du tippst die konsolidierten Normsätze live — Beamer zeigt den wachsenden Steckbrief.',
+    hints:['Gruppen haben ihre Vorschläge präsentiert und diskutiert',
+      'Bei sichtbarem Konsens: Satz eintippen → erscheint sofort auf dem Beamer',
+      'Kein Zeitdruck — lieber weniger, dafür echte Sätze',
+      'Am Ende: "Lest den Steckbrief nochmal in Ruhe — 30 Sekunden Stille"'],
+    beamer:'Beamer zeigt Steckbrief der sich satzweise aufbaut',
+    dataType:'normen_editor'
+  },
+  steckbrief_urkunde:{
+    desc:'Jeder TN wählt einen Satz, spricht ihn laut aus und unterzeichnet digital.',
+    hints:['Stimmung setzen: ruhig, feierlich — "Das hier ist aussergewöhnlich"',
+      'TN einzeln aufrufen — Satz laut sprechen, dann Unterschrift abschicken',
+      'Beamer zeigt die Urkunde die sich mit jeder Unterschrift aufbaut',
+      'Nach letzter Unterschrift: kurze Stille, dann Applaus'],
+    beamer:'Beamer zeigt Urkunde mit allen eingehenden Unterschriften live',
+    dataType:'urkunde'
+  },
   ritual:{
     desc:'Jeder schreibt und unterzeichnet ein persönliches Commitment.',
     hints:['Stimmung setzen: "Das ist ein Moment der Stille und Ernsthaftigkeit"',
@@ -865,6 +895,8 @@ async function renderModuleContent(moduleId){
     case'mut_info':            dataHTML=renderMutInfoSection();break;
     case'gfk_info':            dataHTML=renderGfkInfoSection();break;
     case'gfk_fallbeispiel':    dataHTML=renderGfkFallbeispielSection();break;
+    case'normen_editor':       dataHTML=renderNormenEditorSection();break;
+    case'urkunde':             dataHTML=renderUrkundeModSection();break;
     case'static':    dataHTML=renderStaticSection(detail);break;
   }
 
@@ -2159,6 +2191,119 @@ function renderStaticSection(detail){
   </div>`;
 }
 
+/* ─── NORMEN-EDITOR ──────────────────────────────────────────────────────── */
+const NORMEN_KATEGORIEN = [
+  { id:'kommunikation',  label:'Wie wir miteinander reden',          color:'#4a90d9' },
+  { id:'fehler',         label:'Wie wir mit Fehlern umgehen',         color:'#e63946' },
+  { id:'entscheidungen', label:'Wie wir Entscheidungen treffen',      color:'#f4a261' },
+  { id:'erwartungen',    label:'Was wir voneinander erwarten dürfen', color:'#2a9d8f' },
+];
+
+// Lokaler State für den Normen-Editor (wird via RPC an Beamer gesendet)
+let normenState = { kommunikation:[], fehler:[], entscheidungen:[], erwartungen:[] };
+
+function renderNormenEditorSection() {
+  return `<div style="margin-top:16px;">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;">
+      Tippe die konsolidierten Normsätze aus der Plenumsdiskussion ein.<br>
+      Jeder Satz erscheint sofort auf dem Beamer.
+    </div>
+    ${NORMEN_KATEGORIEN.map(k => `
+    <div style="margin-bottom:20px;padding:16px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);">
+      <div style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${k.color};margin-bottom:10px;">${k.label}</div>
+      <div id="normen_list_${k.id}" style="margin-bottom:10px;min-height:20px;">
+        <!-- wird dynamisch befüllt -->
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input id="normen_input_${k.id}" type="text" maxlength="160" placeholder="Neuer Normsatz…"
+          style="flex:1;background:var(--surf2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;font-family:'IBM Plex Sans',sans-serif;"
+          onkeydown="if(event.key==='Enter')addNormenSatz('${k.id}')" />
+        <button onclick="addNormenSatz('${k.id}')"
+          style="background:${k.color};border:none;border-radius:6px;padding:8px 14px;color:#fff;font-size:13px;cursor:pointer;white-space:nowrap;">+ Hinzufügen</button>
+      </div>
+    </div>`).join('')}
+    <div id="normenSaveInfo" style="font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;"></div>
+    <div style="margin-top:12px;padding:12px 16px;border-radius:8px;background:rgba(42,157,143,.06);border:1px solid rgba(42,157,143,.2);font-size:12px;color:rgba(42,157,143,.7);">
+      Alle Normsätze werden sofort live auf dem Beamer angezeigt.
+    </div>
+  </div>`;
+}
+
+async function addNormenSatz(kid) {
+  const inp = document.getElementById('normen_input_'+kid);
+  const text = (inp?.value||'').trim();
+  if (!text) return;
+  inp.value = '';
+  if (!normenState[kid]) normenState[kid] = [];
+  normenState[kid].push(text);
+  renderNormenList(kid);
+  await pushNormenToBeamer();
+}
+
+async function removeNormenSatz(kid, idx) {
+  if (!normenState[kid]) return;
+  normenState[kid].splice(idx, 1);
+  renderNormenList(kid);
+  await pushNormenToBeamer();
+}
+
+function renderNormenList(kid) {
+  const el = document.getElementById('normen_list_'+kid);
+  if (!el) return;
+  const list = normenState[kid] || [];
+  if (!list.length) { el.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,.2);font-style:italic;">Noch keine Sätze</div>'; return; }
+  el.innerHTML = list.map((t,i) => `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:8px 12px;border-radius:6px;background:rgba(255,255,255,.04);">
+      <span style="flex:1;font-size:13px;color:var(--text);">„${t}"</span>
+      <button onclick="removeNormenSatz('${kid}',${i})" style="background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:16px;padding:0 4px;" title="Entfernen">×</button>
+    </div>`).join('');
+}
+
+async function pushNormenToBeamer() {
+  const info = document.getElementById('normenSaveInfo');
+  if (!onlineSession?.workshopId||!onlineSession?.adminToken) {
+    if(info) info.textContent = '⚠ Kein aktiver Workshop — Beamer nicht erreichbar.';
+    return;
+  }
+  try {
+    initSupabase();
+    await sb.rpc('set_workshop_module', {
+      p_workshop_id: onlineSession.workshopId,
+      p_admin_token: onlineSession.adminToken,
+      p_module: 'steckbrief_normen',
+      p_module_data: { normen: normenState }
+    });
+    if(info) { info.textContent = '✓ Beamer aktualisiert'; setTimeout(()=>{ if(info) info.textContent=''; }, 2000); }
+  } catch(e) {
+    if(info) info.textContent = 'Fehler: '+e.message;
+  }
+}
+
+/* ─── URKUNDE MOD-SECTION ────────────────────────────────────────────────── */
+function renderUrkundeModSection() {
+  // Alle Normsätze aus dem State als flache Liste
+  const allNormen = [];
+  NORMEN_KATEGORIEN.forEach(k => {
+    (normenState[k.id]||[]).forEach(t => allNormen.push(t));
+  });
+  const sigs = (liveResponses||[]).filter(r=>r.module==='steckbrief_urkunde'||r.responseType==='urkunde');
+  return `<div style="margin-top:16px;">
+    <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
+      <div style="font-size:28px;font-weight:700;color:var(--gold);">${sigs.length}</div>
+      <div style="font-size:13px;color:var(--muted);">Unterschriften eingegangen</div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;">Unterzeichnete Normen</div>
+      ${allNormen.length > 0
+        ? allNormen.map(n=>`<div style="font-size:13px;color:var(--text);padding:6px 10px;border-left:2px solid var(--gold);margin-bottom:5px;background:rgba(255,255,255,.02);border-radius:0 6px 6px 0;">„${n}"</div>`).join('')
+        : '<div style="font-size:12px;color:rgba(255,255,255,.2);font-style:italic;">Normen aus Normen-Editor werden hier angezeigt</div>'}
+    </div>
+    <div style="font-size:12px;color:var(--muted);padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.03);">
+      Beamer zeigt die Urkunde live mit jeder eingehenden Unterschrift.
+    </div>
+  </div>`;
+}
+
 // ─── ONLINE WORKSHOP CORE ─────────────────────────────────────────────────────
 async function createOnlineWorkshop(){
   const title=prompt('Workshop-Titel:','Wahrheitsfähigkeit im Team · '+new Date().toLocaleDateString('de-CH'));
@@ -2244,7 +2389,8 @@ async function refreshOnlineWorkshop(){
     // 3. Aktuelle Modul-Antworten laden (alle interaktiven Module)
     const INTERACTIVE=['intro_question','johari_quiz','johari_reflexion','kernbotschaften',
       'morgen_reflexion','gfk','raci','steckbrief_feiern','steckbrief_grenzen',
-      'steckbrief_zumuten','ritual','verzerrungen_quiz','teamnormen_analyse'];
+      'steckbrief_zumuten','steckbrief_vorschlaege','steckbrief_urkunde',
+      'ritual','verzerrungen_quiz','teamnormen_analyse'];
     const mod=onlineSession?.currentModule;
     if(onlineSession?.workshopId&&mod&&INTERACTIVE.includes(mod)){
       const{data:ex,error:exErr}=await sb.from('exercise_responses')
