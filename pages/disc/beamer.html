@@ -2901,11 +2901,10 @@ function showSteckbriefEditor(data) {
   show('sSteckbriefEditor');
   const el = document.getElementById('steckbriefEditorContent');
   if (!el) return;
-  const normen    = data?.normen    || {};   // { kommunikation:[], fehler:[], ... }
+  const normen = data?.normen || {};
   const allNormen = [];
   Object.entries(KATEGORIEN_META).forEach(([kid, meta]) => {
-    const list = normen[kid] || [];
-    list.forEach(text => allNormen.push({ kid, meta, text }));
+    (normen[kid] || []).forEach(text => allNormen.push({ kid, meta, text }));
   });
   if (allNormen.length === 0) {
     el.innerHTML = `
@@ -2913,17 +2912,31 @@ function showSteckbriefEditor(data) {
       <div style="font-size:20px;color:rgba(255,255,255,.35);font-style:italic;">Der Moderator trägt die Normen ein.</div>`;
     return;
   }
+
+  // Dynamische Grössen: je mehr Normen total, desto kleiner
+  const total    = allNormen.length;
+  const titleFs  = Math.max(28, 44 - total * 1.2);
+  const katFs    = Math.max(9,  12 - Math.floor(total / 6));
+  const normFs   = Math.max(11, 18 - total * 0.5);
+  const normPad  = normFs <= 13 ? '7px 12px' : '11px 16px';
+  const normMb   = normFs <= 13 ? 5 : 8;
+  const katMb    = normFs <= 13 ? 12 : 20;
+
   el.innerHTML = `
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:24px;">Team-Steckbrief · ${allNormen.length} Normen</div>
-    <div style="font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;margin-bottom:28px;">Unser Team-Steckbrief</div>
-    ${Object.entries(KATEGORIEN_META).map(([kid, meta]) => {
-      const list = normen[kid] || [];
-      if (!list.length) return '';
-      return `<div style="margin-bottom:24px;">
-        <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:${meta.color};margin-bottom:10px;opacity:.8;">${meta.label}</div>
-        ${list.map(t => `<div style="font-size:18px;color:rgba(255,255,255,.88);line-height:1.6;padding:12px 18px;margin-bottom:8px;border-radius:10px;border-left:3px solid ${meta.color};background:rgba(255,255,255,.03);">„${t}"</div>`).join('')}
-      </div>`;
-    }).join('')}`;
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:16px;flex-shrink:0;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:${titleFs}px;font-weight:700;line-height:1;">Unser Team-Steckbrief</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);">${total} Normen</div>
+    </div>
+    <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;">
+      ${Object.entries(KATEGORIEN_META).map(([kid, meta]) => {
+        const list = normen[kid] || [];
+        if (!list.length) return '';
+        return `<div style="margin-bottom:${katMb}px;flex-shrink:0;">
+          <div style="font-size:${katFs}px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:${meta.color};margin-bottom:6px;opacity:.85;">${meta.label}</div>
+          ${list.map(t => `<div style="font-size:${normFs}px;color:rgba(255,255,255,.88);line-height:1.5;padding:${normPad};margin-bottom:${normMb}px;border-radius:8px;border-left:3px solid ${meta.color};background:rgba(255,255,255,.03);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.replace(/"/g,'&quot;')}">„${t}"</div>`).join('')}
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 /* ═══════════════════════════════════════════════════════
