@@ -1754,7 +1754,12 @@ async function submitSelection(mod) {
 }
 
 /* ─── KATEGORIEN INPUT (Steckbrief Vorschläge) ──────── */
-function renderKategorienInput(el, mod, cfg) {
+async function renderKategorienInput(el, mod, cfg) {
+  // Diskussions-Modus: Beamer-Spiegel auf TN-Gerät
+  if (cfg.phase === 'diskussion') {
+    await renderKategorienDiskussion(el, mod, cfg);
+    return;
+  }
   const kats = cfg.kategorien || [];
   el.innerHTML = `
     <div style="max-width:680px;">
@@ -1891,6 +1896,56 @@ function selectUrkSatz(i) {
     l.style.borderColor = j===i ? 'var(--gold)' : 'var(--border2)';
     l.style.background  = j===i ? 'rgba(201,168,76,.08)' : '';
   });
+}
+
+/* ─── KATEGORIEN DISKUSSION (Spiegel-Modus) ─────────── */
+async function renderKategorienDiskussion(el, mod, cfg) {
+  el.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--muted);font-size:14px;">Vorschläge werden geladen…</div>`;
+  show('sModule');
+  try {
+    initSupabase();
+    const { data: rows } = await sb.from('exercise_responses')
+      .select('content')
+      .eq('workshop_id', session.workshopId)
+      .eq('module', mod);
+    const byKat = {};
+    const kats = cfg.kategorien || [];
+    kats.forEach(k => byKat[k.id] = []);
+    (rows||[]).forEach(r => {
+      try {
+        const c = JSON.parse(r.content);
+        Object.entries(c).forEach(([kid, text]) => {
+          if (byKat[kid] !== undefined) byKat[kid].push(text);
+        });
+      } catch(e) {}
+    });
+    const maxPer = Math.max(...kats.map(k => (byKat[k.id]||[]).length), 1);
+    const fs  = Math.max(11, Math.round(15 - (maxPer - 3) * 0.5));
+    const gap = fs <= 12 ? 4 : 6;
+    const KAT_COLORS = { kommunikation:'#4a90d9', fehler:'#e63946', entscheidungen:'#f4a261', erwartungen:'#2a9d8f' };
+    el.innerHTML = `
+      <div style="margin-bottom:14px;">
+        <div style="font-size:18px;font-weight:600;color:var(--gold);margin-bottom:2px;">Diskussion</div>
+        <div style="font-size:12px;color:var(--muted);">Alle Vorschläge — schau auf deinen Bildschirm</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        ${kats.map(k => {
+          const items = byKat[k.id] || [];
+          const col = KAT_COLORS[k.id] || 'var(--gold)';
+          return `
+          <div style="border-radius:10px;background:var(--surf2);border:1px solid var(--border2);padding:10px 12px;">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:${col};margin-bottom:8px;">${k.label} <span style="color:var(--muted);">${items.length}</span></div>
+            <div style="display:flex;flex-direction:column;gap:${gap}px;">
+              ${items.length
+                ? items.map(t => `<div style="font-size:${fs}px;color:var(--text);line-height:1.4;padding:5px 8px;border-radius:5px;background:var(--surf3);">„${t}"</div>`).join('')
+                : `<div style="font-size:12px;color:var(--dim);font-style:italic;">Keine Vorschläge</div>`}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--D);font-size:13px;">Fehler beim Laden: ${e.message}</div>`;
+  }
 }
 
 function clearUrkSig() {

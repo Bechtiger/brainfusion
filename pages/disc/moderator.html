@@ -690,9 +690,9 @@ const MODULE_DETAILS={
     hints:['Einführung: "Denk an die Analyse und die Bias-Story — was braucht unser Team wirklich?"',
       'Alle tippen alleine — kein Austausch in dieser Phase',
       'Beamer zeigt die eingehenden Vorschläge live nach Kategorie gegliedert',
-      'Gib genug Zeit — Tiefe entsteht, wenn niemand hetzen muss'],
+      'Wenn alle fertig: "Diskussion starten" — jeder TN sieht alle Vorschläge auf seinem Gerät'],
     beamer:'Beamer zeigt Live-Feed der Vorschläge nach Kategorie',
-    dataType:'live_feed'
+    dataType:'vorschlaege_feed'
   },
   steckbrief_normen:{
     desc:'Du tippst die konsolidierten Normsätze live — Beamer zeigt den wachsenden Steckbrief.',
@@ -894,6 +894,7 @@ async function renderModuleContent(moduleId){
     case'gfk_fallbeispiel':    dataHTML=renderGfkFallbeispielSection();break;
     case'normen_editor':       dataHTML=renderNormenEditorSection();break;
     case'urkunde':             dataHTML=renderUrkundeModSection();break;
+    case'vorschlaege_feed':    dataHTML=renderVorschlaegeFeedSection();break;
     case'static':    dataHTML=renderStaticSection(detail);break;
   }
 
@@ -2179,6 +2180,61 @@ Falsche Antworten: ${wrongCount}/${total}`;
     if(el) el.innerHTML = errHtml;
     if(dot){ dot.style.background='#ff8e8e'; dot.style.animation='none'; }
   }
+}
+
+/* ─── VORSCHLÄGE FEED SECTION ────────────────────────── */
+function renderVorschlaegeFeedSection() {
+  const count = liveResponses?.length || 0;
+  const phase = onlineSession?.moduleData?.phase || 'sammeln';
+  return `<div style="margin-top:16px;">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+      <div style="font-size:28px;font-weight:700;color:var(--accent);">${count}</div>
+      <div style="font-size:13px;color:var(--muted);">Vorschläge eingegangen</div>
+      <div style="margin-left:auto;font-size:12px;padding:4px 10px;border-radius:12px;background:${phase==='diskussion'?'rgba(42,157,143,.2)':'rgba(255,255,255,.06)'};color:${phase==='diskussion'?'#2a9d8f':'var(--muted)'};">
+        ${phase==='diskussion'?'● Diskussion läuft':'● Sammeln läuft'}
+      </div>
+    </div>
+    ${phase !== 'diskussion' ? `
+    <button onclick="startDiskussion()" style="width:100%;padding:12px;border-radius:8px;border:none;background:rgba(42,157,143,.15);border:1px solid rgba(42,157,143,.3);color:#2a9d8f;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;" onmouseover="this.style.background='rgba(42,157,143,.25)'" onmouseout="this.style.background='rgba(42,157,143,.15)'">
+      💬 Diskussion starten — Vorschläge auf TN-Geräte spiegeln
+    </button>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center;">Alle TN sehen dann alle Vorschläge auf ihrem eigenen Gerät</div>
+    ` : `
+    <button onclick="stopDiskussion()" style="width:100%;padding:12px;border-radius:8px;border:none;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);font-size:13px;cursor:pointer;">
+      Zurück zu Einzelarbeit
+    </button>`}
+  </div>`;
+}
+
+async function startDiskussion() {
+  if (!onlineSession?.workshopId||!onlineSession?.adminToken) return;
+  try {
+    initSupabase();
+    await sb.rpc('set_workshop_module', {
+      p_workshop_id: onlineSession.workshopId,
+      p_admin_token: onlineSession.adminToken,
+      p_module: 'steckbrief_vorschlaege',
+      p_module_data: { phase: 'diskussion' }
+    });
+    onlineSession.moduleData = { phase: 'diskussion' };
+    toast('Diskussion gestartet — TN sehen jetzt alle Vorschläge ✓', 'success');
+    renderModuleContent('steckbrief_vorschlaege');
+  } catch(e) { toast('Fehler: '+e.message, 'error'); }
+}
+
+async function stopDiskussion() {
+  if (!onlineSession?.workshopId||!onlineSession?.adminToken) return;
+  try {
+    initSupabase();
+    await sb.rpc('set_workshop_module', {
+      p_workshop_id: onlineSession.workshopId,
+      p_admin_token: onlineSession.adminToken,
+      p_module: 'steckbrief_vorschlaege',
+      p_module_data: { phase: 'sammeln' }
+    });
+    onlineSession.moduleData = { phase: 'sammeln' };
+    renderModuleContent('steckbrief_vorschlaege');
+  } catch(e) { toast('Fehler: '+e.message, 'error'); }
 }
 
 function renderStaticSection(detail){
