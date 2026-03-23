@@ -894,7 +894,7 @@ body:hover #fsBtn{ opacity:1; }
 
 <!-- STECKBRIEF VORSCHLÄGE FEED -->
 <div class="screen" id="sSteckbriefFeed">
-  <div id="steckbriefFeedContent" style="display:flex;flex-direction:column;height:100vh;padding:40px 60px;background:#060610;overflow:hidden;"></div>
+  <div id="steckbriefFeedContent" style="display:flex;flex-direction:column;height:100vh;padding:30px 50px 24px;background:#060610;overflow:hidden;box-sizing:border-box;"></div>
 </div>
 
 <!-- STECKBRIEF EDITOR (Normen eintippen) -->
@@ -2846,33 +2846,47 @@ async function pollSteckbriefFeed(mod) {
   try {
     const res = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=alias,content&module=eq.${mod}&workshop_id=eq.${session.workshopId}&order=created_at.asc`, { headers: HDR });
     const rows = await res.json();
+
     // Gruppiere nach Kategorien
     const byKat = {};
+    Object.keys(KATEGORIEN_META).forEach(k => byKat[k] = []);
     rows.forEach(r => {
       try {
         const c = JSON.parse(r.content);
         Object.entries(c).forEach(([kid, text]) => {
-          if (!byKat[kid]) byKat[kid] = [];
-          byKat[kid].push(text);
+          if (byKat[kid] !== undefined) byKat[kid].push(text);
         });
       } catch(e) {}
     });
-    const total = rows.length;
+
+    const totalItems = Object.values(byKat).reduce((s, a) => s + a.length, 0);
+    const maxPerKat  = Math.max(...Object.values(byKat).map(a => a.length), 1);
+
+    // Dynamische Schriftgrösse: je mehr Items, desto kleiner
+    // Basis: 14px bei ≤12 Items, linear runter bis 9px bei 40 Items
+    const fs   = Math.max(9,  Math.round(14 - (maxPerKat - 3) * 0.6));
+    const pad  = fs <= 10 ? '4px 8px' : '6px 10px';
+    const gap  = fs <= 10 ? 3 : 5;
+    const lh   = fs <= 10 ? 1.3 : 1.45;
+    const hdr  = fs <= 10 ? 10 : 11;
+
     el.innerHTML = `
-      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:18px;">
-        <div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;">Normvorschläge</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);">${total} Vorschläge eingegangen</div>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:12px;flex-shrink:0;">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;line-height:1;">Normvorschläge</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);">${rows.length} Vorschläge · ${rows.length} Personen</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;overflow:hidden;height:calc(100vh - 130px);">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-height:0;">
         ${Object.entries(KATEGORIEN_META).map(([kid, meta]) => {
           const items = byKat[kid] || [];
           return `
-          <div style="border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);padding:14px 18px;display:flex;flex-direction:column;overflow:hidden;">
-            <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:${meta.color};margin-bottom:10px;flex-shrink:0;">${meta.label} <span style="color:rgba(255,255,255,.25);margin-left:6px;">${items.length}</span></div>
-            <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:5px;scrollbar-width:none;">
+          <div style="border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);padding:12px 14px;display:flex;flex-direction:column;min-height:0;overflow:hidden;">
+            <div style="font-size:${hdr}px;font-family:'IBM Plex Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;color:${meta.color};margin-bottom:8px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              ${meta.label}&nbsp;<span style="color:rgba(255,255,255,.25);">${items.length}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:${gap}px;flex:1;overflow:hidden;">
               ${items.length
-                ? items.map(t => `<div style="font-size:13px;color:rgba(255,255,255,.78);line-height:1.45;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,.04);flex-shrink:0;">„${t}"</div>`).join('')
-                : `<div style="font-size:13px;color:rgba(255,255,255,.18);font-style:italic;">Noch keine Vorschläge…</div>`}
+                ? items.map(t => `<div style="font-size:${fs}px;color:rgba(255,255,255,.82);line-height:${lh};padding:${pad};border-radius:5px;background:rgba(255,255,255,.04);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${t.replace(/"/g,'&quot;')}">„${t}"</div>`).join('')
+                : `<div style="font-size:${fs}px;color:rgba(255,255,255,.18);font-style:italic;">Noch keine…</div>`}
             </div>
           </div>`;
         }).join('')}
