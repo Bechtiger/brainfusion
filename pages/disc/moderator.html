@@ -2327,17 +2327,29 @@ function renderNormenList(kid) {
 async function pushNormenToBeamer() {
   const info = document.getElementById('normenSaveInfo');
   if (!onlineSession?.workshopId||!onlineSession?.adminToken) {
-    if(info) info.textContent = '⚠ Kein aktiver Workshop — Beamer nicht erreichbar.';
+    if(info) info.textContent = '⚠ Kein aktiver Workshop.';
     return;
   }
   try {
     initSupabase();
+    // 1. Beamer aktualisieren
     await sb.rpc('set_workshop_module', {
       p_workshop_id: onlineSession.workshopId,
       p_admin_token: onlineSession.adminToken,
       p_module: 'steckbrief_normen',
       p_module_data: { normen: normenState }
     });
+    // 2. Normen als exercise_response persistieren (damit Urkunde sie immer findet)
+    const allNormen = [];
+    NORMEN_KATEGORIEN.forEach(k => (normenState[k.id]||[]).forEach(t => allNormen.push(t)));
+    await sb.from('exercise_responses').upsert({
+      workshop_id: onlineSession.workshopId,
+      participant_id: 'moderator',
+      alias: '__normen__',
+      module: 'steckbrief_normen',
+      response_type: 'team_normen',
+      content: JSON.stringify(allNormen)
+    }, { onConflict: 'workshop_id,module,participant_id' }).select();
     if(info) { info.textContent = '✓ Beamer aktualisiert'; setTimeout(()=>{ if(info) info.textContent=''; }, 2000); }
   } catch(e) {
     if(info) info.textContent = 'Fehler: '+e.message;

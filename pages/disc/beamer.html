@@ -2964,36 +2964,39 @@ async function pollUrkundeBeamer() {
   const el = document.getElementById('urkundeBeamerContent');
   if (!el) return;
   try {
+    const wsId = session?.workshopId;
+    if (!wsId) { el.innerHTML='<div style="color:orange;padding:40px;">Session-Fehler: workshopId fehlt</div>'; return; }
+
     // Unterschriften laden
-    const resEx = await fetch(`${SB_URL}/rest/v1/exercise_responses?select=alias,content&module=eq.steckbrief_urkunde&workshop_id=eq.${session.workshopId}&order=created_at.asc`, { headers: HDR });
+    const resEx = await fetch(
+      `${SB_URL}/rest/v1/exercise_responses?select=alias,content&module=eq.steckbrief_urkunde&workshop_id=eq.${wsId}&order=created_at.asc`,
+      { headers: HDR }
+    );
     const rows = await resEx.json();
 
-    // Normen: aus Cache ODER frisch aus DB holen
+    // Normen: aus Cache ODER aus persistierter exercise_response holen
     let normen = urkSavedData?.normen || [];
     if (!normen.length) {
       try {
-        const resWs = await fetch(`${SB_URL}/rest/v1/workshops?select=module_data&id=eq.${session.workshopId}`, { headers: HDR });
-        const wsRows = await resWs.json();
-        const md = wsRows?.[0]?.module_data;
-        if (md?.normen) {
-          // normen ist { kommunikation:[], fehler:[], ... } — flat machen
-          if (Array.isArray(md.normen)) {
-            normen = md.normen;
-          } else {
-            Object.values(md.normen).forEach(arr => { if(Array.isArray(arr)) normen.push(...arr); });
-          }
+        const resN = await fetch(
+          `${SB_URL}/rest/v1/exercise_responses?select=content&module=eq.steckbrief_normen&response_type=eq.team_normen&workshop_id=eq.${wsId}&limit=1`,
+          { headers: HDR }
+        );
+        const nRows = await resN.json();
+        if (nRows?.[0]?.content) {
+          normen = JSON.parse(nRows[0].content);
           urkSavedData = { normen };
         }
-      } catch(e) { console.warn('normen fallback fetch:', e); }
+      } catch(e) { console.warn('normen fetch:', e); }
     }
 
-    const sigs = rows.map(r => {
+    const sigs = (Array.isArray(rows) ? rows : []).map(r => {
       try { return JSON.parse(r.content); } catch(e) { return null; }
     }).filter(Boolean);
 
     const total     = participants?.length || 22;
     const sigCount  = sigs.length;
-    const normFs    = Math.max(11, 16 - normen.length * 0.4);
+    const normFs    = Math.max(11, 16 - (normen.length || 0) * 0.4);
     const normPad   = normFs <= 13 ? '6px 12px' : '9px 14px';
     const sigNameFs = sigCount > 16 ? 9 : 10;
     const sigImgH   = sigCount > 16 ? 30 : 38;
@@ -3016,10 +3019,10 @@ async function pollUrkundeBeamer() {
             ${sigs.map(s => `
             <div style="border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);padding:6px 10px;">
               <div style="font-size:${sigNameFs}px;color:rgba(255,255,255,.5);margin-bottom:3px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.alias||'?'}</div>
-              ${s.signature ? `<img src="${s.signature}" style="width:100%;height:${sigImgH}px;object-fit:contain;" />` : ''}
+              ${s.signature ? `<img src="${s.signature}" style="width:100%;height:${sigImgH}px;object-fit:contain;" />` : '<div style="height:'+sigImgH+'px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.3);">✓</div>'}
             </div>`).join('')}
             ${Array.from({length: Math.max(0, total - sigCount)}).map(() =>
-              `<div style="border-radius:8px;border:1px dashed rgba(255,255,255,.07);height:${sigImgH+18}px;display:flex;align-items:center;justify-content:center;">
+              `<div style="border-radius:8px;border:1px dashed rgba(255,255,255,.07);height:${sigImgH+20}px;display:flex;align-items:center;justify-content:center;">
                 <span style="font-size:14px;opacity:.12;">✍️</span>
               </div>`
             ).join('')}
@@ -3027,7 +3030,11 @@ async function pollUrkundeBeamer() {
           ${sigCount >= total ? `<div style="margin-top:12px;padding:12px;border-radius:10px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);text-align:center;font-family:'Rajdhani',sans-serif;font-size:20px;color:#c9a84c;flex-shrink:0;">✦ Alle haben unterzeichnet ✦</div>` : ''}
         </div>
       </div>`;
-  } catch(e) { console.warn('pollUrkundeBeamer:', e); }
+  } catch(e) {
+    console.warn('pollUrkundeBeamer:', e);
+    const el2 = document.getElementById('urkundeBeamerContent');
+    if(el2) el2.innerHTML = `<div style="color:orange;padding:40px;font-size:16px;">Fehler: ${e.message}</div>`;
+  }
 }
 
 function toggleFullscreen(){
