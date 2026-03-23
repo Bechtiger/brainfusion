@@ -2765,6 +2765,11 @@ function initRealtime() {
           }
           return;
         }
+        // Urkunde: neue Unterschrift → sofort neu rendern
+        if (p.new?.module === 'steckbrief_urkunde' && currentModule === 'steckbrief_urkunde') {
+          pollUrkundeBeamer();
+          return;
+        }
         addFeedResponse(p.new);
       })
     .subscribe();
