@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -1876,6 +1876,9 @@ function renderUrkundeRitual(el, mod, cfg) {
     if (!urkSigCanvas) return;
     urkSigCtx = urkSigCanvas.getContext('2d');
     urkSigCanvas.width = urkSigCanvas.offsetWidth;
+    // Navy-Hintergrund sofort einzeichnen — weisse Linie bleibt beim JPEG-Export sichtbar
+    urkSigCtx.fillStyle = '#191932';
+    urkSigCtx.fillRect(0, 0, urkSigCanvas.width, urkSigCanvas.height);
     urkSigCtx.strokeStyle='#e4e4f0'; urkSigCtx.lineWidth=2.5; urkSigCtx.lineCap='round'; urkSigCtx.lineJoin='round';
     const getPos = e => {
       const r=urkSigCanvas.getBoundingClientRect(), s=e.touches?e.touches[0]:e;
@@ -1963,18 +1966,7 @@ async function submitUrkunde(mod) {
   const satz   = saetze[parseInt(selected.value)] || '';
   btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
   try {
-    // Signatur auf kleinen Canvas kopieren (kompakt für DB-Speicherung)
-    // + Navy-Hintergrund damit sie im PDF sichtbar ist
-    const sigExport = document.createElement('canvas');
-    sigExport.width  = 300;
-    sigExport.height = 90;
-    const sigExpCtx = sigExport.getContext('2d');
-    sigExpCtx.fillStyle = '#191932';
-    sigExpCtx.fillRect(0, 0, 300, 90);
-    sigExpCtx.drawImage(urkSigCanvas, 0, 0, 300, 90);
-    const sigDataUrl = sigExport.toDataURL('image/jpeg', 0.6);
-    console.log('sig size:', sigDataUrl.length, 'chars');
-
+    const sigDataUrl = urkSigCanvas.toDataURL('image/jpeg', 0.92);
     const res = await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({
       participantId: session.participantId, joinToken: session.joinToken,
       module: mod, responseType: 'urkunde',
