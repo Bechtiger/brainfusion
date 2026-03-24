@@ -2462,21 +2462,16 @@ async function exportUrkundePDF() {
     // Unterschriften Header
     doc.setTextColor(30,30,50); doc.setFont('helvetica','bold'); doc.setFontSize(8);
     doc.text('UNTERZEICHNET VON '+sigs.length+' PERSONEN', mg, y); y+=6;
-    // Unterschriften direkt einfügen — dunkle Box, weisse Signatur sichtbar
-    const cols=4, sigW=(W-mg*2)/cols, boxH=22, imgH=13;
-    for (let i=0; i<Math.max(sigs.length,22); i++) {
-      const cx=mg+(i%cols)*sigW, sy=y+Math.floor(i/cols)*(boxH+3);
-    // Signaturen vorbereiten: Navy-Canvas + Bild → JPEG (kein Transparenz-Problem)
+    // Signaturen vorbereiten: Navy-Canvas + Bild → JPEG
     const prepSig = (sig) => new Promise(res => {
       if (!sig || !sig.startsWith('data:image')) { res(null); return; }
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       img.onload = () => {
         const cv = document.createElement('canvas');
-        cv.width = img.naturalWidth || img.width || 600;
-        cv.height = img.naturalHeight || img.height || 200;
+        cv.width = img.naturalWidth || 600;
+        cv.height = img.naturalHeight || 200;
         const ctx = cv.getContext('2d');
-        ctx.fillStyle = '#191932';        // Navy-Hintergrund
+        ctx.fillStyle = '#191932';
         ctx.fillRect(0, 0, cv.width, cv.height);
         ctx.drawImage(img, 0, 0, cv.width, cv.height);
         res(cv.toDataURL('image/jpeg', 0.95));
@@ -2486,7 +2481,7 @@ async function exportUrkundePDF() {
     });
     const preparedSigs = await Promise.all(sigs.map(s => prepSig(s.signature).then(jpg => ({...s, jpg}))));
 
-    // Unterschriften direkt einfügen
+    // Grid zeichnen
     const cols=4, sigW=(W-mg*2)/cols, boxH=22, imgH=13;
     for (let i=0; i<Math.max(preparedSigs.length,22); i++) {
       const cx=mg+(i%cols)*sigW, sy=y+Math.floor(i/cols)*(boxH+3);
@@ -2494,7 +2489,7 @@ async function exportUrkundePDF() {
         doc.setDrawColor(180,140,50); doc.setFillColor(25,25,50); doc.setLineWidth(0.3);
         doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
         if (preparedSigs[i].jpg) {
-          try { doc.addImage(preparedSigs[i].jpg,'JPEG',cx+2,sy+1,sigW-4,imgH); } catch(e){ console.warn('img err',e); }
+          try { doc.addImage(preparedSigs[i].jpg,'JPEG',cx+2,sy+1,sigW-4,imgH); } catch(e){}
         }
         doc.setTextColor(201,168,76); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
         doc.text(preparedSigs[i].alias||'?', cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
