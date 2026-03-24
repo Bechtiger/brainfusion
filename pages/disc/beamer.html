@@ -2994,10 +2994,19 @@ async function pollUrkundeBeamer() {
 
     const sigs = rows.map(r => {
       try {
-        const c = typeof r.content === 'string' ? JSON.parse(r.content) : r.content;
-        return { alias: r.alias || c.alias, signature: c.signature, satz: c.satz };
-      } catch(e) { return null; }
-    }).filter(Boolean);
+        let c = r.content;
+        if (typeof c === 'string') {
+          // Encoding-Probleme beheben bevor parse
+          c = c.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+          c = JSON.parse(c);
+        }
+        if (!c || typeof c !== 'object') return { alias: r.alias||'?', signature: null };
+        return { alias: r.alias || c.alias || '?', signature: c.signature || null, satz: c.satz || '' };
+      } catch(e) {
+        // Auch bei Parse-Fehler: Alias-Box zeigen
+        return { alias: r.alias || '?', signature: null };
+      }
+    }).filter(s => s !== null);
 
     const total    = participants?.length || 22;
     const sigCount = sigs.length;
@@ -3025,10 +3034,10 @@ async function pollUrkundeBeamer() {
           <div style="flex:1;overflow:hidden;display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;align-content:start;">
             ${sigs.map(s => `
             <div style="border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:6px 8px;">
-              <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:3px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.alias||'?'}</div>
-              ${s.signature
+              <div style="font-size:10px;color:rgba(255,255,255,.6);margin-bottom:3px;font-family:'IBM Plex Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.alias}</div>
+              ${s.signature && s.signature.startsWith('data:image')
                 ? `<img src="${s.signature}" style="width:100%;height:${sigH}px;object-fit:contain;display:block;" />`
-                : `<div style="height:${sigH}px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-size:12px;">✓</div>`}
+                : `<div style="height:${sigH}px;display:flex;align-items:center;justify-content:center;color:rgba(201,168,76,.5);font-size:18px;">✓</div>`}
             </div>`).join('')}
             ${Array.from({length: Math.max(0, total - sigCount)}).map(() =>
               `<div style="border-radius:8px;border:1px dashed rgba(255,255,255,.08);height:${sigH+22}px;display:flex;align-items:center;justify-content:center;">
