@@ -2483,22 +2483,24 @@ async function exportUrkundePDF() {
       img.src = dataUrl;
     });
 
-    // Alle Signaturen invertieren
-    const invertedSigs = await Promise.all(sigs.map(async s => ({
-      ...s,
-      sigInverted: s.signature?.startsWith('data:image') ? await invertSig(s.signature) : null
-    })));
-
+    // Unterschriften direkt einfügen — dunkle Box, weisse Signatur sichtbar
+    const cols=4, sigW=(W-mg*2)/cols, boxH=22, imgH=13;
     for (let i=0; i<Math.max(sigs.length,22); i++) {
       const cx=mg+(i%cols)*sigW, sy=y+Math.floor(i/cols)*(boxH+3);
-      doc.setDrawColor(180,140,50); doc.setFillColor(252,250,245); doc.setLineWidth(0.2);
-      doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
-      if (i<invertedSigs.length) {
-        if (invertedSigs[i].sigInverted) {
-          try { doc.addImage(invertedSigs[i].sigInverted,'PNG',cx+2,sy+1,sigW-4,imgH,undefined,'FAST'); } catch(e){}
+      if (i < sigs.length) {
+        // Unterschriebene Box: dunkel (Signatur bleibt weiss sichtbar)
+        doc.setDrawColor(180,140,50); doc.setFillColor(25,25,50); doc.setLineWidth(0.3);
+        doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
+        if (sigs[i].signature?.startsWith('data:image')) {
+          try { doc.addImage(sigs[i].signature,'PNG',cx+2,sy+1,sigW-4,imgH,undefined,'FAST'); } catch(e){}
         }
-        doc.setTextColor(80,70,50); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
-        doc.text(invertedSigs[i].alias, cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
+        // Name in gold
+        doc.setTextColor(201,168,76); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+        doc.text(sigs[i].alias, cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
+      } else {
+        // Leere Box: creme
+        doc.setDrawColor(180,140,50); doc.setFillColor(252,250,245); doc.setLineWidth(0.15);
+        doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
       }
     }
     // Footer
