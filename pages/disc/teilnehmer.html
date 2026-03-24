@@ -1963,10 +1963,20 @@ async function submitUrkunde(mod) {
   const satz   = saetze[parseInt(selected.value)] || '';
   btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
   try {
+    // Signatur mit Navy-Hintergrund exportieren damit sie im PDF sichtbar ist
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = urkSigCanvas.width;
+    exportCanvas.height = urkSigCanvas.height;
+    const exportCtx = exportCanvas.getContext('2d');
+    exportCtx.fillStyle = '#191932';
+    exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    exportCtx.drawImage(urkSigCanvas, 0, 0);
+    const sigDataUrl = exportCanvas.toDataURL('image/jpeg', 0.95);
+
     const res = await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({
       participantId: session.participantId, joinToken: session.joinToken,
       module: mod, responseType: 'urkunde',
-      content: JSON.stringify({ satz, signature: urkSigCanvas.toDataURL('image/png'), alias: session.alias }),
+      content: JSON.stringify({ satz, signature: sigDataUrl, alias: session.alias }),
       alias: session.alias
     })});
     if (!res.ok && res.status !== 409) throw new Error('HTTP '+res.status);

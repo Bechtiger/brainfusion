@@ -2462,39 +2462,8 @@ async function exportUrkundePDF() {
     // Unterschriften Header
     doc.setTextColor(30,30,50); doc.setFont('helvetica','bold'); doc.setFontSize(8);
     doc.text('UNTERZEICHNET VON '+sigs.length+' PERSONEN', mg, y); y+=6;
-    // Signaturen auf Canvas rendern (navy bg + weisse Sig = sichtbar als JPEG)
-    const renderSigToJpeg = (sig) => {
-      return new Promise((resolve) => {
-        if (!sig || !sig.startsWith('data:image')) { resolve(null); return; }
-        const cv = document.createElement('canvas');
-        cv.width = 500; cv.height = 160;
-        const ctx = cv.getContext('2d');
-        const img = new Image();
-        img.onload = () => {
-          ctx.fillStyle = '#191932';
-          ctx.fillRect(0, 0, 500, 160);
-          ctx.drawImage(img, 0, 0, 500, 160);
-          resolve(cv.toDataURL('image/jpeg', 1.0));
-        };
-        img.onerror = () => resolve(null);
-        // Data-URL direkt setzen — triggert onload synchron in Chromium
-        img.src = sig;
-        // Fallback: falls onload nicht feuert nach 100ms
-        setTimeout(() => {
-          if (img.complete && img.naturalWidth > 0) {
-            ctx.fillStyle = '#191932';
-            ctx.fillRect(0, 0, 500, 160);
-            ctx.drawImage(img, 0, 0, 500, 160);
-            resolve(cv.toDataURL('image/jpeg', 1.0));
-          } else {
-            resolve(null);
-          }
-        }, 200);
-      });
-    };
-    const preparedSigs = await Promise.all(
-      sigs.map(s => renderSigToJpeg(s.signature).then(jpg => ({...s, jpg})))
-    );
+    // Signaturen direkt einfügen (bereits als JPEG mit Navy-BG gespeichert)
+    const preparedSigs = sigs; // kein Konvertieren nötig
 
     // Grid zeichnen
     const cols=4, sigW=(W-mg*2)/cols, boxH=22, imgH=13;
@@ -2503,8 +2472,8 @@ async function exportUrkundePDF() {
       if (i < preparedSigs.length) {
         doc.setDrawColor(180,140,50); doc.setFillColor(25,25,50); doc.setLineWidth(0.3);
         doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
-        if (preparedSigs[i].jpg) {
-          try { doc.addImage(preparedSigs[i].jpg,'JPEG',cx+2,sy+1,sigW-4,imgH); } catch(e){}
+        if (preparedSigs[i].signature) {
+          try { doc.addImage(preparedSigs[i].signature, 'JPEG', cx+2, sy+1, sigW-4, imgH); } catch(e){}
         }
         doc.setTextColor(201,168,76); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
         doc.text(preparedSigs[i].alias||'?', cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
