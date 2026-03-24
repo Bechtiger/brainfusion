@@ -2456,42 +2456,53 @@ async function exportUrkundePDF() {
     // Unterschriften Header
     doc.setTextColor(30,30,50); doc.setFont('helvetica','bold'); doc.setFontSize(8);
     doc.text('UNTERZEICHNET VON '+sigs.length+' PERSONEN', mg, y); y+=6;
-    // Grid 4 Spalten — helle Boxen, Unterschriften invertiert dargestellt
+    // Grid 4 Spalten
     const cols=4, sigW=(W-mg*2)/cols, boxH=20, imgH=12;
+
+    // Alle Signaturen vorab invertieren
+    const invertSig = (dataUrl) => new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const cv = document.createElement('canvas');
+        cv.width = img.width; cv.height = img.height;
+        const ctx = cv.getContext('2d');
+        // Cremefarbener Hintergrund
+        ctx.fillStyle = '#fffaf0'; ctx.fillRect(0,0,cv.width,cv.height);
+        ctx.drawImage(img,0,0);
+        const d = ctx.getImageData(0,0,cv.width,cv.height);
+        for (let p=0; p<d.data.length; p+=4) {
+          const brightness = (d.data[p]+d.data[p+1]+d.data[p+2])/3;
+          // Helle Pixel (Hintergrund) → transparent
+          // Dunkle Pixel (Linie) → dunkles Navy
+          if (brightness > 180) {
+            d.data[p+3] = 0;
+          } else {
+            d.data[p]=20; d.data[p+1]=20; d.data[p+2]=50; d.data[p+3]=255;
+          }
+        }
+        ctx.putImageData(d,0,0);
+        resolve(cv.toDataURL('image/png'));
+      };
+      img.onerror = () => resolve(null);
+      img.src = dataUrl;
+    });
+
+    // Alle Signaturen invertieren
+    const invertedSigs = await Promise.all(sigs.map(async s => ({
+      ...s,
+      sigInverted: s.signature?.startsWith('data:image') ? await invertSig(s.signature) : null
+    })));
+
     for (let i=0; i<Math.max(sigs.length,22); i++) {
       const cx=mg+(i%cols)*sigW, sy=y+Math.floor(i/cols)*(boxH+3);
-      // Box mit hellem Hintergrund und zartem Rahmen
       doc.setDrawColor(180,140,50); doc.setFillColor(252,250,245); doc.setLineWidth(0.2);
       doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
-      if (i<sigs.length) {
-        if (sigs[i].signature?.startsWith('data:image')) {
-          try {
-            // Unterschrift auf hellem Hintergrund: Canvas zum Invertieren
-            const canvas = document.createElement('canvas');
-            const img = new Image();
-            await new Promise(resolve => {
-              img.onload = () => {
-                canvas.width = img.width; canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#fffaf0'; ctx.fillRect(0,0,canvas.width,canvas.height);
-                ctx.drawImage(img, 0, 0);
-                const d = ctx.getImageData(0,0,canvas.width,canvas.height);
-                for (let p=0; p<d.data.length; p+=4) {
-                  // Weisse Pixel transparent, dunkle Pixel schwarz
-                  const bright = (d.data[p]+d.data[p+1]+d.data[p+2])/3;
-                  if (bright > 200) { d.data[p+3]=0; }
-                  else { d.data[p]=30; d.data[p+1]=30; d.data[p+2]=50; d.data[p+3]=220; }
-                }
-                ctx.putImageData(d, 0, 0);
-                resolve();
-              };
-              img.src = sigs[i].signature;
-            });
-            doc.addImage(canvas.toDataURL('image/png'),'PNG',cx+2,sy+1,sigW-4,imgH,undefined,'FAST');
-          } catch(e) { /* fallback: nichts zeichnen */ }
+      if (i<invertedSigs.length) {
+        if (invertedSigs[i].sigInverted) {
+          try { doc.addImage(invertedSigs[i].sigInverted,'PNG',cx+2,sy+1,sigW-4,imgH,undefined,'FAST'); } catch(e){}
         }
         doc.setTextColor(80,70,50); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
-        doc.text(sigs[i].alias, cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
+        doc.text(invertedSigs[i].alias, cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
       }
     }
     // Footer
