@@ -1,6 +1,6 @@
 # Wahrheitsfähigkeit im Team - Workshop-Plattform
 > Projektgedächtnis für Claude Code / Claude Chat Sessions
-> Letzte Aktualisierung: 2026-03-22 (Session Bias-Story Redesign + Team-Normen-Analyse)
+> Letzte Aktualisierung: 2026-03-24 (Session Team-Steckbrief + Urkunden-System vollständig)
 > Status: Workshop bereit ✅ | Nächster Einsatz: 22./23. April 2026
 
 ---
@@ -151,12 +151,14 @@ disc_test → disc_map → disc_results → disc_role_profile → pairing_karten
 
 [Tag 2 – Vertiefen]
 morgen_reflexion
-→ teamnormen_analyse     ← NEU: 24 Fragen, 6 Dimensionen, KI-Radar
-→ normen_info            ← NEU: 7-Screen Theorie-Präsentation
-→ raci_info → raci
+→ teamnormen_analyse     ← 24 Fragen, 6 Dimensionen, KI-Radar
+→ normen_info            ← 7-Screen Theorie-Präsentation
 
 [Tag 2 – Abschluss]
-steckbrief_feiern → steckbrief_grenzen → steckbrief_zumuten → ritual → closing
+steckbrief_vorschlaege   ← NEU: 4 Kategorien, Einzelarbeit anonym, Diskussions-Spiegel
+→ steckbrief_normen      ← NEU: Moderator tippt live, Beamer zeigt wachsenden Steckbrief
+→ steckbrief_urkunde     ← NEU: Satz wählen + Canvas-Unterschrift → Urkunde live aufgebaut
+→ closing
 ```
 
 
@@ -437,3 +439,55 @@ const parsed = JSON.parse(txt);
 - Folgeprodukt geplant: Führungskräfte-Workshop (DISC + schwierige Gespräche + permissive Kommunikation)
 - TikTok "KI-Freak" (~10.400 Follower), Co-Autor zweier Bücher mit Claude
 - Nächste geplante Module: Teamnorm-Urkunde (Abschlussritual Tag 2)
+
+---
+
+## 18. NEU: Team-Steckbrief & Urkunden-System (Session 24.03.2026)
+
+### 18.1 Drei neue Module
+
+| Modul | TN-Interface | Beamer | Moderator |
+|---|---|---|---|
+| `steckbrief_vorschlaege` | 4 Kategorien, anonym | Live-Feed 2×2 Grid, dynamische Schriftgrösse | "Diskussion starten" → spiegelt Feed auf TN-Geräte |
+| `steckbrief_normen` | Beamer-static: "Schau auf Beamer" | Wachsender Steckbrief, live aktualisiert | Editor mit 4 Kategorien + Hinzufügen-Button |
+| `steckbrief_urkunde` | Satz wählen + Canvas-Unterschrift | Urkunde mit Normen + live eingehende Signaturen | PDF-Export Button |
+
+### 18.2 Diskussions-Spiegel
+```javascript
+// Moderator drückt "Diskussion starten"
+await sb.rpc('set_workshop_module', { p_module_data: { phase: 'diskussion' } });
+// TN-Interface wechselt automatisch → zeigt alle Vorschläge nach Kategorie
+```
+
+### 18.3 Normen-Persistenz
+Normen werden bei jedem `addNormenSatz()` via `pushNormenToBeamer()` als eigene exercise_response gespeichert:
+```javascript
+// module: 'steckbrief_normen', response_type: 'team_normen'
+// content: JSON.stringify(allNormen) // flat array aller Sätze
+```
+
+### 18.4 Signatur-Technik (KRITISCH!)
+```javascript
+// 1. Canvas-Init: Navy-Hintergrund SOFORT einzeichnen
+urkSigCtx.fillStyle = '#191932';
+urkSigCtx.fillRect(0, 0, urkSigCanvas.width, urkSigCanvas.height);
+// 2. clearUrkSig: Navy NACH clearRect wiederherstellen!
+// 3. Export: JPEG mit quality 0.92 — kein PNG (Transparenz-Problem in jsPDF)
+const sigDataUrl = urkSigCanvas.toDataURL('image/jpeg', 0.92);
+```
+
+### 18.5 KRITISCHER BUG (gefunden + gefixt 24.03.2026)
+🚨 **submit-exercise Edge Function** hatte `content.trim().substring(0, 500)` — schnitt Signaturen auf 500 Zeichen ab → JSON kaputt → Signatur immer null!
+**Gefixt in:** `supabase/functions/submit-exercise/index.ts` → `content.trim()` ohne substring
+
+### 18.6 PDF-Urkunde
+- jsPDF via `<script src="cdn.jsdelivr.net/npm/jspdf@2.5.1/...">` in moderator.html `<head>`
+- Helles Layout: weisser Hintergrund, Navy Titelbalken, goldener Doppelrahmen
+- Navy Signatur-Boxen (unterschrieben) + Creme leere Boxen
+- `doc.setOpacity()` existiert NICHT in jsPDF 2.5.1 — niemals verwenden!
+- Normen aus `normenState` ODER Fallback aus DB (`response_type: 'team_normen'`)
+
+### 18.7 Pending
+- [ ] KI-generiertes Handout (Gesamtzusammenfassung des Workshops)
+- [ ] Kosmetische Feinschliffe nach ersten Drucktests
+- [ ] CLAUDE.md → memory_user_edits aktualisieren

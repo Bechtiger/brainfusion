@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { participantId, joinToken, module, content, responseType } = await req.json()
+    const { participantId, joinToken, module, content, responseType, alias: aliasOverride, anonymous } = await req.json()
 
     if (!participantId || !joinToken || !module || !content) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -45,10 +45,10 @@ serve(async (req) => {
       .insert({
         workshop_id: participant.workshop_id,
         participant_id: participantId,
-        alias: participant.alias,
+        alias: (anonymous === true || aliasOverride === null) ? null : (aliasOverride || participant.alias),
         module,
         response_type: responseType || 'text',
-        content: content.trim().substring(0, 500)
+        content: content.trim()
       })
       .select('id')
       .single()
