@@ -2993,8 +2993,10 @@ async function pollUrkundeBeamer() {
     }
 
     const sigs = rows.map(r => {
-      try { const c = JSON.parse(r.content); return { alias: r.alias || c.alias, signature: c.signature, satz: c.satz }; }
-      catch(e) { return null; }
+      try {
+        const c = typeof r.content === 'string' ? JSON.parse(r.content) : r.content;
+        return { alias: r.alias || c.alias, signature: c.signature, satz: c.satz };
+      } catch(e) { return null; }
     }).filter(Boolean);
 
     const total    = participants?.length || 22;
