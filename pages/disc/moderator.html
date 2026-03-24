@@ -2457,13 +2457,26 @@ async function exportUrkundePDF() {
     for (let i=0; i<Math.max(sigs.length,22); i++) {
       const cx=mg+(i%cols)*sigW, sy=y+Math.floor(i/cols)*(boxH+3);
       if (i < sigs.length) {
-        // Unterschriebene Box: dunkel (Signatur bleibt weiss sichtbar)
+        // Navy-Box
         doc.setDrawColor(180,140,50); doc.setFillColor(25,25,50); doc.setLineWidth(0.3);
         doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
         if (sigs[i].signature?.startsWith('data:image')) {
-          try { doc.addImage(sigs[i].signature,'PNG',cx+2,sy+1,sigW-4,imgH,undefined,'FAST'); } catch(e){}
+          try {
+            // Canvas mit Navy-Hintergrund + Signatur → JPEG (kein Alpha-Problem)
+            const cv = document.createElement('canvas');
+            cv.width = 400; cv.height = 160;
+            const ctx = cv.getContext('2d');
+            ctx.fillStyle = '#191932';
+            ctx.fillRect(0,0,cv.width,cv.height);
+            await new Promise(res => {
+              const img = new Image();
+              img.onload = () => { ctx.drawImage(img,0,0,cv.width,cv.height); res(); };
+              img.onerror = res;
+              img.src = sigs[i].signature;
+            });
+            doc.addImage(cv.toDataURL('image/jpeg',0.9),'JPEG',cx+2,sy+1,sigW-4,imgH);
+          } catch(e) {}
         }
-        // Name in gold
         doc.setTextColor(201,168,76); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
         doc.text(sigs[i].alias, cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
       } else {
