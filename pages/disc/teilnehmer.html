@@ -1952,7 +1952,14 @@ async function renderKategorienDiskussion(el, mod, cfg) {
 }
 
 function clearUrkSig() {
-  if(urkSigCtx){ urkSigCtx.clearRect(0,0,urkSigCanvas.width,urkSigCanvas.height); urkHasSig=false; document.getElementById('urkSigHint').style.opacity='1'; }
+  if(urkSigCtx){
+    urkSigCtx.clearRect(0,0,urkSigCanvas.width,urkSigCanvas.height);
+    // Navy-Hintergrund wiederherstellen damit JPEG-Export weisse Linien zeigt
+    urkSigCtx.fillStyle='#191932';
+    urkSigCtx.fillRect(0,0,urkSigCanvas.width,urkSigCanvas.height);
+    urkHasSig=false;
+    document.getElementById('urkSigHint').style.opacity='1';
+  }
 }
 
 async function submitUrkunde(mod) {
