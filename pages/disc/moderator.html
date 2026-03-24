@@ -2452,37 +2452,6 @@ async function exportUrkundePDF() {
     // Unterschriften Header
     doc.setTextColor(30,30,50); doc.setFont('helvetica','bold'); doc.setFontSize(8);
     doc.text('UNTERZEICHNET VON '+sigs.length+' PERSONEN', mg, y); y+=6;
-    // Grid 4 Spalten
-    const cols=4, sigW=(W-mg*2)/cols, boxH=20, imgH=12;
-
-    // Alle Signaturen vorab invertieren
-    const invertSig = (dataUrl) => new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => {
-        const cv = document.createElement('canvas');
-        cv.width = img.width; cv.height = img.height;
-        const ctx = cv.getContext('2d');
-        // Canvas bleibt transparent — NUR das Bild zeichnen
-        ctx.drawImage(img, 0, 0);
-        const d = ctx.getImageData(0, 0, cv.width, cv.height);
-        for (let p = 0; p < d.data.length; p += 4) {
-          const r = d.data[p], g = d.data[p+1], b = d.data[p+2], a = d.data[p+3];
-          const brightness = (r + g + b) / 3;
-          // Helle Pixel mit Alpha (= gezeichnete weisse Linie) → dunkles Navy
-          if (a > 30 && brightness > 100) {
-            d.data[p] = 20; d.data[p+1] = 20; d.data[p+2] = 60; d.data[p+3] = 240;
-          } else {
-            // Transparenter Hintergrund bleibt transparent
-            d.data[p+3] = 0;
-          }
-        }
-        ctx.putImageData(d, 0, 0);
-        resolve(cv.toDataURL('image/png'));
-      };
-      img.onerror = () => resolve(null);
-      img.src = dataUrl;
-    });
-
     // Unterschriften direkt einfügen — dunkle Box, weisse Signatur sichtbar
     const cols=4, sigW=(W-mg*2)/cols, boxH=22, imgH=13;
     for (let i=0; i<Math.max(sigs.length,22); i++) {
