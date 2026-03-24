@@ -1973,7 +1973,16 @@ async function submitUrkunde(mod) {
   const satz   = saetze[parseInt(selected.value)] || '';
   btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
   try {
-    const sigDataUrl = urkSigCanvas.toDataURL('image/jpeg', 0.92);
+    // Signatur auf kleinen Canvas skalieren (max 300x90) — DB hat 500-Zeichen-Limit
+    const smallCv = document.createElement('canvas');
+    smallCv.width = 300; smallCv.height = 90;
+    const sCtx = smallCv.getContext('2d');
+    sCtx.fillStyle = '#191932';
+    sCtx.fillRect(0, 0, 300, 90);
+    sCtx.drawImage(urkSigCanvas, 0, 0, 300, 90);
+    const sigDataUrl = smallCv.toDataURL('image/jpeg', 0.5);
+    console.log('sig chars:', sigDataUrl.length);
+
     const res = await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({
       participantId: session.participantId, joinToken: session.joinToken,
       module: mod, responseType: 'urkunde',
