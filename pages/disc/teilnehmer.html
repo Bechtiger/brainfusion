@@ -1963,12 +1963,17 @@ async function submitUrkunde(mod) {
   const satz   = saetze[parseInt(selected.value)] || '';
   btn.disabled=true; btn.classList.add('loading'); btn.textContent='';
   try {
-    // Navy-Hintergrund UNTER die Signatur zeichnen (destination-over)
-    urkSigCtx.globalCompositeOperation = 'destination-over';
-    urkSigCtx.fillStyle = '#191932';
-    urkSigCtx.fillRect(0, 0, urkSigCanvas.width, urkSigCanvas.height);
-    urkSigCtx.globalCompositeOperation = 'source-over';
-    const sigDataUrl = urkSigCanvas.toDataURL('image/jpeg', 0.95);
+    // Signatur auf kleinen Canvas kopieren (kompakt für DB-Speicherung)
+    // + Navy-Hintergrund damit sie im PDF sichtbar ist
+    const sigExport = document.createElement('canvas');
+    sigExport.width  = 300;
+    sigExport.height = 90;
+    const sigExpCtx = sigExport.getContext('2d');
+    sigExpCtx.fillStyle = '#191932';
+    sigExpCtx.fillRect(0, 0, 300, 90);
+    sigExpCtx.drawImage(urkSigCanvas, 0, 0, 300, 90);
+    const sigDataUrl = sigExport.toDataURL('image/jpeg', 0.6);
+    console.log('sig size:', sigDataUrl.length, 'chars');
 
     const res = await fetch(EDGE+'/submit-exercise', { method:'POST', headers:HDR, body: JSON.stringify({
       participantId: session.participantId, joinToken: session.joinToken,
