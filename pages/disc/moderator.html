@@ -2462,24 +2462,39 @@ async function exportUrkundePDF() {
     // Unterschriften Header
     doc.setTextColor(30,30,50); doc.setFont('helvetica','bold'); doc.setFontSize(8);
     doc.text('UNTERZEICHNET VON '+sigs.length+' PERSONEN', mg, y); y+=6;
-    // Signaturen vorbereiten: Navy-Canvas + Bild → JPEG
-    const prepSig = (sig) => new Promise(res => {
-      if (!sig || !sig.startsWith('data:image')) { res(null); return; }
-      const img = new Image();
-      img.onload = () => {
+    // Signaturen auf Canvas rendern (navy bg + weisse Sig = sichtbar als JPEG)
+    const renderSigToJpeg = (sig) => {
+      return new Promise((resolve) => {
+        if (!sig || !sig.startsWith('data:image')) { resolve(null); return; }
         const cv = document.createElement('canvas');
-        cv.width = img.naturalWidth || 600;
-        cv.height = img.naturalHeight || 200;
+        cv.width = 500; cv.height = 160;
         const ctx = cv.getContext('2d');
-        ctx.fillStyle = '#191932';
-        ctx.fillRect(0, 0, cv.width, cv.height);
-        ctx.drawImage(img, 0, 0, cv.width, cv.height);
-        res(cv.toDataURL('image/jpeg', 0.95));
-      };
-      img.onerror = () => res(null);
-      img.src = sig;
-    });
-    const preparedSigs = await Promise.all(sigs.map(s => prepSig(s.signature).then(jpg => ({...s, jpg}))));
+        const img = new Image();
+        img.onload = () => {
+          ctx.fillStyle = '#191932';
+          ctx.fillRect(0, 0, 500, 160);
+          ctx.drawImage(img, 0, 0, 500, 160);
+          resolve(cv.toDataURL('image/jpeg', 1.0));
+        };
+        img.onerror = () => resolve(null);
+        // Data-URL direkt setzen — triggert onload synchron in Chromium
+        img.src = sig;
+        // Fallback: falls onload nicht feuert nach 100ms
+        setTimeout(() => {
+          if (img.complete && img.naturalWidth > 0) {
+            ctx.fillStyle = '#191932';
+            ctx.fillRect(0, 0, 500, 160);
+            ctx.drawImage(img, 0, 0, 500, 160);
+            resolve(cv.toDataURL('image/jpeg', 1.0));
+          } else {
+            resolve(null);
+          }
+        }, 200);
+      });
+    };
+    const preparedSigs = await Promise.all(
+      sigs.map(s => renderSigToJpeg(s.signature).then(jpg => ({...s, jpg})))
+    );
 
     // Grid zeichnen
     const cols=4, sigW=(W-mg*2)/cols, boxH=22, imgH=13;
