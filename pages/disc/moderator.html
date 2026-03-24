@@ -710,8 +710,7 @@ const MODULE_DETAILS={
       'Nach letzter Unterschrift: kurze Stille, dann Applaus'],
     beamer:'Beamer zeigt Urkunde mit allen eingehenden Unterschriften live',
     dataType:'urkunde'
-  },
-  ritual:{
+  },  ritual:{
     desc:'Jeder schreibt und unterzeichnet ein persönliches Commitment.',
     hints:['Stimmung setzen: "Das ist ein Moment der Stille und Ernsthaftigkeit"',
       'Kein Zeitdruck — lass TN Zeit zum wirklichen Nachdenken',
@@ -2358,27 +2357,120 @@ async function pushNormenToBeamer() {
 
 /* ─── URKUNDE MOD-SECTION ────────────────────────────────────────────────── */
 function renderUrkundeModSection() {
-  // Alle Normsätze aus dem State als flache Liste
   const allNormen = [];
-  NORMEN_KATEGORIEN.forEach(k => {
-    (normenState[k.id]||[]).forEach(t => allNormen.push(t));
-  });
-  const sigs = (liveResponses||[]).filter(r=>r.module==='steckbrief_urkunde'||r.responseType==='urkunde');
+  NORMEN_KATEGORIEN.forEach(k => (normenState[k.id]||[]).forEach(t => allNormen.push(t)));
+  const sigs = (liveResponses||[]).filter(r => r.response_type==='urkunde' || r.module==='steckbrief_urkunde');
   return `<div style="margin-top:16px;">
-    <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
       <div style="font-size:28px;font-weight:700;color:var(--gold);">${sigs.length}</div>
       <div style="font-size:13px;color:var(--muted);">Unterschriften eingegangen</div>
     </div>
-    <div style="margin-bottom:16px;">
-      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;">Unterzeichnete Normen</div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;">Normen auf der Urkunde</div>
       ${allNormen.length > 0
-        ? allNormen.map(n=>`<div style="font-size:13px;color:var(--text);padding:6px 10px;border-left:2px solid var(--gold);margin-bottom:5px;background:rgba(255,255,255,.02);border-radius:0 6px 6px 0;">„${n}"</div>`).join('')
-        : '<div style="font-size:12px;color:rgba(255,255,255,.2);font-style:italic;">Normen aus Normen-Editor werden hier angezeigt</div>'}
+        ? allNormen.map(n=>`<div style="font-size:13px;color:var(--text);padding:5px 10px;border-left:2px solid var(--gold);margin-bottom:4px;background:rgba(255,255,255,.02);border-radius:0 5px 5px 0;">„${n}"</div>`).join('')
+        : '<div style="font-size:12px;color:rgba(255,255,255,.2);font-style:italic;">Normen aus Normen-Editor</div>'}
     </div>
-    <div style="font-size:12px;color:var(--muted);padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.03);">
-      Beamer zeigt die Urkunde live mit jeder eingehenden Unterschrift.
-    </div>
+    <button onclick="exportUrkundePDF()" id="exportPdfBtn"
+      style="width:100%;padding:14px;border-radius:8px;border:1px solid rgba(201,168,76,.4);background:rgba(201,168,76,.1);color:#c9a84c;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;">
+      🎖️ Urkunde als PDF exportieren
+    </button>
+    <div id="exportStatus" style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center;min-height:16px;"></div>
   </div>`;
+}
+
+async function exportUrkundePDF() {
+  const btn = document.getElementById('exportPdfBtn');
+  const status = document.getElementById('exportStatus');
+  btn.disabled = true; btn.textContent = '⏳ Wird generiert…';
+  status.textContent = 'Daten werden geladen…';
+  try {
+    // Normen zusammenstellen
+    const allNormen = [];
+    NORMEN_KATEGORIEN.forEach(k => (normenState[k.id]||[]).forEach(t => allNormen.push({ kat:k, text:t })));
+    if (!allNormen.length) {
+      initSupabase();
+      const {data:nRows} = await sb.from('exercise_responses').select('content')
+        .eq('module','steckbrief_normen').eq('response_type','team_normen')
+        .order('created_at',{ascending:false}).limit(1);
+      if (nRows?.[0]?.content) {
+        const flat = typeof nRows[0].content==='string' ? JSON.parse(nRows[0].content) : nRows[0].content;
+        flat.forEach(t => allNormen.push({kat:null, text:t}));
+      }
+    }
+    // Unterschriften laden
+    initSupabase();
+    const {data:sigRows} = await sb.from('exercise_responses').select('alias,content')
+      .eq('module','steckbrief_urkunde').eq('workshop_id',onlineSession.workshopId)
+      .order('created_at',{ascending:true});
+    const sigs = (sigRows||[]).map(r => {
+      try {
+        const c = typeof r.content==='string' ? JSON.parse(r.content) : r.content;
+        return {alias: r.alias||c?.alias||'?', signature: c?.signature||null};
+      } catch(e) { return {alias:r.alias||'?', signature:null}; }
+    });
+    status.textContent = 'PDF wird aufgebaut…';
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+    const W=210, H=297, mg=16;
+    // Hintergrund
+    doc.setFillColor(8,8,16); doc.rect(0,0,W,H,'F');
+    // Rahmen
+    doc.setDrawColor(201,168,76); doc.setLineWidth(0.4); doc.rect(mg-4,mg-4,W-(mg-4)*2,H-(mg-4)*2,'S');
+    doc.setLineWidth(0.15); doc.rect(mg-2,mg-2,W-(mg-2)*2,H-(mg-2)*2,'S');
+    // Titel
+    let y = mg+8;
+    doc.setTextColor(201,168,76); doc.setFont('helvetica','bold'); doc.setFontSize(22);
+    doc.text('Team-Steckbrief', W/2, y, {align:'center'});
+    y+=6; doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(120,120,160);
+    doc.text('R&D Engineering  ·  Swisstronics Contract Manufacturing AG  ·  '+new Date().getFullYear(), W/2, y, {align:'center'});
+    y+=5; doc.setDrawColor(201,168,76); doc.setLineWidth(0.3); doc.line(mg,y,W-mg,y); y+=6;
+    // Normen
+    const catCol = {kommunikation:[74,144,217], fehler:[230,57,70], entscheidungen:[244,162,97], erwartungen:[42,157,143]};
+    let lastKat=null;
+    allNormen.forEach(({kat,text}) => {
+      const kid=kat?.id||null;
+      if (kid!==lastKat && kat) {
+        if (lastKat!==null) y+=2;
+        const c=catCol[kid]||[180,180,180];
+        doc.setTextColor(c[0],c[1],c[2]); doc.setFont('helvetica','bold'); doc.setFontSize(7);
+        doc.text((kat.label||'').toUpperCase(), mg+4, y); y+=4; lastKat=kid;
+      }
+      doc.setTextColor(220,220,235); doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+      const c=catCol[kid]||[180,180,180];
+      doc.setFillColor(c[0],c[1],c[2]); doc.rect(mg+2,y-3.2,1.2,4.5,'F');
+      const lines=doc.splitTextToSize('"'+text+'"', W-mg*2-12);
+      doc.text(lines,mg+6,y); y+=lines.length*5.8;
+    });
+    y+=4; doc.setDrawColor(60,60,90); doc.setLineWidth(0.2); doc.line(mg,y,W-mg,y); y+=5;
+    // Unterschriften Header
+    doc.setTextColor(201,168,76); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.text('UNTERZEICHNET VON '+sigs.length+' PERSONEN', mg, y); y+=6;
+    // Grid 4 Spalten
+    const cols=4, sigW=(W-mg*2)/cols, boxH=18, imgH=10;
+    for (let i=0; i<Math.max(sigs.length,22); i++) {
+      const cx=mg+(i%cols)*sigW, sy=y+Math.floor(i/cols)*(boxH+2);
+      doc.setDrawColor(50,50,80); doc.setFillColor(15,15,30); doc.setLineWidth(0.15);
+      doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
+      if (i<sigs.length) {
+        if (sigs[i].signature?.startsWith('data:image')) {
+          try { doc.addImage(sigs[i].signature,'PNG',cx+3,sy+1,sigW-6,imgH,undefined,'FAST'); } catch(e){}
+        }
+        doc.setTextColor(160,160,200); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+        doc.text(sigs[i].alias, cx+sigW/2, sy+boxH-2.5, {align:'center', maxWidth:sigW-4});
+      }
+    }
+    // Footer
+    doc.setTextColor(60,60,90); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
+    doc.text('Erstellt am '+new Date().toLocaleDateString('de-CH')+' · Wahrheitsfähigkeit im Team', W/2, H-mg+2, {align:'center'});
+    doc.save('Team-Steckbrief-Urkunde.pdf');
+    status.textContent = '✓ PDF gespeichert!';
+    setTimeout(()=>{ if(status) status.textContent=''; },3000);
+  } catch(e) {
+    status.textContent = 'Fehler: '+e.message; console.error(e);
+  } finally {
+    btn.disabled=false; btn.textContent='🎖️ Urkunde als PDF exportieren';
+  }
 }
 
 // ─── ONLINE WORKSHOP CORE ─────────────────────────────────────────────────────
