@@ -2406,9 +2406,19 @@ async function exportUrkundePDF() {
       .order('created_at',{ascending:true});
     const sigs = (sigRows||[]).map(r => {
       try {
-        const c = typeof r.content==='string' ? JSON.parse(r.content) : r.content;
-        return {alias: r.alias||c?.alias||'?', signature: c?.signature||null};
-      } catch(e) { return {alias:r.alias||'?', signature:null}; }
+        let c = r.content;
+        if (typeof c === 'string') {
+          // Sonderzeichen bereinigen vor JSON.parse
+          c = c.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+          try { c = JSON.parse(c); } catch(e2) {
+            // Regex-Fallback: signature direkt extrahieren
+            const m = c.match(/"signature"\s*:\s*"(data:image[^"]+)"/);
+            const a = c.match(/"alias"\s*:\s*"([^"]+)"/);
+            return { alias: r.alias || (a&&a[1]) || '?', signature: m ? m[1] : null };
+          }
+        }
+        return { alias: r.alias || c?.alias || '?', signature: c?.signature || null };
+      } catch(e) { return { alias: r.alias||'?', signature: null }; }
     });
     status.textContent = 'PDF wird aufgebaut…';
     const {jsPDF} = window.jspdf;
@@ -2456,31 +2466,39 @@ async function exportUrkundePDF() {
     const cols=4, sigW=(W-mg*2)/cols, boxH=22, imgH=13;
     for (let i=0; i<Math.max(sigs.length,22); i++) {
       const cx=mg+(i%cols)*sigW, sy=y+Math.floor(i/cols)*(boxH+3);
-      if (i < sigs.length) {
-        // Navy-Box
+    // Signaturen vorbereiten: Navy-Canvas + Bild → JPEG (kein Transparenz-Problem)
+    const prepSig = (sig) => new Promise(res => {
+      if (!sig || !sig.startsWith('data:image')) { res(null); return; }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const cv = document.createElement('canvas');
+        cv.width = img.naturalWidth || img.width || 600;
+        cv.height = img.naturalHeight || img.height || 200;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#191932';        // Navy-Hintergrund
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        res(cv.toDataURL('image/jpeg', 0.95));
+      };
+      img.onerror = () => res(null);
+      img.src = sig;
+    });
+    const preparedSigs = await Promise.all(sigs.map(s => prepSig(s.signature).then(jpg => ({...s, jpg}))));
+
+    // Unterschriften direkt einfügen
+    const cols=4, sigW=(W-mg*2)/cols, boxH=22, imgH=13;
+    for (let i=0; i<Math.max(preparedSigs.length,22); i++) {
+      const cx=mg+(i%cols)*sigW, sy=y+Math.floor(i/cols)*(boxH+3);
+      if (i < preparedSigs.length) {
         doc.setDrawColor(180,140,50); doc.setFillColor(25,25,50); doc.setLineWidth(0.3);
         doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
-        if (sigs[i].signature?.startsWith('data:image')) {
-          try {
-            // Canvas mit Navy-Hintergrund + Signatur → JPEG (kein Alpha-Problem)
-            const cv = document.createElement('canvas');
-            cv.width = 400; cv.height = 160;
-            const ctx = cv.getContext('2d');
-            ctx.fillStyle = '#191932';
-            ctx.fillRect(0,0,cv.width,cv.height);
-            await new Promise(res => {
-              const img = new Image();
-              img.onload = () => { ctx.drawImage(img,0,0,cv.width,cv.height); res(); };
-              img.onerror = res;
-              img.src = sigs[i].signature;
-            });
-            doc.addImage(cv.toDataURL('image/jpeg',0.9),'JPEG',cx+2,sy+1,sigW-4,imgH);
-          } catch(e) {}
+        if (preparedSigs[i].jpg) {
+          try { doc.addImage(preparedSigs[i].jpg,'JPEG',cx+2,sy+1,sigW-4,imgH); } catch(e){ console.warn('img err',e); }
         }
         doc.setTextColor(201,168,76); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
-        doc.text(sigs[i].alias, cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
+        doc.text(preparedSigs[i].alias||'?', cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
       } else {
-        // Leere Box: creme
         doc.setDrawColor(180,140,50); doc.setFillColor(252,250,245); doc.setLineWidth(0.15);
         doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
       }
