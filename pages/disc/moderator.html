@@ -2423,68 +2423,148 @@ async function exportUrkundePDF() {
     status.textContent = 'PDF wird aufgebaut…';
     const {jsPDF} = window.jspdf;
     const doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
-    const W=210, H=297, mg=16;
-    // Heller Hintergrund (druckfreundlich)
-    doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F');
-    // Äusserer Rahmen — gold
-    doc.setDrawColor(180,140,50); doc.setLineWidth(0.6); doc.rect(mg-5,mg-5,W-(mg-5)*2,H-(mg-5)*2,'S');
-    doc.setLineWidth(0.2); doc.rect(mg-3,mg-3,W-(mg-3)*2,H-(mg-3)*2,'S');
-    // Titel-Hintergrund
-    doc.setFillColor(30,30,50); doc.rect(mg-5,mg-5,W-(mg-5)*2,28,'F');
-    // Titel
-    let y = mg+7;
-    doc.setTextColor(201,168,76); doc.setFont('helvetica','bold'); doc.setFontSize(22);
-    doc.text('Team-Steckbrief', W/2, y, {align:'center'});
-    y+=6; doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(180,160,100);
-    doc.text('R&D Engineering  ·  Swisstronics Contract Manufacturing AG  ·  '+new Date().getFullYear(), W/2, y, {align:'center'});
-    y+=10;
-    // Goldene Trennlinie
-    doc.setDrawColor(180,140,50); doc.setLineWidth(0.4); doc.line(mg,y,W-mg,y); y+=6;
-    // Normen
-    const catCol = {kommunikation:[50,100,190], fehler:[200,50,60], entscheidungen:[200,120,30], erwartungen:[30,140,110]};
-    let lastKat=null;
-    allNormen.forEach(({kat,text}) => {
-      const kid=kat?.id||null;
-      if (kid!==lastKat && kat) {
-        if (lastKat!==null) y+=3;
-        const c=catCol[kid]||[100,100,120];
-        doc.setTextColor(c[0],c[1],c[2]); doc.setFont('helvetica','bold'); doc.setFontSize(7);
-        doc.text((kat.label||'').toUpperCase(), mg+3, y); y+=5; lastKat=kid;
-      }
-      doc.setTextColor(30,30,50); doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
-      const c=catCol[kid]||[100,100,120];
-      doc.setFillColor(c[0],c[1],c[2]); doc.rect(mg+1,y-3.2,1.5,5,'F');
-      const lines=doc.splitTextToSize('"'+text+'"', W-mg*2-10);
-      doc.text(lines,mg+5,y); y+=lines.length*5.6;
-    });
-    y+=4;
-    doc.setDrawColor(180,140,50); doc.setLineWidth(0.3); doc.line(mg,y,W-mg,y); y+=5;
-    // Unterschriften Header
-    doc.setTextColor(30,30,50); doc.setFont('helvetica','bold'); doc.setFontSize(8);
-    doc.text('UNTERZEICHNET VON '+sigs.length+' PERSONEN', mg, y); y+=6;
-    // Signaturen direkt einfügen (bereits als JPEG mit Navy-BG gespeichert)
-    const preparedSigs = sigs; // kein Konvertieren nötig
+    const W=210, H=297, mg=14;
+    const gold=[180,140,50], navy=[22,22,45], cream=[252,250,244], white=[255,255,255];
 
-    // Grid zeichnen
-    const cols=4, sigW=(W-mg*2)/cols, boxH=22, imgH=13;
-    for (let i=0; i<Math.max(preparedSigs.length,22); i++) {
-      const cx=mg+(i%cols)*sigW, sy=y+Math.floor(i/cols)*(boxH+3);
-      if (i < preparedSigs.length) {
-        doc.setDrawColor(180,140,50); doc.setFillColor(25,25,50); doc.setLineWidth(0.3);
-        doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
-        if (preparedSigs[i].signature) {
-          try { doc.addImage(preparedSigs[i].signature, 'JPEG', cx+2, sy+1, sigW-4, imgH); } catch(e){}
+    // ── Hintergrund ──────────────────────────────────────────────────
+    doc.setFillColor(...white); doc.rect(0,0,W,H,'F');
+
+    // ── Äusserer Doppelrahmen (gold) ─────────────────────────────────
+    doc.setDrawColor(...gold); doc.setLineWidth(0.8);
+    doc.rect(8,8,W-16,H-16,'S');
+    doc.setLineWidth(0.25);
+    doc.rect(11,11,W-22,H-22,'S');
+
+    // ── Titelblock (navy) ────────────────────────────────────────────
+    doc.setFillColor(...navy); doc.rect(8,8,W-16,32,'F');
+
+    // Ornamente links/rechts im Titel
+    doc.setDrawColor(...gold); doc.setLineWidth(0.3);
+    doc.line(14,24,40,24); doc.line(W-40,24,W-14,24);
+
+    doc.setTextColor(...[201,168,76]);
+    doc.setFont('helvetica','bold'); doc.setFontSize(24);
+    doc.text('Team-Steckbrief', W/2, 22, {align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.setTextColor(180,160,100);
+    doc.text('R&D Engineering  ·  Swisstronics Contract Manufacturing AG  ·  '+new Date().getFullYear(), W/2, 30, {align:'center'});
+
+    // ── Normen: 2-Spalten-Layout ──────────────────────────────────────
+    let y = 48;
+    const catMeta = {
+      kommunikation: {label:'Wie wir miteinander reden',    col:[50,100,190]},
+      fehler:        {label:'Wie wir mit Fehlern umgehen',   col:[200,50,60]},
+      entscheidungen:{label:'Wie wir Entscheidungen treffen',col:[200,120,30]},
+      erwartungen:   {label:'Was wir voneinander erwarten',  col:[30,140,110]},
+    };
+
+    // Gruppe nach Kategorie
+    const byKat = {};
+    allNormen.forEach(({kat,text}) => {
+      if (!kat) return;
+      if (!byKat[kat.id]) byKat[kat.id] = { kat, items:[] };
+      byKat[kat.id].items.push(text);
+    });
+    const katIds = Object.keys(byKat);
+
+    // Dynamische Schriftgrösse basierend auf Gesamtzahl Normsätze
+    const totalNorms = allNormen.length;
+    const normFs = Math.max(7.5, 10 - totalNorms * 0.15);
+    const lineH   = normFs * 0.42;
+    const colW    = (W - mg*2 - 6) / 2;
+
+    // 2 Spalten: links Kat 0+1, rechts Kat 2+3
+    const renderKatCol = (kids, xStart) => {
+      let cy = y;
+      kids.forEach(kid => {
+        if (!byKat[kid]) return;
+        const {kat, items} = byKat[kid];
+        const meta = catMeta[kid] || {col:[100,100,120]};
+        const c = meta.col;
+
+        // Kategorie-Header
+        doc.setFillColor(c[0],c[1],c[2]);
+        doc.rect(xStart, cy-3, colW, 5.5, 'F');
+        doc.setTextColor(255,255,255);
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+        doc.text((catMeta[kid]?.label||kid).toUpperCase(), xStart+2, cy+1);
+        cy += 7;
+
+        // Normsätze
+        items.forEach(text => {
+          doc.setFillColor(c[0],c[1],c[2]);
+          doc.rect(xStart, cy-3, 1.5, normFs*0.45+1.5, 'F');
+          doc.setTextColor(25,25,50);
+          doc.setFont('helvetica','normal'); doc.setFontSize(normFs);
+          const lines = doc.splitTextToSize('"'+text+'"', colW-6);
+          doc.text(lines, xStart+4, cy);
+          cy += lines.length * lineH + 2;
+        });
+        cy += 3;
+      });
+      return cy;
+    };
+
+    const leftIds  = katIds.slice(0, Math.ceil(katIds.length/2));
+    const rightIds = katIds.slice(Math.ceil(katIds.length/2));
+    const leftEnd  = renderKatCol(leftIds,  mg);
+    const rightEnd = renderKatCol(rightIds, mg + colW + 6);
+    y = Math.max(leftEnd, rightEnd) + 4;
+
+    // ── Ornament-Trennlinie ───────────────────────────────────────────
+    doc.setDrawColor(...gold); doc.setLineWidth(0.5);
+    doc.line(mg, y, W-mg, y);
+    doc.setFillColor(...gold);
+    doc.circle(W/2, y, 1.5, 'F');
+    doc.circle(W/2-8, y, 0.8, 'F');
+    doc.circle(W/2+8, y, 0.8, 'F');
+    y += 6;
+
+    // ── Unterschriften-Header ─────────────────────────────────────────
+    doc.setTextColor(...navy);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.text('UNTERZEICHNET VON '+sigs.length+' PERSONEN', W/2, y, {align:'center'});
+    y += 6;
+
+    // ── Signatur-Grid: 4 Spalten, kompakt ────────────────────────────
+    const cols = 4;
+    const sigW = (W - mg*2) / cols;
+    // Verfügbarer Platz für Signaturen
+    const availH = H - y - 14;
+    const rows = Math.ceil(Math.max(sigs.length, 22) / cols);
+    const boxH = Math.min(20, Math.floor((availH - rows*2) / rows));
+    const imgH = boxH - 6;
+
+    for (let i=0; i<Math.max(sigs.length, 22); i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cx  = mg + col * sigW;
+      const sy  = y + row * (boxH + 2);
+
+      if (i < sigs.length) {
+        doc.setDrawColor(...gold); doc.setFillColor(...navy); doc.setLineWidth(0.25);
+        doc.roundedRect(cx+1, sy, sigW-2, boxH, 1.5, 1.5, 'FD');
+        if (sigs[i].signature) {
+          try { doc.addImage(sigs[i].signature, 'JPEG', cx+2, sy+1, sigW-4, imgH); } catch(e){}
         }
-        doc.setTextColor(201,168,76); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
-        doc.text(preparedSigs[i].alias||'?', cx+sigW/2, sy+boxH-2, {align:'center', maxWidth:sigW-4});
+        doc.setTextColor(...[201,168,76]);
+        doc.setFont('helvetica','normal'); doc.setFontSize(6);
+        doc.text(sigs[i].alias||'?', cx+sigW/2, sy+boxH-1.5, {align:'center', maxWidth:sigW-4});
       } else {
-        doc.setDrawColor(180,140,50); doc.setFillColor(252,250,245); doc.setLineWidth(0.15);
-        doc.roundedRect(cx+1,sy,sigW-2,boxH,2,2,'FD');
+        doc.setDrawColor(...[160,140,80]); doc.setFillColor(...cream); doc.setLineWidth(0.15);
+        doc.roundedRect(cx+1, sy, sigW-2, boxH, 1.5, 1.5, 'FD');
       }
     }
-    // Footer
-    doc.setTextColor(140,120,80); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
-    doc.text('Erstellt am '+new Date().toLocaleDateString('de-CH')+' · Wahrheitsfähigkeit im Team · Swisstronics Contract Manufacturing AG', W/2, H-mg+2, {align:'center'});
+
+    // ── Footer ────────────────────────────────────────────────────────
+    doc.setFillColor(...navy);
+    doc.rect(8, H-16, W-16, 8, 'F');
+    doc.setTextColor(140,120,70); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
+    doc.text(
+      'Erstellt am '+new Date().toLocaleDateString('de-CH')+' · Wahrheitsfähigkeit im Team · Swisstronics Contract Manufacturing AG',
+      W/2, H-11, {align:'center'}
+    );
+
     doc.save('Team-Steckbrief-Urkunde.pdf');
     status.textContent = '✓ PDF gespeichert!';
     setTimeout(()=>{ if(status) status.textContent=''; },3000);
