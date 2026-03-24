@@ -2438,10 +2438,6 @@ async function exportUrkundePDF() {
       if (kid!==lastKat && kat) {
         if (lastKat!==null) y+=3;
         const c=catCol[kid]||[100,100,120];
-        // Kategorie-Label mit Hintergrundbalken
-        doc.setFillColor(c[0],c[1],c[2]); doc.setOpacity(0.12);
-        doc.rect(mg,y-3,W-mg*2,5.5,'F');
-        doc.setOpacity(1);
         doc.setTextColor(c[0],c[1],c[2]); doc.setFont('helvetica','bold'); doc.setFontSize(7);
         doc.text((kat.label||'').toUpperCase(), mg+3, y); y+=5; lastKat=kid;
       }
