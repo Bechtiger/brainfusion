@@ -2468,12 +2468,13 @@ async function exportUrkundePDF() {
         const d = ctx.getImageData(0,0,cv.width,cv.height);
         for (let p=0; p<d.data.length; p+=4) {
           const brightness = (d.data[p]+d.data[p+1]+d.data[p+2])/3;
-          // Helle Pixel (Hintergrund) → transparent
-          // Dunkle Pixel (Linie) → dunkles Navy
-          if (brightness > 180) {
-            d.data[p+3] = 0;
+          const alpha = d.data[p+3];
+          // Weisse Pixel (gezeichnete Linie) → dunkles Navy
+          // Transparente/dunkle Pixel (Hintergrund) → transparent
+          if (brightness > 180 && alpha > 50) {
+            d.data[p]=20; d.data[p+1]=20; d.data[p+2]=60; d.data[p+3]=255;
           } else {
-            d.data[p]=20; d.data[p+1]=20; d.data[p+2]=50; d.data[p+3]=255;
+            d.data[p+3] = 0;
           }
         }
         ctx.putImageData(d,0,0);
