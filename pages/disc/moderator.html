@@ -1,4 +1,734 @@
-﻿﻿﻿﻿<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="
+    {id:'johari_fallbeispiele', icon:'??',name:'Fallbeispiele',  sub:'MC-Voting'},viewport" content="width=device-width,initial-scale=1"/>
+<title>Wahrheitsfähigkeit im Team — Dashboard</title>
+<style>
+:root{
+  --bg:#0b1020;--surf:#141b2d;--surf2:#1c2740;--surf3:#101726;--border:#2b3657;
+  --text:#ecf1ff;--muted:#9ca9cc;
+  --D:#e84a5f;--I:#f4a261;--S:#2a9d8f;--C:#4a90d9;
+  --good:#3ecf8e;--warn:#f7c46c;--bad:#ff8e8e;--gold:#c9a84c;
+  --quad1:rgba(232,74,95,.08);--quad2:rgba(244,162,97,.08);
+  --quad3:rgba(74,144,217,.08);--quad4:rgba(42,157,143,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(180deg,#0a1020,#0d1428 30%,#0a1020);color:var(--text);
+  font-family:Inter,system-ui,'Segoe UI',sans-serif;min-height:100vh}
+.wrap{max-width:1440px;margin:0 auto;padding:20px 24px}
+
+/* HEADER */
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:26px;letter-spacing:.2px;margin-bottom:4px}
+.sub{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--surf);border:1px solid var(--border);color:var(--text);padding:8px 14px;
+  border-radius:10px;cursor:pointer;font-size:13px;transition:background .15s;white-space:nowrap}
+.btn:hover{background:var(--surf2)}.btn.primary{background:linear-gradient(135deg,var(--C),#6aa7e4);border:none;font-weight:600}
+.btn.green{background:linear-gradient(135deg,#1a6b4a,#2a9d8f);border:none;font-weight:600}
+.btn.danger{background:linear-gradient(135deg,#6b1a1a,var(--bad));border:none}
+.btn.gold{background:linear-gradient(135deg,#5a3e10,var(--gold));border:none;font-weight:600}
+
+/* ONLINE BAR */
+.online-bar{background:var(--surf2);border:1px solid var(--border);border-radius:14px;
+  padding:12px 18px;margin-bottom:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.online-bar .code{font-family:monospace;font-size:22px;font-weight:700;letter-spacing:4px;
+  color:#fff;background:#0b1020;padding:5px 14px;border-radius:8px;border:1px solid var(--border)}
+.pulse{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);
+  margin-right:6px;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.small{font-size:12px;color:var(--muted)}
+
+/* MODULE PANEL */
+.module-panel{background:var(--surf2);border:1px solid var(--border);border-radius:14px;
+  padding:12px 18px;margin-bottom:14px}
+.module-panel-title{font-size:11px;color:var(--muted);margin-bottom:10px;
+  text-transform:uppercase;letter-spacing:1.2px}
+.module-phase-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;
+  margin:10px 0 5px;border-bottom:1px solid var(--border);padding-bottom:3px}
+.module-phase-label:first-child{margin-top:0}
+.module-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:5px;margin-bottom:2px}
+@media(max-width:1200px){.module-grid{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:900px){.module-grid{grid-template-columns:repeat(4,1fr)}}
+.module-btn{background:var(--surf3);border:1px solid var(--border);border-radius:9px;
+  padding:7px 5px;cursor:pointer;text-align:center;transition:all .15s;position:relative}
+.module-btn:hover{background:var(--surf2);border-color:#4a6080}
+.module-btn.active{background:linear-gradient(135deg,rgba(42,157,143,.25),rgba(74,144,217,.15));
+  border-color:var(--S);box-shadow:0 0 10px rgba(42,157,143,.2)}
+.module-btn .m-badge{position:absolute;top:4px;right:4px;width:7px;height:7px;
+  border-radius:50%;background:var(--S)}
+.module-btn .m-icon{font-size:16px;margin-bottom:2px}
+.module-btn .m-name{font-size:9.5px;color:var(--text);font-weight:600;line-height:1.2}
+.module-btn .m-sub{font-size:9px;color:var(--muted);margin-top:1px}
+.module-btn.active .m-name{color:#7ff0e0}
+
+/* WORKSHOP GRID */
+.ws-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+@media(max-width:1100px){.ws-grid{grid-template-columns:1fr}}
+
+/* MODULE CONTENT CARD */
+.module-card{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.01));
+  border:1px solid var(--border);border-radius:18px;padding:20px}
+.module-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;
+  padding-bottom:14px;border-bottom:1px solid var(--border)}
+.mod-icon-big{font-size:36px;line-height:1}
+.mod-header-text h2{font-size:20px;margin:0 0 3px}
+.mod-desc{font-size:13px;color:var(--muted)}
+.mod-beamer-info{font-size:12px;color:var(--C);background:rgba(74,144,217,.08);
+  border:1px solid rgba(74,144,217,.18);border-radius:8px;padding:5px 12px;
+  margin-bottom:12px;display:inline-block}
+.mod-hints{background:var(--surf3);border:1px solid var(--border);border-radius:12px;
+  padding:13px 16px;margin-bottom:14px}
+.mod-hints h4{font-size:11px;color:var(--gold);text-transform:uppercase;
+  letter-spacing:1.2px;margin-bottom:8px}
+.mod-hints ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.mod-hints li{font-size:13px;color:var(--muted);padding-left:18px;position:relative;line-height:1.4}
+.mod-hints li::before{content:'→';position:absolute;left:0;color:var(--gold)}
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);
+  margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* LIVE FEED */
+.live-feed-wrap{max-height:500px;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.feed-card{background:var(--surf2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 14px;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.feed-alias{font-weight:700;color:var(--S);font-size:12px;margin-bottom:4px;
+  display:flex;justify-content:space-between}
+.feed-anon{color:var(--muted)}
+.feed-time{font-size:11px;color:var(--muted);font-weight:400}
+.feed-content{color:var(--text);line-height:1.5;font-size:13px}
+.feed-empty{color:var(--muted);font-size:13px;padding:20px;text-align:center;
+  background:var(--surf3);border-radius:10px;line-height:1.5}
+
+/* DISC PROGRESS */
+.progress-bar-outer{background:var(--surf3);border-radius:10px;height:14px;overflow:hidden;margin-bottom:6px}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--S),var(--C));
+  transition:width .6s ease;border-radius:10px}
+.progress-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.progress-chip{background:var(--surf3);border:1px solid var(--border);border-radius:8px;
+  padding:4px 10px;font-size:12px;transition:all .3s}
+.progress-chip.done{border-color:var(--good);color:var(--good)}
+.progress-chip.waiting{color:var(--muted)}
+
+/* BARS (johari, raci) */
+.bar-rows{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:grid;grid-template-columns:130px 1fr 28px;gap:8px;align-items:center;font-size:13px}
+.bar-bg{background:var(--surf3);border-radius:6px;height:11px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;transition:width .5s}
+.bar-S{background:var(--S)}.bar-D{background:var(--D)}.bar-I{background:var(--I)}.bar-C{background:var(--C)}
+
+/* STATIC INFO CARDS */
+.info-cards{display:flex;flex-direction:column;gap:7px}
+.info-card{background:var(--surf3);border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;font-size:13px;line-height:1.5}
+.info-card strong{color:var(--I)}
+
+/* CANVAS IN WORKSHOP */
+.ws-map-wrap{background:#0f1528;border:1px solid var(--border);border-radius:12px;
+  padding:8px;overflow:hidden}
+.ws-map-canvas{width:100%;height:420px;display:block}
+
+/* PARTICIPANT PANEL */
+.participant-panel{background:var(--surf);border:1px solid var(--border);border-radius:18px;
+  padding:16px;position:sticky;top:20px}
+.panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.panel-header h3{font-size:14px;margin:0;font-weight:700}
+.p-count-badge{background:var(--surf2);border:1px solid var(--border);border-radius:20px;
+  padding:2px 8px;font-size:12px;color:var(--muted)}
+.participant-list{display:flex;flex-direction:column;gap:5px;max-height:560px;overflow-y:auto}
+.p-chip{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:center;
+  background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;
+  font-size:12px;transition:border-color .3s}
+.p-chip.p-responded{border-color:rgba(62,207,142,.35)}
+.p-chip.p-disc{border-color:rgba(74,144,217,.25)}
+.p-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.p-dot.green{background:var(--good)}.p-dot.blue{background:var(--C)}.p-dot.gray{background:#3a3a5a}
+.p-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.p-badges{display:flex;gap:3px;justify-content:flex-end}
+.p-badge{font-size:9px;padding:1px 5px;border-radius:20px}
+.badge-disc{background:rgba(74,144,217,.15);color:var(--C)}
+.badge-ans{background:rgba(62,207,142,.15);color:var(--good)}
+.panel-legend{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:4px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted)}
+
+/* OFFLINE ANALYSIS VIEW */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--surf2);border-radius:14px;padding:13px;border:1px solid rgba(255,255,255,.03)}
+.stat .k{font-size:12px;color:var(--muted)}.stat .v{font-size:26px;font-weight:700;margin-top:5px}
+.offline-grid{display:grid;grid-template-columns:1.35fr .9fr;gap:16px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));
+  border:1px solid var(--border);border-radius:18px;padding:18px}
+.chart-wrap{background:#0f1528;border:1px solid var(--border);border-radius:14px;padding:10px;overflow:hidden}
+canvas{width:100%;height:540px;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:12px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.list{max-height:860px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 7px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;justify-content:center;width:23px;height:23px;
+  border-radius:999px;color:#fff;font-weight:700;font-size:11px}
+.pD{background:var(--D)}.pI{background:var(--I)}.pS{background:var(--S)}.pC{background:var(--C)}
+.note{padding:11px 13px;border-radius:12px;background:var(--surf3);border:1px solid var(--border);
+  line-height:1.5;font-size:12px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.hint-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.toggle{background:var(--surf);border:1px solid var(--border);color:var(--text);padding:7px 12px;
+  border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-size:12px}
+.empty{color:var(--muted);padding:22px 0;text-align:center}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.danger-text{color:var(--bad)}.ok-text{color:#a8f0c8}.warn-text{color:var(--warn)}
+.coach p{margin:.35rem 0;color:#d7dff8;line-height:1.45;font-size:13px}
+@media(max-width:1140px){.offline-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.split,.hint-grid{grid-template-columns:1fr}}
+/* KI-ZUSAMMENFASSUNG MODAL */
+.summary-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.summary-box{background:#0d1428;border:1px solid var(--border);border-radius:20px;
+  width:100%;max-width:860px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.summary-head{display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;border-bottom:1px solid var(--border)}
+.summary-head h2{font-size:17px;margin:0}
+.summary-body{flex:1;overflow-y:auto;padding:24px;font-size:14px;line-height:1.7;
+  color:#dbe6ff;white-space:pre-wrap;font-family:'IBM Plex Mono',monospace}
+.summary-body.loading{display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--muted)}
+.summary-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px}
+.summary-section{background:var(--surf2);border:1px solid var(--border);border-radius:12px;
+  padding:14px 18px;margin-bottom:14px;white-space:pre-wrap;font-family:inherit}
+.summary-section h3{font-size:13px;color:var(--gold);margin:0 0 8px;text-transform:uppercase;letter-spacing:1px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ─── HEADER ─── -->
+<div class="top">
+  <div>
+    <h1>Wahrheitsfähigkeit im Team</h1>
+    <div class="sub">Moderator-Dashboard · Steuere Module, sieh Antworten live, behalte den Überblick</div>
+  </div>
+  <div class="actions">
+    <button class="btn green" id="createWorkshopBtn">+ Workshop erstellen</button>
+    <button class="btn primary" id="connectWorkshopBtn">Workshop verbinden</button>
+    <button class="btn" id="refreshWorkshopBtn" style="display:none">🔄</button>
+    <label class="btn">JSON <input id="fileInput" type="file" accept=".json" multiple hidden></label>
+    <button class="btn" id="demoBtn">Demo</button>
+    <button class="btn" id="csvBtn">CSV</button>
+    <button class="btn danger" id="clearBtn">Löschen</button>
+  </div>
+</div>
+
+<!-- ─── STATUS BAR ─── -->
+<div class="online-bar" id="onlineBar" style="display:none">
+  <div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:3px"><span class="pulse"></span>Live-Workshop aktiv</div>
+    <div class="code" id="onlineCode">–</div>
+  </div>
+  <div class="small" id="onlineStatus">Warte auf Teilnehmer...</div>
+  <div style="margin-left:auto;display:flex;flex-direction:column;gap:3px">
+    <div class="small">Teilnehmer-Link (mit Code):</div>
+    <a id="participantLink" href="#" target="_blank" style="color:var(--C);font-size:12px">–</a>
+  </div>
+  <button class="btn gold" onclick="openBeamer()">&#127893; Beamer</button>
+    <button class="btn" style="background:linear-gradient(135deg,#2a1a5a,#7b4fc4);border:none;font-weight:600" onclick="openSummaryModal()">🤖 KI-Zusammenfassung</button>
+  <button class="btn danger" id="stopWorkshopBtn">Workshop beenden</button>
+</div>
+
+<!-- ─── MODULE NAV ─── -->
+<div class="module-panel" id="modulePanel" style="display:none">
+  <div class="module-panel-title">🎯 Modul aktivieren — Teilnehmer sehen dies sofort auf ihrem Notebook</div>
+  <div id="moduleGrid"></div>
+</div>
+
+<!-- ─── WORKSHOP VIEW (dynamisch) ─── -->
+<div id="workshopView" style="display:none">
+  <div class="ws-grid">
+    <div id="moduleContentArea">
+      <div class="module-card"><div class="feed-empty">Wähle ein Modul oben...</div></div>
+    </div>
+    <div class="participant-panel">
+      <div class="panel-header">
+        <h3>Teilnehmer</h3>
+        <span class="p-count-badge" id="pCount">0</span>
+      </div>
+      <div class="participant-list" id="participantList">
+        <div class="feed-empty" style="padding:14px">Warte auf Teilnehmer...</div>
+      </div>
+      <div class="panel-legend">
+        <div class="legend-item"><span class="p-dot green" style="display:inline-block;flex-shrink:0"></span>Hat aktuelle Aufgabe beantwortet</div>
+        <div class="legend-item"><span class="p-dot blue" style="display:inline-block;flex-shrink:0"></span>DISC fertig, wartet</div>
+        <div class="legend-item"><span class="p-dot gray" style="display:inline-block;flex-shrink:0"></span>Beigetreten</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── OFFLINE VIEW (JSON-Import / Demo) ─── -->
+<div id="offlineView">
+  <div class="stats">
+    <div class="stat"><div class="k">Teilnehmer</div><div class="v" id="statCount">0</div></div>
+    <div class="stat"><div class="k">Ø Rollenstress</div><div class="v" id="statStress">0</div></div>
+    <div class="stat"><div class="k">Dominanter Stil</div><div class="v" id="statDominant">–</div></div>
+    <div class="stat"><div class="k">Teamtendenz X</div><div class="v" id="statAxisX">–</div></div>
+    <div class="stat"><div class="k">Arbeitsmodus Y</div><div class="v" id="statAxisY">–</div></div>
+  </div>
+  <div class="offline-grid">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <div><h2 style="margin:0 0 4px;font-size:18px">Quadranten-Map</h2>
+          <div class="small">X=D−S · Y=I−C · Weiss=natürlich · Blau=Rolle</div></div>
+        <div class="row">
+          <label class="toggle"><input type="checkbox" id="anonToggle"> Anonym</label>
+          <label class="toggle"><input type="checkbox" id="showRoleToggle" checked> Rolle</label>
+          <label class="toggle"><input type="checkbox" id="showLinesToggle" checked> Weg</label>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="mapCanvas" width="900" height="540"></canvas></div>
+      <div class="legend">
+        <span><span class="dot" style="background:#fff"></span>natürlich</span>
+        <span><span class="dot" style="background:#7cc4ff"></span>Rolle</span>
+        <span><span class="dot" style="background:var(--bad)"></span>hoher Weg</span>
+        <span><span class="dot" style="background:var(--warn)"></span>mittlerer Weg</span>
+      </div>
+      <div class="hint-grid">
+        <div class="note"><strong>oben rechts</strong> – Drive+People<br><span class="small">Schnell, initiativ, sichtbar</span></div>
+        <div class="note"><strong>oben links</strong> – Stabilität+People<br><span class="small">Verbindend, teamorientiert</span></div>
+        <div class="note"><strong>unten rechts</strong> – Drive+Struktur<br><span class="small">Entschlossen, analytisch</span></div>
+        <div class="note"><strong>unten links</strong> – Stabilität+Struktur<br><span class="small">Verlässlich, systematisch</span></div>
+      </div>
+      <div class="coach" id="coachText"></div>
+    </div>
+    <div class="card list">
+      <h2 style="margin-top:0;margin-bottom:12px;font-size:17px">Teilnehmer</h2>
+      <table>
+        <thead><tr><th>Name</th><th>N</th><th>R</th><th>Stress</th><th>Quadrant</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="emptyState" class="empty">Noch keine Daten.</div>
+      <div class="split">
+        <div class="note" id="teamDnaBox"><strong>Team-DNA</strong><br><span class="small">Nach Import berechnet.</span></div>
+        <div class="note" id="followUpBox"><strong>Follow-up</strong><br><span class="small">Nach Import berechnet.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const SUPABASE_URL='https://dnoecftuybkoqvrkfvei.supabase.co';
+const ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRub2VjZnR1eWJrb3F2cmtmdmVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzIzMjAsImV4cCI6MjA4ODMwODMyMH0.XzQJtx0bxO0sk1T68c_0MczeSOdblLxpJLGRbzDMiS4';
+const EDGE_BASE=SUPABASE_URL+'/functions/v1';
+const SESSION_KEY='disc-online-session-v2';
+const STORAGE_KEY='disc-dashboard-v3';
+const PARTICIPANT_URL='https://brainfusion.app/pages/disc/teilnehmer.html';
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let participants=[];       // offline DISC results (JSON import)
+let onlineSession=null;    // {workshopId, code, adminToken, title, currentModule}
+let sb=null;
+let autoRefreshTimer=null;
+let allJoined=[];          // [{alias, joined_at}] from participants table
+let discDoneSet=new Set(); // aliases who finished DISC
+let respondedSet=new Set(); // aliases who responded to current module
+let liveResponses=[];      // exercise_responses for current module
+let kiDebounceTimer=null;  // Debounce-Timer für KI-Analyse
+let kiLastCount=-1;        // letzte analysierte Antwort-Anzahl
+let fbKiResult=null;       // letztes KI-Ergebnis für Fallbeispiele (survives re-render)
+let kiCurrentModule='';    // Modul bei letzter Analyse
+const state={anonymous:false,showRole:true,showLines:true};
+
+// ─── MODULE DEFINITIONS ───────────────────────────────────────────────────────
+const MODULE_PHASES=[
+  {label:'▸ Tag 1 – Einstieg & Johari',modules:[
+    {id:'waiting',           icon:'🕐',name:'Bereit',          sub:'Warten'},
+    {id:'intro_question',    icon:'💬',name:'Einstiegsfrage',  sub:'Live-Feed'},
+    {id:'johari_erklaerung', icon:'🪟',name:'Johari Fenster',  sub:'Beamer-Grafik'},
+    {id:'johari_fallbeispiele',         icon:'🎭',name:'Fallbeispiele',    sub:'MC-Voting'},
+    {id:'bias_story',              icon:'🕵',name:'Bias-Story',      sub:'Bestätigungsfehler'},
+    {id:'kognitive_verzerrungen_info',  icon:'🧠',name:'Verzerrungen',     sub:'Info/Beamer'},
+    {id:'verzerrungen_quiz',            icon:'🎯',name:'Verzerr. Quiz',    sub:'MC-Voting'},
+    {id:'johari_reflexion',  icon:'🔍',name:'Johari Reflexion',sub:'Live-Feed'},
+    {id:'was_sage_ich_nicht',icon:'🤫',name:'Was sage ich nicht?',sub:'Stille Reflexion'},
+    {id:'mut_info',            icon:'💪',name:'Mut & Offenheit',sub:'Beamer'},
+    {id:'gfk_info',            icon:'🕊',name:'GFK Einführung', sub:'Beamer'},
+    {id:'gfk_fallbeispiel',    icon:'🎯',name:'GFK Fallbsp.',   sub:'MC-Voting'},
+    {id:'gfk_coaching',        icon:'🏋',name:'GFK Coaching',   sub:'Individuell'},
+    {id:'gfk',                 icon:'🕊',name:'GFK',            sub:'Live-Feed'},
+    {id:'kernbotschaften_info',icon:'⚡',name:'Kernbtsch.',     sub:'Info/Beamer'},
+    {id:'kernbotschaften',     icon:'⚡',name:'Kernbotschaft',  sub:'Live-Feed'},
+  ]},
+  {label:'▸ Tag 1 – DISC',modules:[
+    {id:'disc_test',           icon:'📊',name:'DISC-Test',      sub:'28×2 Fragen'},
+    {id:'disc_map',            icon:'🗺',name:'DISC Live-Map',  sub:'Beamer'},
+    {id:'disc_results',        icon:'✦',name:'DISC Resultate', sub:'Team-Konstellation'},
+    {id:'disc_role_profile',   icon:'🎭',name:'Rollenprofil',   sub:'KI-Präsentation'},
+    {id:'pairing_karten',      icon:'🤝',name:'Pairing-Karten', sub:'Freigabe an TN'},
+  ]},
+  {label:'▸ Tag 2 – Vertiefen',modules:[
+    {id:'morgen_reflexion',    icon:'🌅',name:'Morgen-Check',   sub:'Live-Feed'},
+    {id:'teamnormen_analyse',  icon:'🧭',name:'Normen-Analyse', sub:'24 Fragen'},
+    {id:'normen_info',         icon:'📖',name:'Normen-Theorie', sub:'Beamer-Präsentation'},
+    {id:'raci_info',           icon:'📋',name:'RACI Info',      sub:'Beamer'},
+    {id:'raci',                icon:'📋',name:'RACI',           sub:'Auswahl'},
+  ]},
+  {label:'▸ Tag 2 – Abschluss',modules:[
+    {id:'steckbrief_vorschlaege', icon:'📝',name:'Norm-Vorschläge',sub:'Einzelarbeit'},
+    {id:'steckbrief_normen',      icon:'📋',name:'Normen-Editor',  sub:'Moderator tippt'},
+    {id:'steckbrief_urkunde',     icon:'🖊',name:'Urkunde',        sub:'Unterzeichnen'},
+    {id:'closing',                icon:'🏆',name:'Abschluss',      sub:'Ende'},
+  ]}
+];
+const MODULES=MODULE_PHASES.flatMap(p=>p.modules);
+
+const MODULE_DETAILS={
+  waiting:{
+    desc:'Workshop aktiv — warte bis alle Teilnehmer beigetreten sind.',
+    hints:['Teile den Code und Link mit allen Teilnehmern (Slack, E-Mail, mündlich)',
+      'Lass den Beamer laufen — er zeigt Code + URL grossformatig',
+      'Warte bis alle in der Teilnehmerliste rechts sichtbar sind',
+      'Dann → DISC-Test aktivieren'],
+    beamer:'Beamer zeigt Workshop-Code und Teilnehmer-URL',
+    dataType:'joined'
+  },
+  disc_test:{
+    desc:'Teilnehmer füllen den DISC-Fragebogen aus (~10-15 Min).',
+    hints:['Sag: "Geht nach eurem ersten Bauchgefühl — kein Richtig oder Falsch"',
+      'Sag: "Wählt wie ihr wirklich seid, nicht wie ihr sein möchtet"',
+      'Halte Stille während des Tests — keine Musik, keine Gespräche',
+      'Wenn jemand früh fertig: "Einfach kurz warten, wir schauen gleich gemeinsam"'],
+    beamer:'Beamer zeigt Fortschrittsbalken (x von y fertig)',
+    dataType:'disc_progress'
+  },
+  disc_map:{
+    desc:'Alle Ergebnisse sichtbar — führe durch die Team-Quadranten-Map.',
+    hints:['Starte bei der Gesamtverteilung: "Schaut — so verteilt sich unser Team"',
+      'Erkläre die Quadranten: Drive+People / Stabilität+People / etc.',
+      'Cluster zeigen: "Hier sind viele — das bedeutet..."',
+      'Einzelne einladen: "Wer mag kurz beschreiben, was der Test ausgelöst hat?"',
+      'Betone: "Kein Profil ist besser — alle bringen etwas Wesentliches"'],
+    beamer:'Beamer zeigt vollbild DISC-Quadranten-Map mit allen Profilen',
+    dataType:'disc_map'
+  },
+  disc_results:{
+    desc:'Team-Konstellation als Übersicht — mit KI-Analyse direkt auf dem Beamer.',
+    hints:['Zeige wer welchen Typ hat — leite durch die Gruppen',
+      '"Schaut mal — D-Typen: wer ist überrascht?"',
+      'Starte die KI-Analyse und lies die Ergebnisse gemeinsam',
+      'Frage das Team: "Was resoniert, was überrascht euch?"'],
+    beamer:'Beamer zeigt Avatar-Gruppen nach Typ + KI-Teamanalyse',
+    dataType:'disc_results'
+  },
+  disc_role_profile:{
+    desc:'KI präsentiert ein Rollenprofil live auf dem Beamer — mit Fallbeispielen aus dem Engineering-Alltag.',
+    hints:[
+      'Wähle einen Typ — der Beamer zeigt sofort das KI-Profil',
+      'Sage dem Team: "Wer sich hier erkennt, darf einfach nicken"',
+      'Lies die Fallbeispiele vor — lade zur Reaktion ein',
+      '"Stimmt das? Oder sieht jemand das anders?"',
+      'Zeige alle Typen im Team — einer nach dem anderen'],
+    beamer:'Beamer zeigt KI-generiertes Rollenprofil mit Fallbeispielen',
+    dataType:'disc_role_profile'
+  },
+  was_sage_ich_nicht:{
+    desc:'Jeder schreibt anonym: Was sage ich im Team nicht — obwohl ich es sollte? Antworten erscheinen live auf dem Beamer.',
+    hints:[
+      'Gib 3-4 Minuten Schreibzeit — keine Diskussion vorher',
+      '"Es gibt keine falsche Antwort — nur ehrliche"',
+      'Lies einige Antworten laut vor — ohne zu kommentieren',
+      'Frage dann: "Was löst das in euch aus?"',
+      'Verbinde mit dem DISC-Profil: "Welcher Typ schweigt worüber?"'],
+    beamer:'Beamer zeigt anonyme Antworten live als Feed',
+    dataType:'live_feed'
+  },
+  pairing_karten:{
+    desc:'Gibt die Pairing-Karten für alle Teilnehmenden frei — personalisiert auf die echten Typen im Team.',
+    hints:[
+      'Erst nach den Rollenprofil-Präsentationen aktivieren',
+      'Die KI vergleicht nur die Typen die wirklich im Team sind',
+      'Gib 5 Minuten Zeit zum Lesen',
+      '"Schaut eure Karte an — was überrascht euch?"',
+      'Anschliessend PDF-Download anbieten'],
+    beamer:'Kein Beamer-Screen — Teilnehmende lesen auf ihrem Gerät',
+    dataType:'pairing_karten'
+  },
+  intro_question:{
+    desc:'Teilnehmer schreiben ihre spontane Antwort — anonym möglich.',
+    hints:['Lies die Frage laut vor bevor du das Modul aktivierst',
+      'Gib 3-4 Minuten Zeit — keine Diskussion vorher',
+      'Wenn Antworten reinkommen: ein paar laut vorlesen (ohne Namen)',
+      'Überleitung: "Was fällt euch an diesen Antworten auf?"'],
+    beamer:'Beamer zeigt die Frage + Live-Feed der Antworten',
+    dataType:'live_feed'
+  },
+  kernbotschaften_info:{
+    desc:'Du erklärst die 4 Kernbotschaften. Kein Input von Teilnehmern.',
+    hints:['Lies jeden Satz langsam und kommentiere ihn kurz',
+      'Frage nach jedem: "Wer kennt diese Situation?"',
+      'Pause lassen — diese Sätze berühren manchmal tief',
+      'Überleitung: "Welcher trifft dich am meisten? → gleich aufschreiben"'],
+    beamer:'Beamer zeigt statische Erklärungsfolie',
+    dataType:'static',
+    staticContent:[
+      '⏱ "Der Langsamste im Team bestimmt das Tempo."',
+      '🔑 "Jeder Einzelne ist unverzichtbar."',
+      '🏆 "Die Gesamtleistung ist wichtiger als die Leistung des Einzelnen."',
+      '🤫 "Was ungesagt bleibt, wirkt trotzdem."'
+    ]
+  },
+  kernbotschaften:{
+    desc:'Welcher der 4 Sätze trifft dich am meisten — und warum?',
+    hints:['Sag: "Schreibt den Satz auf, der euch am meisten getroffen hat — kurz warum"',
+      'Anonym-Option ist aktiviert — respektiere das bewusst',
+      'Wenn Antworten reinkommen: Muster erkennen ("mehrere nennen Satz 2...")',
+      'Frage: "Was macht es so schwer, das direkt zu sagen?"'],
+    beamer:'Beamer zeigt Live-Feed der Antworten (anonym möglich)',
+    dataType:'live_feed'
+  },
+  johari_erklaerung:{
+    desc:'Johari-Fenster Erklärung — Beamer zeigt animierte Grafik, du referierst.',
+    hints:['Erkläre die 4 Quadranten kurz: Arena, Blinder Fleck, Fassade, Unbekannt',
+      'Klicke "Transformation zeigen" um zu zeigen wie Wahrheitsfähigkeit die Arena vergrössert',
+      'Frage: "In welchem Quadrant verbringen wir im Team am meisten Zeit?"',
+      'Überleitung: "Gleich schreiben wir auf — wo liegt dein eigener blinder Fleck?"'],
+    beamer:'Beamer zeigt animiertes Johari-Fenster mit allen 4 Quadranten',
+    dataType:'johari_static'
+  },
+  johari_fallbeispiele:{
+    desc:'Johari Fallbeispiele — 7 interaktive Szenarien mit Multiple Choice Abstimmung.',
+    hints:['Starte mit Szenario 1 — lies die Situation vor oder lass lesen',
+      'Teilnehmer w&#228;hlen auf ihrem Handy die Antwort',
+      'Klicke \"Aufl&#246;sen\" um die richtige Antwort aufzudecken',
+      'Klicke \"N&#228;chstes Szenario\" f&#252;r Szenario 2, 3 ... bis 7',
+      '&#220;berleitung: \"Warum ist das so schwer — auch bei uns im Team?\"'],
+    beamer:'Beamer zeigt Szenario-Text + Live-Abstimmungsbalken',
+    dataType:'johari_fallbeispiele'
+  },
+  normen_info:{
+    desc:'Theoretische Grundlagen zu informellen Teamnormen — navigierbar auf dem Beamer.',
+    hints:[],
+    beamer:'7 navigierbare Screens mit Fortschrittsbalken',
+    dataType:'normen_info'
+  },
+  teamnormen_analyse:{
+    desc:'Team erkennt seine informellen Normen — anonym, ehrlich, schonungslos.',
+    hints:[
+      'Sage vorher: "Keine richtigen oder falschen Antworten — nur eure ehrliche Wahrnehmung"',
+      'Wichtig: Absolute Anonymität — kein Name, kein Profilbild, keine Zuordnung möglich',
+      'Lass 15–20 Minuten Zeit — die Fragen brauchen echtes Nachdenken',
+      'Nach der KI-Analyse: kurz Stille lassen bevor du sprichst',
+      'Dein Satz dazu: "Das beansprucht nicht absolute Wahrheit — es spiegelt eure Antworten"',
+    ],
+    beamer:'Beamer zeigt Sammlung + KI-Auswertung mit Radar-Profil und Norm-Texten',
+    dataType:'teamnormen_analyse'
+  },
+  bias_story:{
+    desc:'Teilnehmer erleben den Bestätigungsfehler am eigenen Leib — bevor die Theorie kommt.',
+    hints:[
+      'Kein Spoiler! Wörter wie "Bias" oder "Bestätigungsfehler" NICHT vor der Auflösung verwenden',
+      'Phase 1 "Story starten": Teilnehmer lesen 8 Story-Screens auf ihrem Gerät',
+      'Phase 2 "Fragen freigeben": Jeder entscheidet ALLEIN — keine Diskussion!',
+      'Phase 3 "Sperren": Beamer zeigt Verteilung A/B/C + Sicherheit',
+      'Phase 4 "Auflösung": Erst jetzt die echte Ursache zeigen',
+      'Phase 5 "Reflexion": Transfer zum Arbeitsalltag — "Wo passiert uns das wirklich?"'],
+    beamer:'Beamer zeigt je nach Phase: Fortschritt / Verteilung / Auflösung',
+    dataType:'bias_story'
+  },
+  kognitive_verzerrungen_info:{
+    desc:'Kognitive Verzerrungen — Erkl&#228;rung der 4 wichtigsten Denkmuster.',
+    hints:['Erkl&#228;re jeden Bias mit dem Johari-Quadrant: "Das friert den blinden Fleck ein"',
+      'Nutze die Beispiele auf dem Beamer — frage: "Kennt ihr das aus eurem Alltag?"',
+      'Betone: Diese Muster passieren unbewusst — niemand ist b&#246;sartig',
+      '&#220;berleitung: "Gleich testen wir: Erkennt ihr die Verzerrung im Alltag?"'],
+    beamer:'Beamer zeigt 4 Karten mit Verzerrungen + Johari-Verbindung',
+    dataType:'verzerrungen_info'
+  },
+  verzerrungen_quiz:{
+    desc:'3 Fallbeispiele — Teilnehmer erkennen die kognitive Verzerrung dahinter.',
+    hints:['Lies das Szenario vor — lass Teilnehmer auf dem Handy w&#228;hlen',
+      'Warte bis gen&#252;gend Stimmen da sind, dann KI-Analyse starten',
+      'Frage: "Was h&#228;tte hier geholfen? Wie k&#246;nnen wir das im Team verhindern?"',
+      '&#220;berleitung: "Diese Muster passieren uns allen — was hilft dagegen?"'],
+    beamer:'Beamer zeigt Szenario-Text + Live-Abstimmungsbalken',
+    dataType:'verzerrungen_quiz'
+  },
+  johari_quiz:{
+    desc:'Teilnehmer wählen Adjektive — Basis für das Johari-Fenster.',
+    hints:['Erkläre Johari kurz: "Arena=bekannt/bekannt, Blinder Fleck=unbekannt/bekannt..."',
+      'Die Abstimmung zeigt: Was sieht das Team von sich selbst?',
+      'Wenn fertig: Auswertung unten anschauen — welche kommen oft?',
+      'Frage: "Was überrascht euch? Was fehlt eurer Meinung nach?"'],
+    beamer:'Beamer zeigt Live-Auswertung der Adjektiv-Auswahl',
+    dataType:'johari'
+  },
+  johari_reflexion:{
+    desc:'Was siehst du an dir, was andere möglicherweise nicht sehen?',
+    hints:['Sag: "Jetzt kommt der schwierigere Teil — der blinde Fleck"',
+      'Anonym-Option ist besonders wichtig hier — ermutige aktiv dazu',
+      'Antworten vorlesen — erst ohne Kommentar, dann: "Was löst das aus?"',
+      'Pause nach dem Vorlesen — diese Antworten sind oft tiefgründig'],
+    beamer:'Beamer zeigt Live-Feed der Reflexionen',
+    dataType:'live_feed'
+  },
+  morgen_reflexion:{
+    desc:'Was ist euch gestern noch nachgegangen? Einstieg in Tag 2.',
+    hints:['Schöner Start in Tag 2: "Was hat euch die Nacht durch begleitet?"',
+      'Ein paar Antworten vorlesen — das verbindet die Gruppe',
+      'Kein Richtig/Falsch — alle Antworten willkommen',
+      'Kurz halten: 5-8 Minuten, dann weiter'],
+    beamer:'Beamer zeigt Live-Feed der Morgen-Reflexionen',
+    dataType:'live_feed'
+  },
+  raci_info:{
+    desc:'Du erklärst das RACI-Modell. Beamer zeigt die Matrix.',
+    hints:['R = Responsible: Wer macht es konkret?',
+      'A = Accountable: Wer trägt die Gesamtverantwortung?',
+      'C = Consulted: Wer wird vorher gefragt?',
+      'I = Informed: Wer wird nachher informiert?',
+      'Nimm ein konkretes aktuelles Projekt als Beispiel'],
+    beamer:'Beamer zeigt RACI-Matrix mit Erklärung',
+    dataType:'static',
+    staticContent:[
+      '<strong>R — Responsible:</strong> Wer macht die Arbeit? (konkrete Person/en)',
+      '<strong>A — Accountable:</strong> Wer trägt die Verantwortung? (immer nur einer)',
+      '<strong>C — Consulted:</strong> Wer wird vorher um Input gebeten?',
+      '<strong>I — Informed:</strong> Wer wird nachher über das Ergebnis informiert?'
+    ]
+  },
+  raci:{
+    desc:'Teilnehmer wählen ihre typischen RACI-Rollen im Team.',
+    hints:['Frage: "In welchen Rollen seht ihr euch typischerweise im Team?"',
+      'Mehrfachauswahl ist möglich — das ist normal',
+      'Auswertung unten: Wo ist das Team gut besetzt? Wo fehlt jemand?',
+      'Diskussion: "Was fällt euch an dieser Verteilung auf?"'],
+    beamer:'Beamer zeigt RACI-Auswertung als Balkendiagramm',
+    dataType:'raci'
+  },
+  mut_info:{
+    desc:'Die Br&#252;cke: Warum Mut & Offenheit die Arena vergr&#246;ssern.',
+    hints:['Starte mit der Energie-Paradoxie: "Was kostet mehr — Verbergen oder Ansprechen?"',
+      'Lass die Gruppe kurz innehalten: "Woran merkt ihr den Aufwand des Verbergens?"',
+      'Betone: Mut hei&#223;t nicht Mut-IG sein — es hei&#223;t, trotz Angst zu handeln',
+      '&#220;berleitung: "Und wie spricht man etwas an, ohne jemanden zu verletzen? → GFK"'],
+    beamer:'Beamer zeigt Energie-Paradoxie + 3 Dimensionen des Muts',
+    dataType:'mut_info'
+  },
+  gfk_info:{
+    desc:'Gew&#228;ltfreie Kommunikation — Die 4 Schritte als visuelles Tool.',
+    hints:['Erkl&#228;re jeden Schritt mit einem konkreten Teambeispiel',
+      'Beobachtung: "Was genau ist passiert — ohne Bewertung?"',
+      'Bitte am Ende betonen: konkret, erf&#252;llbar, kein Befehl',
+      '&#220;berleitung: "Gleich testen wir das an einem echten Szenario"'],
+    beamer:'Beamer zeigt die 4 GFK-Schritte mit Struktur und Beispielen',
+    dataType:'gfk_info'
+  },
+  gfk_fallbeispiel:{
+    desc:'2 Szenarien: Teilnehmer erkennen GFK-konforme vs. verletzende Kommunikation.',
+    hints:['Lies das Szenario vor — lass Teilnehmer w&#228;hlen',
+      'Nach Abstimmung: Erkl&#228;re warum Option B GFK ist (Struktur durchgehen)',
+      'Frage: "Was w&#228;re anders gelaufen mit dieser Formulierung?"',
+      '&#220;berleitung: "Jetzt euer eigener Versuch — aus eurem Alltag"'],
+    beamer:'Beamer zeigt Szenario + Live-Abstimmungsbalken',
+    dataType:'gfk_fallbeispiel'
+  },
+  gfk_coaching:{
+    desc:'Jeder Teilnehmer durchläuft 10 persönliche GFK-Coaching Runden auf seinem Gerät — mit KI-Analyse und Verbesserungsvorschlägen.',
+    hints:[
+      'Aktiviere das Modul — alle arbeiten nun individuell auf ihrem Gerät',
+      'Gib 15-20 Minuten Zeit für alle 10 Runden',
+      'Runden 1, 6, 10: eigene Situationen — Runden 2-5, 7-9: Fallbeispiele',
+      'Du siehst live die Auswertung — KI zeigt dir was noch unklar ist',
+      'Nach Abschluss: "Wer mag einen Lernpunkt teilen?"',
+      'Überleitung zum GFK Live-Feed: eigene Formulierungen fürs Team'],
+    beamer:'Beamer zeigt "GFK Coaching läuft..." — kein Feedback sichtbar',
+    dataType:'gfk_coaching'
+  },
+  gfk:{
+    desc:'Teilnehmer formulieren eine GFK-Aussage (Beobachtung/Gefühl/Bedürfnis/Bitte).',
+    hints:['Struktur: Beobachtung → Gefühl → Bedürfnis → Bitte',
+      'Ermutige: "Es darf unfertig sein — der Prozess des Formulierens zählt"',
+      'Wenn Antworten da: gemeinsam durch die Struktur gehen',
+      'Frage: "Was war am schwierigsten zu formulieren? Warum?"'],
+    beamer:'Beamer zeigt GFK-Struktur + Live-Feed der Aussagen',
+    dataType:'live_feed'
+  },
+  steckbrief_feiern:{
+    desc:'Was läuft gut in diesem Team? Was verdient Anerkennung?',
+    hints:['Positive Energie — lass die Gruppe lächeln und stolz sein',
+      'Frage nach Konkretem: "Was genau feiern wir hier? Nenn ein Beispiel."',
+      'Antworten laut vorlesen — gemeinsam anerkennend nicken',
+      'Zeit: 5-8 Minuten, dann weiter zu Grenzen'],
+    beamer:'Beamer zeigt Live-Feed der Stärken',
+    dataType:'live_feed'
+  },
+  steckbrief_grenzen:{
+    desc:'Was duldet dieses Team nicht? Klare Grenzen benennen.',
+    hints:['Mutige Runde — ermutigen klare Grenzen zu benennen',
+      'Kein Weichspülen: "Was wirklich nicht geht bei uns — konkret"',
+      'Antworten vorlesen — erst ohne Kommentar, dann gemeinsam besprechen',
+      'Frage: "Können wir uns darauf committen? Alle?"'],
+    beamer:'Beamer zeigt Live-Feed der Grenzen',
+    dataType:'live_feed'
+  },
+  steckbrief_zumuten:{
+    desc:'Was traut sich dieses Team zu? Raus aus der Komfortzone.',
+    hints:['Letzter Steckbrief-Schritt — oft schon mehr Energie in der Gruppe',
+      'Frage: "Was würdet ihr euch zumuten, wenn ihr noch mehr Vertrauen hättet?"',
+      'Antworten vorlesen: "Ja — das traut ihr euch zu!"',
+      'Überleitung zum Ritual: "Wie machen wir das jetzt verbindlich?"'],
+    beamer:'Beamer zeigt Live-Feed',
+    dataType:'live_feed'
+  },
+  steckbrief_vorschlaege:{
+    desc:'Jeder tippt anonym Normvorschläge nach 4 Kategorien — Einzelarbeit, 10 Min.',
+    hints:['Einführung: "Denk an die Analyse und die Bias-Story — was braucht unser Team wirklich?"',
+      'Alle tippen alleine — kein Austausch in dieser Phase',
+      'Beamer zeigt die eingehenden Vorschläge live nach Kategorie gegliedert',
+      'Wenn alle fertig: "Diskussion starten" — jeder TN sieht alle Vorschläge auf seinem Gerät'],
+    beamer:'Beamer zeigt Live-Feed der Vorschläge nach Kategorie',
+    dataType:'vorschlaege_feed'
+  },
+  steckbrief_normen:{
+    desc:'Du tippst die konsolidierten Normsätze live — Beamer zeigt den wachsenden Steckbrief.',
+    hints:['Gruppen haben ihre Vorschläge präsentiert und diskutiert',
+      'Bei sichtbarem Konsens: Satz eintippen → erscheint sofort auf dem Beamer',
+      'Kein Zeitdruck — lieber weniger, dafür echte Sätze',
+      'Am Ende: "Lest den Steckbrief nochmal in Ruhe — 30 Sekunden Stille"'],
+    beamer:'Beamer zeigt Steckbrief der sich satzweise aufbaut',
+    dataType:'normen_editor'
+  },
+  steckbrief_urkunde:{
+    desc:'Jeder TN wählt einen Satz, spricht ihn laut aus und unterzeichnet digital.',
+    hints:['Stimmung setzen: ruhig, feierlich — "Das hier ist aussergewöhnlich"',
+      'TN einzeln aufrufen — Satz laut sprechen, dann Unterschrift abschicken',
+      'Beamer zeigt die Urkunde die sich mit jeder Unterschrift aufbaut',
+      'Nach letzter Unterschrift: kurze Stille, dann Applaus'],
+    beamer:'Beamer zeigt Urkunde mit allen eingehenden Unterschriften live',
+    dataType:'urkunde'
+  },  ritual:{
+    desc:'Jeder schreibt und unterzeichnet ein persönliches Commitment.',
+    hints:['Stimmung setzen: "Das ist ein Moment der Stille und Ernsthaftigkeit"',
+      'Kein Zeitdruck — lass TN Zeit zum wirklichen Nachdenken',
+      'Wenn fertig: Optional vorlesen lassen (nur freiwillig)',
+      '"Was ihr gerade geschrieben habt, ist ein Geschenk an euer Team"'],
+    beamer:'Beamer zeigt Versprechen nach und nach',
+    dataType:'live_feed'
+  },
+  closing:{
+    desc:'Der Workshop geht zu Ende. Dankeschön und Ausblick.',
+    hints:['Danke allen für Mut und Offenheit — das war nicht selbstverständlich',
+      'Kurze Zusammenfassung: "Was nehmt ihr mit?"',
+      'Hinweis: Team bekommt einen KI-aufbereiteten Workshop-Report',
+      'Optional: Rundrunde — "Ein Wort für heute"'],
+    beamer:'Beamer zeigt goldenen Abschluss-Screen',
+    dataType:'handout'
+  }CTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8"/>
@@ -900,6 +1630,7 @@ async function renderModuleContent(moduleId){
     case'normen_editor':       dataHTML=renderNormenEditorSection();break;
     case'urkunde':             dataHTML=renderUrkundeModSection();break;
     case'vorschlaege_feed':    dataHTML=renderVorschlaegeFeedSection();break;
+    case'handout':             dataHTML=renderHandoutSection();break;
     case'static':    dataHTML=renderStaticSection(detail);break;
   }
 
@@ -2187,7 +2918,362 @@ Falsche Antworten: ${wrongCount}/${total}`;
   }
 }
 
-/* ─── VORSCHLÄGE FEED SECTION ────────────────────────── */
+/* ─── HANDOUT SECTION ────────────────────────────────────────────────────── */
+function renderHandoutSection() {
+  return `<div style="margin-top:16px;">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+      Die KI liest alle Workshop-Antworten, die DISC-Auswertung und die Team-Normen —
+      und schreibt daraus ein emotionales, 3–4-seitiges Handout für alle Teilnehmenden.
+    </div>
+    <button onclick="generateHandoutPDF()" id="handoutBtn"
+      style="width:100%;padding:14px;border-radius:8px;border:1px solid rgba(74,144,217,.4);background:rgba(74,144,217,.1);color:#4a90d9;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+      ✨ Workshop-Handout generieren
+    </button>
+    <div id="handoutStatus" style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center;min-height:16px;line-height:1.5;"></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.02);line-height:1.6;">
+      Das Handout enthält: Einstieg · Entdeckungen des Teams · Team-Profil (DISC) ·
+      Team-Normen · Persönliche Versprechen (anonym) · Ein Brief der KI an das Team.
+    </div>
+  </div>`;
+}
+
+async function generateHandoutPDF() {
+  const btn    = document.getElementById('handoutBtn');
+  const status = document.getElementById('handoutStatus');
+  btn.disabled = true; btn.textContent = '⏳ Wird generiert…';
+
+  const setStatus = (msg) => { if(status) status.innerHTML = msg; };
+
+  try {
+    initSupabase();
+    const wsId = onlineSession?.workshopId;
+    if (!wsId) throw new Error('Kein aktiver Workshop');
+
+    // ── 1. Alle Daten laden ──────────────────────────────────────────
+    setStatus('📥 Workshop-Daten werden geladen…');
+
+    // Antworten aller Module
+    const { data: responses } = await sb.from('exercise_responses')
+      .select('alias, module, response_type, content')
+      .eq('workshop_id', wsId)
+      .order('created_at', { ascending: true });
+
+    // DISC-Resultate
+    const { data: discResults } = await sb.from('results')
+      .select('alias, natural_primary, role_primary, natural_d, natural_i, natural_s, natural_c, stress_index')
+      .eq('workshop_id', wsId);
+
+    // Normen
+    const normenRow = (responses||[]).find(r => r.response_type === 'team_normen');
+    const normen = normenRow ? (typeof normenRow.content === 'string' ? JSON.parse(normenRow.content) : normenRow.content) : [];
+
+    // Antworten nach Modul gruppieren (anonym aggregiert)
+    const byModule = {};
+    (responses||[]).forEach(r => {
+      if (r.response_type === 'team_normen') return;
+      if (!byModule[r.module]) byModule[r.module] = [];
+      let text = r.content;
+      if (typeof text === 'object') text = JSON.stringify(text);
+      if (text && text.length > 10 && text.length < 2000) {
+        byModule[r.module].push(text.replace(/^"|"$/g,'').substring(0, 400));
+      }
+    });
+
+    // Versprechen (anonym)
+    const versprechen = (responses||[])
+      .filter(r => r.response_type === 'urkunde')
+      .map(r => {
+        try {
+          const c = typeof r.content === 'string' ? JSON.parse(r.content) : r.content;
+          return c?.satz || '';
+        } catch(e) { return ''; }
+      }).filter(Boolean);
+
+    // DISC-Zusammenfassung
+    const discSummary = (discResults||[]).map(r =>
+      `${r.alias}: ${r.natural_primary} (natürlich), ${r.role_primary} (Rolle), Stress: ${r.stress_index}%`
+    ).join('\n');
+
+    const discDistrib = { D:0, I:0, S:0, C:0 };
+    (discResults||[]).forEach(r => { if(discDistrib[r.natural_primary] !== undefined) discDistrib[r.natural_primary]++; });
+
+    // ── 2. KI-Prompt aufbauen ────────────────────────────────────────
+    setStatus('🤖 KI denkt nach und schreibt…<br><small>(Das dauert 20–40 Sekunden)</small>');
+
+    const moduleLabels = {
+      intro_question:   'Einstiegsfrage',
+      johari_reflexion: 'Johari-Reflexion (blinde Flecken)',
+      was_sage_ich_nicht: 'Was ich nicht sage',
+      kernbotschaften:  'Kernbotschaften',
+      gfk:              'Gewaltfreie Kommunikation',
+      morgen_reflexion: 'Morgen-Reflexion Tag 2',
+    };
+
+    const antwortenText = Object.entries(byModule)
+      .filter(([mod]) => moduleLabels[mod])
+      .map(([mod, antworten]) => {
+        const sample = antworten.slice(0, 8).join('\n• ');
+        return `\n[${moduleLabels[mod]}]\n• ${sample}`;
+      }).join('\n');
+
+    const prompt = `Du bist ein einfühlsamer, poetischer Schreiber der tiefe menschliche Einsicht mit klarer Sprache verbindet.
+
+Du hast zwei Tage lang einen Workshop "Wahrheitsfähigkeit im Team" mit einem R&D-Engineering-Team begleitet.
+${(discResults||[]).length} Personen haben teilgenommen.
+
+Hier sind ihre anonymen Antworten aus verschiedenen Workshop-Phasen:
+${antwortenText}
+
+Team-Normen die sie gemeinsam erarbeitet haben:
+${normen.map((n,i) => `${i+1}. "${n}"`).join('\n')}
+
+Ihre persönlichen Versprechen bei der Unterzeichnung (anonym):
+${versprechen.map((v,i) => `• "${v}"`).join('\n')}
+
+DISC-Team-Profil (mit Namen, da dies nicht anonym ist):
+Verteilung: D=${discDistrib.D}, I=${discDistrib.I}, S=${discDistrib.S}, C=${discDistrib.C}
+Einzelpersonen:
+${discSummary}
+
+Schreibe jetzt ein emotionales, würdigendes Workshop-Handout mit GENAU diesen 5 Abschnitten.
+Trenne jeden Abschnitt mit der Zeile "===ABSCHNITT===".
+Schreibe auf Deutsch. Schreibe für Menschen — nicht für Protokolle.
+
+ABSCHNITT 1 — "Der Anfang" (ca. 200 Wörter)
+Was sie zu Beginn beschrieben haben. Was in der Luft lag. Was der Mut erfordert hat, herzukommen.
+
+ABSCHNITT 2 — "Was ihr über euch entdeckt habt" (ca. 300 Wörter)
+Was die Johari-Arbeit, die Bias-Geschichte und die Normen-Analyse gezeigt haben. Konkret, ehrlich, würdigend. Was als Muster erkennbar war.
+
+ABSCHNITT 3 — "Euer Team-Profil" (ca. 250 Wörter)
+Die DISC-Dynamik in menschlicher Sprache. Was diese Mischung bedeutet. Welche Stärken sie hat. Wo sie Reibung erzeugt — und warum das wertvoll ist. DISC-Namen dürfen hier genannt werden.
+
+ABSCHNITT 4 — "Was ihr versprochen habt" (ca. 200 Wörter)
+Die Normen und die Versprechen. In poetischer, würdigender Sprache. Was es bedeutet, diese Dinge laut auszusprechen und zu unterzeichnen.
+
+ABSCHNITT 5 — "Ein Brief an euch" (ca. 300 Wörter)
+Ein persönlicher Brief von dir (der KI) an dieses Team. In der Du-Form. Emotional, ehrlich, zukunftsgerichtet. Kein Protokoll — ein echter Brief von jemandem der dabei war.
+
+Schreibe jetzt. Nur die 5 Abschnitte, getrennt durch ===ABSCHNITT===. Kein Intro, kein Outro.`;
+
+    // ── 3. KI aufrufen ───────────────────────────────────────────────
+    const kiRes = await fetch(`${EDGE_BASE}/ki-analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer '+ANON_KEY },
+      body: JSON.stringify({
+        system: 'Du bist ein einfühlsamer Workshop-Begleiter und Schreiber. Du schreibst emotionale, würdigende Texte über menschliche Lernprozesse in Teams.',
+        userPrompt: prompt,
+        maxTokens: 3000
+      })
+    });
+    const kiData = await kiRes.json();
+    const kiText = (kiData.text || kiData.content?.[0]?.text || '').trim();
+    if (!kiText) throw new Error('KI hat keinen Text zurückgegeben');
+
+    const sections = kiText.split('===ABSCHNITT===').map(s => s.trim()).filter(Boolean);
+    if (sections.length < 4) throw new Error(`Nur ${sections.length} Abschnitte erhalten`);
+
+    // ── 4. PDF aufbauen ──────────────────────────────────────────────
+    setStatus('📄 PDF wird gestaltet…');
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const W=210, H=297;
+    const mg=18, contentW=W-mg*2;
+    const gold=[180,140,50], navy=[22,22,45], cream=[252,250,244];
+
+    const sectionTitles = [
+      'Der Anfang',
+      'Was ihr über euch entdeckt habt',
+      'Euer Team-Profil',
+      'Was ihr versprochen habt',
+      'Ein Brief an euch'
+    ];
+    const sectionIcons = ['✦','◈','◉','✍','♡'];
+
+    // Hilfsfunktionen
+    const addPage = () => {
+      doc.addPage();
+      // Seitenrahmen
+      doc.setDrawColor(...gold); doc.setLineWidth(0.3);
+      doc.rect(8,8,W-16,H-16,'S');
+      // Seitenzahl
+      doc.setTextColor(160,140,90); doc.setFontSize(7); doc.setFont('helvetica','normal');
+      doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(),
+        W/2, H-10, {align:'center'});
+    };
+
+    const writeText = (text, x, y, maxW, fontSize, color, style='normal', lineSpacing=1.45) => {
+      doc.setFont('helvetica', style);
+      doc.setFontSize(fontSize);
+      doc.setTextColor(...color);
+      const lines = doc.splitTextToSize(text, maxW);
+      doc.text(lines, x, y);
+      return lines.length * fontSize * lineSpacing * 0.353;  // mm
+    };
+
+    // ── SEITE 1: Titelseite ──────────────────────────────────────────
+    doc.setFillColor(...[255,255,255]); doc.rect(0,0,W,H,'F');
+    doc.setDrawColor(...gold); doc.setLineWidth(0.8); doc.rect(8,8,W-16,H-16,'S');
+    doc.setLineWidth(0.2); doc.rect(11,11,W-22,H-22,'S');
+
+    // Navy-Titelblock
+    doc.setFillColor(...navy); doc.rect(8,8,W-16,60,'F');
+
+    // Ornamentlinie
+    doc.setDrawColor(...gold); doc.setLineWidth(0.3);
+    doc.line(mg,42,W/2-20,42); doc.line(W/2+20,42,W-mg,42);
+    doc.setFillColor(...gold); doc.circle(W/2,42,2,'F');
+
+    doc.setTextColor(201,168,76); doc.setFont('helvetica','bold'); doc.setFontSize(28);
+    doc.text('Wahrheitsfähigkeit', W/2, 28, {align:'center'});
+    doc.setFontSize(14); doc.setFont('helvetica','normal');
+    doc.setTextColor(180,160,100);
+    doc.text('im Team', W/2, 36, {align:'center'});
+    doc.setFontSize(9);
+    doc.text('R&D Engineering  ·  Swisstronics Contract Manufacturing AG  ·  '+
+      new Date().toLocaleDateString('de-CH'), W/2, 56, {align:'center'});
+
+    // Intro-Text Seite 1
+    let y1 = 78;
+    doc.setTextColor(60,50,30); doc.setFont('helvetica','italic'); doc.setFontSize(11);
+    const introLines = doc.splitTextToSize(
+      '"Was in diesen zwei Tagen passiert ist, lässt sich nicht in einem Protokoll festhalten. Es lässt sich nur würdigen."',
+      contentW - 20
+    );
+    doc.text(introLines, W/2, y1, {align:'center'});
+    y1 += introLines.length * 6.5;
+
+    // Goldene Linie
+    y1 += 6;
+    doc.setDrawColor(...gold); doc.setLineWidth(0.4); doc.line(mg+10,y1,W-mg-10,y1);
+    y1 += 10;
+
+    // Abschnitt 1 auf Seite 1
+    doc.setFillColor(245,240,225);
+    doc.rect(mg-2, y1-5, contentW+4, 10, 'F');
+    doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.text('1  ' + sectionTitles[0], mg, y1+2);
+    y1 += 14;
+
+    if (sections[0]) {
+      const h = writeText(sections[0], mg, y1, contentW, 10, [40,35,20]);
+      y1 += h + 5;
+    }
+
+    // Normen-Box
+    if (normen.length > 0) {
+      y1 += 4;
+      doc.setFillColor(250,246,235); doc.setDrawColor(...gold); doc.setLineWidth(0.2);
+      doc.rect(mg, y1, contentW, normen.length * 7 + 14, 'F');
+      doc.rect(mg, y1, contentW, normen.length * 7 + 14, 'S');
+      y1 += 7;
+      doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+      doc.text('UNSERE TEAM-NORMEN', mg+4, y1);
+      y1 += 5;
+      normen.forEach(n => {
+        doc.setFillColor(...gold); doc.rect(mg+3, y1-2.5, 1.2, 4, 'F');
+        doc.setTextColor(40,35,20); doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+        const lines = doc.splitTextToSize('"'+n+'"', contentW-12);
+        doc.text(lines, mg+8, y1);
+        y1 += lines.length * 5;
+      });
+    }
+
+    // Footer Seite 1
+    doc.setTextColor(160,140,90); doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(),
+      W/2, H-10, {align:'center'});
+
+    // ── SEITE 2 ──────────────────────────────────────────────────────
+    addPage();
+    let y2 = 22;
+
+    [[1,sections[1]],[2,sections[2]]].forEach(([idx, text]) => {
+      // Abschnitts-Header
+      doc.setFillColor(245,240,225);
+      doc.rect(mg-2, y2-5, contentW+4, 10, 'F');
+      doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+      doc.text(`${idx+1}  ${sectionTitles[idx]}`, mg, y2+2);
+      y2 += 14;
+
+      if (text) {
+        const h = writeText(text, mg, y2, contentW, 10, [40,35,20]);
+        y2 += h + 12;
+      }
+    });
+
+    // ── SEITE 3 ──────────────────────────────────────────────────────
+    addPage();
+    let y3 = 22;
+
+    // Abschnitt 4: Versprechen
+    doc.setFillColor(245,240,225);
+    doc.rect(mg-2, y3-5, contentW+4, 10, 'F');
+    doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+    doc.text('4  ' + sectionTitles[3], mg, y3+2);
+    y3 += 14;
+
+    if (sections[3]) {
+      const h = writeText(sections[3], mg, y3, contentW, 10, [40,35,20]);
+      y3 += h + 8;
+    }
+
+    // Versprechen-Zitate
+    if (versprechen.length > 0) {
+      y3 += 2;
+      doc.setTextColor(140,110,50); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+      doc.text('DIE VERSPRECHEN — ' + versprechen.length + ' STIMMEN', mg, y3);
+      y3 += 6;
+      versprechen.forEach(v => {
+        doc.setFillColor(250,246,235); doc.setDrawColor(...[200,175,100]); doc.setLineWidth(0.15);
+        const vLines = doc.splitTextToSize('"'+v+'"', contentW - 8);
+        const vH = vLines.length * 5.5 + 6;
+        doc.roundedRect(mg, y3-3, contentW, vH, 2, 2, 'FD');
+        doc.setTextColor(40,35,20); doc.setFont('helvetica','italic'); doc.setFontSize(9);
+        doc.text(vLines, mg+4, y3+1.5);
+        y3 += vH + 3;
+        if (y3 > H - 30) return;
+      });
+    }
+
+    // ── SEITE 4: Brief ───────────────────────────────────────────────
+    addPage();
+    let y4 = 22;
+
+    // Navy-Header für Brief
+    doc.setFillColor(...navy); doc.rect(8,8,W-16,22,'F');
+    doc.setTextColor(201,168,76); doc.setFont('helvetica','bold'); doc.setFontSize(15);
+    doc.text('Ein Brief an euch', W/2, 22, {align:'center'});
+    y4 = 40;
+
+    // Kursive Einleitung
+    doc.setTextColor(100,80,40); doc.setFont('helvetica','italic'); doc.setFontSize(9);
+    doc.text('Von der KI, die dabei war.', mg, y4); y4 += 10;
+
+    if (sections[4]) {
+      const h = writeText(sections[4], mg, y4, contentW, 10.5, [40,35,20], 'normal', 1.5);
+      y4 += h + 15;
+    }
+
+    // Unterschrift der KI
+    doc.setDrawColor(...gold); doc.setLineWidth(0.3);
+    doc.line(mg, y4, mg+50, y4); y4 += 6;
+    doc.setTextColor(...gold); doc.setFont('helvetica','italic'); doc.setFontSize(9);
+    doc.text('Claude — KI-Begleiterin des Workshops', mg, y4);
+
+    doc.save('Workshop-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf');
+    setStatus('✓ Handout gespeichert! ' + sections.length + ' Abschnitte auf 4 Seiten.');
+    setTimeout(() => { if(status) status.textContent=''; }, 5000);
+
+  } catch(e) {
+    setStatus('❌ Fehler: ' + e.message);
+    console.error('generateHandoutPDF:', e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Workshop-Handout generieren';
+  }
+}
 function renderVorschlaegeFeedSection() {
   const count = liveResponses?.length || 0;
   const phase = onlineSession?.moduleData?.phase || 'sammeln';
