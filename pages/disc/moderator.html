@@ -2225,20 +2225,37 @@ async function generateHandoutPDF() {
         .eq('workshop_id',wsId).order('created_at',{ascending:true}),
       sb.from('workshops').select('module_data').eq('id',wsId).single().then(r=>({data:r.data}))
     ]);
-    // DISC via REST mit participants JOIN (genau wie refreshOnlineWorkshop)
-    let disc=[];
-    try {
-      const discUrl='https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/results?select=alias,natural_primary,role_primary,natural_d,natural_i,natural_s,natural_c,stress_index,participants!inner(alias)&workshop_id=eq.'+wsId;
-      const dr=await fetch(discUrl,{headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY}});
-      if(dr.ok){
-        const raw=await dr.json();
-        // alias aus participants!inner extrahieren falls nötig
-        disc=(Array.isArray(raw)?raw:[]).map(r=>({
-          ...r,
-          alias: r.alias || r.participants?.alias || '?'
-        }));
-      }
-    } catch(e){ console.warn('DISC load:',e.message); }
+    // DISC aus dem bereits geladenen participants-Array (von refreshOnlineWorkshop)
+    // Nur Einträge mit DISC-Daten (natural_primary gesetzt)
+    let disc = (participants||[]).filter(p => p.naturalType || p.natural_primary).map(p => ({
+      alias:          p.alias,
+      natural_primary: p.naturalType || p.natural_primary,
+      role_primary:   p.roleType    || p.role_primary,
+      natural_d: p.natural?.D || p.natural_d || 0,
+      natural_i: p.natural?.I || p.natural_i || 0,
+      natural_s: p.natural?.S || p.natural_s || 0,
+      natural_c: p.natural?.C || p.natural_c || 0,
+      stress_index: p.stress || p.stress_index || 0,
+    }));
+    // Fallback: direkt aus Supabase fetchen falls participants leer
+    if(disc.length===0){
+      try{
+        const dr=await fetch('https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/results?select=*,participants!inner(alias)&workshop_id=eq.'+wsId,
+          {headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY}});
+        if(dr.ok){
+          const raw=await dr.json();
+          disc=(Array.isArray(raw)?raw:[]).map(r=>({
+            alias: r.participants?.alias||r.alias||'?',
+            natural_primary: r.natural_primary,
+            role_primary:    r.role_primary,
+            natural_d: r.natural_d||0, natural_i: r.natural_i||0,
+            natural_s: r.natural_s||0, natural_c: r.natural_c||0,
+            stress_index: r.stress_index||0,
+          }));
+        }
+      }catch(e){ console.warn('DISC fallback:',e.message); }
+    }
+    console.log('DISC geladen:', disc.length, 'Profile');
 
     // TNA aus module_data der teamnormen_analyse Phase
     const tnaScores  = wsData?.module_data?.scores  || null;
