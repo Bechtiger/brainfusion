@@ -2208,527 +2208,417 @@ function renderHandoutSection() {
 // Handout Generator v2 — clean, robust, no markdown artifacts
 // Handout Generator v2 — clean, robust, no markdown artifacts
 async function generateHandoutPDF() {
-  const btn    = document.getElementById('handoutBtn');
-  const status = document.getElementById('handoutStatus');
-  btn.disabled = true; btn.textContent = '⏳ Wird generiert…';
-  const setStatus = (msg) => { if(status) status.innerHTML = msg; };
-
-  // Strip markdown from KI text
-  const stripMd = (text) => (text||'')
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/\*(.*?)\*/g, '$1')
-    .replace(/^#+\s+/gm, '')
-    .replace(/^[-*]\s+/gm, '• ')
-    .trim();
+  const btn=document.getElementById('handoutBtn');
+  const status=document.getElementById('handoutStatus');
+  btn.disabled=true; btn.textContent='⏳ Wird generiert…';
+  const setS=(m)=>{ if(status) status.innerHTML=m; };
+  const strip=(t)=>(t||'').replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').replace(/^#+\s/gm,'').replace(/^[-*]\s/gm,'').trim();
 
   try {
     initSupabase();
-    const wsId = onlineSession?.workshopId;
-    if (!wsId) throw new Error('Kein aktiver Workshop');
+    const wsId=onlineSession?.workshopId;
+    if(!wsId) throw new Error('Kein aktiver Workshop');
+    setS('📥 Daten laden…');
 
-    // ─── DATEN LADEN ─────────────────────────────────────────────────
-    setStatus('📥 Daten werden geladen…');
-    const [{ data: responses }, { data: discResults }] = await Promise.all([
-      sb.from('exercise_responses').select('alias,module,response_type,content,created_at')
-        .eq('workshop_id', wsId).order('created_at', { ascending: true }),
-      sb.from('results').select('alias,natural_primary,role_primary,natural_d,natural_i,natural_s,natural_c,role_d,role_i,role_s,role_c,stress_index')
-        .eq('workshop_id', wsId)
+    const [{data:resp},{data:wsData}]=await Promise.all([
+      sb.from('exercise_responses').select('alias,module,response_type,content')
+        .eq('workshop_id',wsId).order('created_at',{ascending:true}),
+      sb.from('workshops').select('module_data').eq('id',wsId).single().then(r=>({data:r.data}))
     ]);
+    // DISC via REST direkt (gleicher Weg wie refreshOnlineWorkshop)
+    let disc=[];
+    try {
+      const discUrl='https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/results?select=alias,natural_primary,role_primary,natural_d,natural_i,natural_s,natural_c,stress_index&workshop_id=eq.'+wsId;
+      const dr=await fetch(discUrl,{headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY}});
+      if(dr.ok) disc=await dr.json();
+    } catch(e){ console.warn('DISC load:',e.message); }
 
-    const { data: wsData } = await sb.from('workshops').select('module_data').eq('id', wsId).single();
+    // TNA aus module_data der teamnormen_analyse Phase
     const tnaScores  = wsData?.module_data?.scores  || null;
-    const tnaKernsatz = stripMd(wsData?.module_data?.staerke || '');
-    const tnaNormen  = (wsData?.module_data?.normen || []);
+    const tnaKernsatz= strip(wsData?.module_data?.staerke||'');
+    const tnaNormen  = wsData?.module_data?.normen  || [];
 
-    const normenRow = (responses||[]).find(r => r.response_type === 'team_normen');
-    const normen    = normenRow ? (typeof normenRow.content==='string' ? JSON.parse(normenRow.content) : normenRow.content)||[] : [];
+    // Normen aus exercise_responses
+    const normenRow=(resp||[]).find(r=>r.response_type==='team_normen');
+    const normen=normenRow?(typeof normenRow.content==='string'?JSON.parse(normenRow.content):normenRow.content)||[]:[];
 
-    const versprechen = (responses||[]).filter(r => r.response_type==='urkunde').map(r => {
-      try { const c = typeof r.content==='string' ? JSON.parse(r.content) : r.content; return { alias: r.alias||'?', satz: stripMd(c?.satz||'') }; }
-      catch(e) { return null; }
+    // Versprechen
+    const verspr=(resp||[]).filter(r=>r.response_type==='urkunde').map(r=>{
+      try{const c=typeof r.content==='string'?JSON.parse(r.content):r.content;return{alias:r.alias||'?',satz:strip(c?.satz||'')};}catch(e){return null;}
     }).filter(Boolean);
 
-    const discDistrib = { D:0, I:0, S:0, C:0 };
-    (discResults||[]).forEach(r => { if(r.natural_primary in discDistrib) discDistrib[r.natural_primary]++; });
+    // DISC
+    const dd={D:0,I:0,S:0,C:0};
+    (disc||[]).forEach(r=>{if(r.natural_primary in dd)dd[r.natural_primary]++;});
 
-    const moduleOrder = [
-      { id:'intro_question',    label:'Einstiegsfrage'            },
-      { id:'johari_reflexion',  label:'Johari — Blinder Fleck'    },
-      { id:'was_sage_ich_nicht',label:'Was ich nicht sage'         },
-      { id:'kernbotschaften',   label:'Kernbotschaften'            },
-      { id:'gfk',               label:'Gewaltfreie Kommunikation'  },
-      { id:'morgen_reflexion',  label:'Morgen-Reflexion Tag 2'     },
-    ];
-    const byModule = {};
-    (responses||[]).forEach(r => {
-      if (!moduleOrder.find(m => m.id===r.module)) return;
-      if (!byModule[r.module]) byModule[r.module] = [];
-      let text = typeof r.content==='object' ? JSON.stringify(r.content) : (r.content||'');
-      text = text.replace(/^"|"$/g,'').replace(/\\n/g,' ').substring(0, 280);
-      if (text.length > 10) byModule[r.module].push({ alias: r.alias||'Anonym', text });
+    // Antworten nach Modul
+    const mods={intro_question:'Einstiegsfrage',johari_reflexion:'Johari — Blinder Fleck',
+      was_sage_ich_nicht:'Was ich nicht sage',kernbotschaften:'Kernbotschaften',
+      gfk:'Gewaltfreie Kommunikation',morgen_reflexion:'Morgen-Reflexion'};
+    const byM={};
+    (resp||[]).forEach(r=>{
+      if(!mods[r.module])return;
+      if(!byM[r.module])byM[r.module]=[];
+      let t=typeof r.content==='object'?JSON.stringify(r.content):(r.content||'');
+      t=t.replace(/^"|"$/g,'').replace(/\\n/g,' ').substring(0,260);
+      if(t.length>10)byM[r.module].push({alias:r.alias||'Anonym',text:t});
     });
 
-    // ─── KI-TEXTE ────────────────────────────────────────────────────
-    setStatus('🤖 KI generiert Texte…<br><small>30–60 Sekunden</small>');
-
-    const callKI = async (prompt, maxTok=500) => {
-      try {
-        const r = await fetch(`${EDGE_BASE}/ki-analyze`, {
-          method:'POST',
+    // ── KI ──────────────────────────────────────────────────────────
+    setS('🤖 KI schreibt…<br><small>30–60 Sek.</small>');
+    const ki=async(p,t=450)=>{
+      try{
+        const r=await fetch(`${EDGE_BASE}/ki-analyze`,{method:'POST',
           headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
-          body: JSON.stringify({ system:'Du bist ein einfühlsamer Workshop-Begleiter. Schreibe auf Deutsch, ohne Markdown-Formatierung, ohne Sternchen, ohne Fettschrift-Zeichen. Nur normaler Fliesstext in 4-5 Sätzen.', userPrompt:prompt, maxTokens:maxTok })
-        });
-        if (!r.ok) return '';
-        const d = await r.json();
-        return stripMd(d.text || d.content?.[0]?.text || '');
-      } catch(e) { return ''; }
+          body:JSON.stringify({system:'Schreibe auf Deutsch ohne Markdown, ohne Sternchen, nur Fliesstext, maximal 4 Sätze.',userPrompt:p,maxTokens:t})});
+        if(!r.ok)return'';
+        const d=await r.json();
+        return strip(d.text||d.content?.[0]?.text||'');
+      }catch(e){return'';}
     };
-
-    const einstiegAntworten = (byModule['intro_question']||[]).slice(0,5).map(i=>'"'+i.text+'"').join(' / ');
-    const entdAntworten = [...(byModule['johari_reflexion']||[]),...(byModule['was_sage_ich_nicht']||[])].slice(0,5).map(i=>'"'+i.text+'"').join(' / ');
-    const discN = (discResults||[]).length;
-
-    const [kiEinstieg, kiEntd, kiDisc, kiTna, kiBrief] = await Promise.all([
-      einstiegAntworten ? callKI(`Workshopteilnehmer antworteten auf "Was macht es schwer, Dinge direkt anzusprechen?": ${einstiegAntworten}\n\nSchreibe 3-4 Sätze: Was beschreibt das über die Ausgangslage? Emotional, würdigend. Kein Markdown.`) : Promise.resolve(''),
-      entdAntworten ? callKI(`Teilnehmer zu blinden Flecken: ${entdAntworten}\n\nSchreibe 3-4 Sätze: Was haben sie entdeckt? Kein Markdown.`) : Promise.resolve(''),
-      discN > 0 ? callKI(`Team DISC: D=${discDistrib.D}, I=${discDistrib.I}, S=${discDistrib.S}, C=${discDistrib.C} von ${discN} Personen.\n\nSchreibe 4-5 Sätze über Teamdynamik, Stärken, Spannungen. Kein Markdown.`) : Promise.resolve(''),
-      tnaScores ? callKI(`Team-Normen-Analyse (1=dysfunktional, 5=gesund): ${JSON.stringify(tnaScores)}. ${tnaKernsatz ? 'Kernsatz: '+tnaKernsatz : ''}\n\nSchreibe 4-5 Sätze über die Erkenntnisse. Kein Markdown.`) : Promise.resolve(''),
-      callKI(`Ein Team hat zwei Workshop-Tage gemacht. Normen: ${normen.slice(0,5).map((n,i)=>i+1+'. '+n).join('. ')}. ${versprechen.length} Personen haben unterzeichnet.\n\nSchreibe einen persönlichen Brief an das Team (4-5 Sätze, Du-Form, emotional). Kein Markdown.`, 450)
+    const ea=(byM['intro_question']||[]).slice(0,4).map(i=>'"'+i.text+'"').join(' / ');
+    const je=([ ...(byM['johari_reflexion']||[]),...(byM['was_sage_ich_nicht']||[])]).slice(0,4).map(i=>'"'+i.text+'"').join(' / ');
+    const dn=(disc||[]).length;
+    const [k1,k2,k3,k4,k5]=await Promise.all([
+      ea?ki('Antworten auf "Was macht es schwer, direkt anzusprechen?": '+ea+'\n\nSchreibe 3-4 Sätze, emotional, würdigend. Kein Markdown.'):Promise.resolve(''),
+      je?ki('Teilnehmer zu blinden Flecken: '+je+'\n\nSchreibe 3-4 Sätze. Kein Markdown.'):Promise.resolve(''),
+      dn>0?ki('DISC: D='+dd.D+' I='+dd.I+' S='+dd.S+' C='+dd.C+' von '+dn+' Personen. Schreibe 4 Sätze über Dynamik. Kein Markdown.'):Promise.resolve(''),
+      tnaScores?ki('TNA-Scores (1=schlecht,5=gut): '+JSON.stringify(tnaScores)+'. '+(tnaKernsatz?'Kernsatz: '+tnaKernsatz:'')+'\n\nSchreibe 4 Sätze über Erkenntnisse. Kein Markdown.'):Promise.resolve(''),
+      ki('Team hat 2 Workshop-Tage gemacht. Normen: '+(normen.slice(0,4).join('. '))+'. '+verspr.length+' Personen unterzeichneten. Schreibe persönlichen Brief (4-5 Sätze, Du-Form). Kein Markdown.',400)
     ]);
 
-    // ─── PDF SETUP ───────────────────────────────────────────────────
-    setStatus('📄 PDF wird aufgebaut…');
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    // ── PDF ──────────────────────────────────────────────────────────
+    setS('📄 PDF aufbauen…');
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const W=210,H=297,ML=16,MR=16,cW=W-ML-MR; // content width = 178mm
+    const GOLD=[180,140,50],NAVY=[22,22,45],DARK=[30,25,15],LGOLD=[248,243,225];
+    let pg=0, y=18;
 
-    const W=210, H=297, mg=15, cW=W-mg*2;
-    const GOLD=[180,140,50], NAVY=[22,22,45], DARK=[30,25,15], LGOLD=[245,238,210];
-
-    let currentPage = 0;
-    let y = 0;
-
-    // ─── Hilfsfunktionen ─────────────────────────────────────────────
-    const startPage = () => {
-      if (currentPage > 0) doc.addPage();
-      currentPage++;
-      doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F');
-      // Doppelrahmen
-      doc.setDrawColor(...GOLD); doc.setLineWidth(0.6); doc.rect(7,7,W-14,H-14,'S');
-      doc.setLineWidth(0.15); doc.rect(9.5,9.5,W-19,H-19,'S');
-      // Footer
-      doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(150,130,70);
-      doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(), W/2, H-8.5, {align:'center'});
-      doc.text(''+currentPage, W-11, H-8.5, {align:'right'});
-      y = 18;
+    // ── Helpers ──────────────────────────────────────────────────────
+    const deco=()=>{
+      doc.setDrawColor(...GOLD);doc.setLineWidth(0.5);doc.rect(7,7,W-14,H-14,'S');
+      doc.setLineWidth(0.12);doc.rect(9.5,9.5,W-19,H-19,'S');
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(150,130,70);
+      doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(),W/2,H-8.5,{align:'center'});
+      doc.text(String(pg),W-11,H-8.5,{align:'right'});
+    };
+    const newPage=()=>{
+      doc.addPage();pg++;
+      doc.setFillColor(255,255,255);doc.rect(0,0,W,H,'F');
+      deco();y=18;
+    };
+    // Gibt benötigte Höhe zurück OHNE zu zeichnen
+    const calcH=(text,fs,maxW)=>{
+      if(!text||!text.trim())return 0;
+      doc.setFontSize(fs);
+      return doc.splitTextToSize(strip(text),maxW).length*fs*0.42+3;
+    };
+    // Bricht automatisch auf neue Seite wenn nicht genug Platz
+    const need=(h)=>{ if(y+h>H-14)newPage(); };
+    // Text schreiben
+    const wText=(text,fs,col,style='normal',x=ML,maxW=cW)=>{
+      if(!text||!text.trim())return;
+      const t=strip(text);
+      const lines=doc.splitTextToSize(t,maxW);
+      need(lines.length*fs*0.42+3);
+      doc.setFont('helvetica',style);doc.setFontSize(fs);doc.setTextColor(...col);
+      doc.text(lines,x,y);
+      y+=lines.length*fs*0.42+3;
+    };
+    // Section-Header
+    const secH=(title,col=NAVY)=>{
+      need(12);
+      doc.setFillColor(...col);doc.rect(ML-1,y-4,cW+2,9,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(...GOLD);
+      // Sicherstellen dass title in cW passt
+      const tl=doc.splitTextToSize(title,cW-4);
+      doc.text(tl[0],ML+1,y+2); // Nur erste Zeile
+      y+=11;
+    };
+    // KI-Box
+    const kiBox=(text)=>{
+      if(!text||!text.trim())return;
+      const t=strip(text);
+      const lines=doc.splitTextToSize(t,cW-8);
+      const bH=lines.length*8.5*0.40+10;
+      need(bH+4);
+      doc.setFillColor(...LGOLD);doc.setDrawColor(...GOLD);doc.setLineWidth(0.2);
+      doc.rect(ML,y,cW,bH,'FD');
+      doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(...GOLD);
+      doc.text('KI-INTERPRETATION',ML+cW-2,y+3.5,{align:'right'});
+      doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(50,40,10);
+      doc.text(lines,ML+4,y+7.5);
+      y+=bH+5;
+    };
+    // Zitat-Karte
+    const qCard=(alias,text)=>{
+      const t=strip(text).substring(0,230);
+      const lines=doc.splitTextToSize('"'+t+'"',cW-26);
+      const bH=Math.max(9,lines.length*7.5*0.40+6);
+      need(bH+3);
+      doc.setFillColor(248,247,242);doc.setDrawColor(200,185,145);doc.setLineWidth(0.12);
+      doc.rect(ML,y,cW,bH,'FD');
+      doc.setFillColor(...GOLD);doc.rect(ML,y,2.5,bH,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(100,85,35);
+      doc.text((alias||'Anonym').substring(0,14),ML+4,y+4.5);
+      doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...DARK);
+      doc.text(lines,ML+24,y+4.5);
+      y+=bH+2.5;
     };
 
-    const checkPageBreak = (neededH) => {
-      if (y + neededH > H - 16) { startPage(); }
-    };
+    // ════ SEITE 1: TITEL ════════════════════════════════════════════
+    pg=1;
+    doc.setFillColor(255,255,255);doc.rect(0,0,W,H,'F');
+    deco();
 
-    const secHeader = (title, color=NAVY) => {
-      checkPageBreak(12);
-      doc.setFillColor(...color); doc.rect(mg-1, y-4, cW+2, 9, 'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...GOLD);
-      doc.text(title, mg+1, y+2);
-      y += 11;
-    };
+    doc.setFillColor(...NAVY);doc.rect(7,7,W-14,36,'F');
+    doc.setDrawColor(...GOLD);doc.setLineWidth(0.3);
+    doc.line(ML,25,W/2-20,25);doc.line(W/2+20,25,W-MR,25);
+    doc.setFillColor(...GOLD);doc.circle(W/2,25,1.8,'F');
+    doc.circle(W/2-11,25,0.9,'F');doc.circle(W/2+11,25,0.9,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(21);doc.setTextColor(201,168,76);
+    doc.text('Wahrheitsfähigkeit im Team',W/2,21,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(175,155,95);
+    doc.text('Workshop-Dokumentation  ·  R&D Engineering  ·  Swisstronics',W/2,29,{align:'center'});
+    doc.setFontSize(8.5);doc.setTextColor(145,128,78);
+    doc.text(new Date().toLocaleDateString('de-CH',{year:'numeric',month:'long',day:'numeric'}),W/2,36,{align:'center'});
+    y=52;
 
-    const writeBlock = (text, fs=9.5, col=DARK, style='normal', indent=0) => {
-      if (!text || !text.trim()) return;
-      const clean = stripMd(text);
-      const lines = doc.splitTextToSize(clean, cW - indent);
-      checkPageBreak(lines.length * fs * 0.42 + 3);
-      doc.setFont('helvetica', style); doc.setFontSize(fs); doc.setTextColor(...col);
-      doc.text(lines, mg + indent, y);
-      y += lines.length * fs * 0.42 + 3;
-    };
-
-    const kiInterpret = (text) => {
-      if (!text || !text.trim()) return;
-      checkPageBreak(20);
-      const lines = doc.splitTextToSize(stripMd(text), cW - 8);
-      const bH = lines.length * 8.5 * 0.40 + 9;
-      doc.setFillColor(...LGOLD); doc.setDrawColor(...GOLD); doc.setLineWidth(0.2);
-      doc.rect(mg, y, cW, bH, 'FD');
-      doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...GOLD);
-      doc.text('KI-INTERPRETATION', mg+cW-2, y+3.5, {align:'right'});
-      doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(50,40,10);
-      doc.text(lines, mg+4, y+7);
-      y += bH + 5;
-    };
-
-    const quoteCard = (alias, text) => {
-      const clean = stripMd(text).substring(0,220);
-      const tLines = doc.splitTextToSize('"'+clean+'"', cW-26);
-      const bH = Math.max(8, tLines.length * 7.5 * 0.40 + 5);
-      checkPageBreak(bH + 2);
-      doc.setFillColor(248,248,243); doc.setDrawColor(200,185,145); doc.setLineWidth(0.15);
-      doc.rect(mg, y, cW, bH, 'FD');
-      doc.setFillColor(...GOLD); doc.rect(mg, y, 2.5, bH, 'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(110,90,40);
-      doc.text((alias||'Anonym').substring(0,14), mg+4, y+4.5);
-      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...DARK);
-      doc.text(tLines, mg+24, y+4.5);
-      y += bH + 2.5;
-    };
-
-    // ════════════════════════════════════════════════════════════════
-    // SEITE 1: TITELSEITE
-    // ════════════════════════════════════════════════════════════════
-    startPage();
-
-    // Navy Titelblock (fest, keine Überlappung)
-    doc.setFillColor(...NAVY); doc.rect(7,7,W-14,36,'F');
-
-    // Ornament
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.35);
-    doc.line(mg, 26, W/2-20, 26); doc.line(W/2+20, 26, W-mg, 26);
-    doc.setFillColor(...GOLD);
-    doc.circle(W/2, 26, 2, 'F');
-    doc.circle(W/2-11, 26, 1, 'F');
-    doc.circle(W/2+11, 26, 1, 'F');
-
-    doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(201,168,76);
-    doc.text('Wahrheitsfähigkeit im Team', W/2, 21, {align:'center'});
-
-    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(175,155,95);
-    doc.text('Workshop-Dokumentation  ·  R&D Engineering  ·  Swisstronics', W/2, 29, {align:'center'});
-
-    doc.setFontSize(8.5); doc.setTextColor(145,128,78);
-    doc.text(new Date().toLocaleDateString('de-CH',{year:'numeric',month:'long',day:'numeric'}), W/2, 36, {align:'center'});
-
-    y = 52;
-
-    // Übersichts-Box
-    const overviewItems = [
-      ['Teilnehmende', (discResults||[]).length || (responses||[]).filter((r,i,a)=>a.findIndex(x=>x.alias===r.alias)===i).length || '—'],
-      ['DISC-Profile', (discResults||[]).length],
-      ['Antworten', (responses||[]).filter(r=>!['team_normen','urkunde'].includes(r.response_type)).length],
-      ['Normen', normen.length],
-      ['Unterzeichnet', versprechen.length],
+    // Übersicht
+    const ov=[
+      ['Teilnehmende',(disc||[]).length||'—'],
+      ['DISC-Profile',(disc||[]).length],
+      ['Antworten',(resp||[]).filter(r=>!['team_normen','urkunde'].includes(r.response_type)).length],
+      ['Normen',normen.length],
+      ['Unterzeichnet',verspr.length],
     ];
-    doc.setFillColor(...LGOLD); doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
-    doc.rect(mg, y, cW, 28, 'FD');
-    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...NAVY);
-    doc.text('WORKSHOP-ÜBERSICHT', mg+4, y+6);
-    const iW = cW / overviewItems.length;
-    overviewItems.forEach(([label, val], i) => {
-      const ix = mg + 4 + i * iW;
-      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(80,65,30);
-      doc.text(label, ix, y+13);
-      doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...GOLD);
-      doc.text(''+val, ix, y+24);
+    doc.setFillColor(...LGOLD);doc.setDrawColor(...GOLD);doc.setLineWidth(0.25);
+    doc.rect(ML,y,cW,26,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...NAVY);
+    doc.text('WORKSHOP-ÜBERSICHT',ML+4,y+5.5);
+    const iW=cW/ov.length;
+    ov.forEach(([lbl,val],i)=>{
+      const ix=ML+4+i*iW;
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(75,60,25);
+      doc.text(lbl,ix,y+12);
+      doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(...GOLD);
+      doc.text(String(val),ix,y+22);
     });
-    y += 34;
+    y+=32;
 
-    // Einstieg Seite 1
-    secHeader('01  Der Anfang — Was in der Luft lag');
-    (byModule['intro_question']||[]).slice(0,4).forEach(item => quoteCard(item.alias, item.text));
-    kiInterpret(kiEinstieg);
+    secH('01  Der Anfang — Was in der Luft lag');
+    (byM['intro_question']||[]).slice(0,4).forEach(it=>qCard(it.alias,it.text));
+    kiBox(k1);
 
-    // ════════════════════════════════════════════════════════════════
-    // SEITE 2: ENTDECKUNGEN + KERNBOTSCHAFTEN
-    // ════════════════════════════════════════════════════════════════
-    startPage();
-    secHeader('02  Was ihr über euch entdeckt habt');
-    const entdItems = [...(byModule['johari_reflexion']||[]),...(byModule['was_sage_ich_nicht']||[])];
-    entdItems.slice(0,6).forEach(item => quoteCard(item.alias, item.text));
-    kiInterpret(kiEntd);
-
-    if ((byModule['kernbotschaften']||[]).length > 0) {
-      y += 3;
-      secHeader('03  Kernbotschaften — Was bewegt hat', [60,45,15]);
-      (byModule['kernbotschaften']||[]).slice(0,5).forEach(item => quoteCard(item.alias, item.text));
+    // ════ SEITE 2 ════════════════════════════════════════════════════
+    newPage();
+    secH('02  Was ihr über euch entdeckt habt');
+    [...(byM['johari_reflexion']||[]),...(byM['was_sage_ich_nicht']||[])].slice(0,6).forEach(it=>qCard(it.alias,it.text));
+    kiBox(k2);
+    if((byM['kernbotschaften']||[]).length){
+      y+=3;secH('03  Kernbotschaften — Was bewegt hat',[55,40,12]);
+      (byM['kernbotschaften']||[]).slice(0,5).forEach(it=>qCard(it.alias,it.text));
+    }
+    if((byM['gfk']||[]).length){
+      y+=3;secH('04  Gewaltfreie Kommunikation',[55,40,12]);
+      (byM['gfk']||[]).slice(0,4).forEach(it=>qCard(it.alias,it.text));
     }
 
-    if ((byModule['gfk']||[]).length > 0) {
-      y += 3;
-      secHeader('04  Gewaltfreie Kommunikation', [60,45,15]);
-      (byModule['gfk']||[]).slice(0,4).forEach(item => quoteCard(item.alias, item.text));
-    }
-
-    // ════════════════════════════════════════════════════════════════
-    // SEITE 3: DISC-PROFIL
-    // ════════════════════════════════════════════════════════════════
-    startPage();
-    secHeader('05  Euer Team-Profil — DISC-Auswertung');
-
-    if ((discResults||[]).length > 0) {
-      // Balkendiagramm
-      y += 2;
-      const barAreaW = cW * 0.55;
-      const barMax = 32;
-      const maxVal = Math.max(...Object.values(discDistrib), 1);
-      const bW = barAreaW / 4 - 3;
-      const discLabels = {D:['Dominant','Ergebnisorientiert'],I:['Initiativ','Begeisternd'],S:['Stetig','Harmonisch'],C:['Gewissenhaft','Analytisch']};
-      const catCols = {D:[200,50,60],I:[220,130,30],S:[42,140,100],C:[60,110,200]};
-      let bx = mg + 4;
-      ['D','I','S','C'].forEach(dim => {
-        const count = discDistrib[dim] || 0;
-        const bH = maxVal > 0 ? (count/maxVal)*barMax : 0;
-        const col = catCols[dim];
-        // Balken
-        if (bH > 0) { doc.setFillColor(...col); doc.rect(bx+2, y+barMax-bH, bW-4, bH, 'F'); }
-        // Rahmen
-        doc.setDrawColor(...col); doc.setLineWidth(0.2); doc.rect(bx+2, y, bW-4, barMax, 'S');
-        // Zahl
-        doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...col);
-        doc.text(''+count, bx+bW/2, y+barMax-3, {align:'center'});
-        // Buchstabe
-        doc.setFontSize(11); doc.text(dim, bx+bW/2, y+barMax+7, {align:'center'});
-        // Label
-        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(60,50,20);
-        doc.text(discLabels[dim][0], bx+bW/2, y+barMax+13, {align:'center'});
-        doc.text(discLabels[dim][1], bx+bW/2, y+barMax+17, {align:'center'});
-        bx += bW + 3;
+    // ════ SEITE 3: DISC ══════════════════════════════════════════════
+    newPage();
+    secH('05  Euer Team-Profil — DISC-Auswertung');
+    if((disc||[]).length>0){
+      // Balken
+      y+=2;
+      const bAW=cW*0.52,bMax=30,mV=Math.max(...Object.values(dd),1);
+      const bW2=(bAW/4)-2;
+      const dLbls={D:['Dominant','Ergebnis'],I:['Initiativ','Begeisternd'],S:['Stetig','Harmonisch'],C:['Gewissenhaft','Analytisch']};
+      const cC={D:[200,50,60],I:[220,130,30],S:[42,140,100],C:[60,110,200]};
+      let bx=ML+2;
+      ['D','I','S','C'].forEach(d=>{
+        const cnt=dd[d]||0,bH2=mV>0?(cnt/mV)*bMax:0,col=cC[d];
+        if(bH2>0){doc.setFillColor(...col);doc.rect(bx+2,y+bMax-bH2,bW2-4,bH2,'F');}
+        doc.setDrawColor(...col);doc.setLineWidth(0.18);doc.rect(bx+2,y,bW2-4,bMax,'S');
+        doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...col);
+        doc.text(String(cnt),bx+bW2/2,y+bMax-3,{align:'center'});
+        doc.setFontSize(10);doc.text(d,bx+bW2/2,y+bMax+7,{align:'center'});
+        doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(60,50,20);
+        doc.text(dLbls[d][0],bx+bW2/2,y+bMax+12,{align:'center'});
+        bx+=bW2+2;
       });
-
-      // Stress-Legende rechts
-      const lx = mg + barAreaW + 8;
-      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...NAVY);
-      doc.text('STRESS-INDEX', lx, y+5);
-      const stressColors = [[50,160,80],[220,160,30],[200,60,50]];
-      const stressLabels = ['Niedrig 0-33%','Mittel 34-66%','Hoch 67-100%'];
-      stressColors.forEach((col,i) => {
-        doc.setFillColor(...col); doc.rect(lx, y+10+i*7, 5, 4, 'F');
-        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(50,40,15);
-        doc.text(stressLabels[i], lx+7, y+13+i*7);
-      });
-      y += barMax + 22;
-
-      // Einzelprofile Tabelle
-      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...NAVY);
-      doc.text('EINZELPROFILE', mg, y); y += 5;
-
-      // Tabellenkopf
-      const cols = [38, 22, 22, 22, 22, 20];
-      const colX = [mg, mg+38, mg+60, mg+82, mg+104, mg+126];
-      const headers = ['Name','Natürlich','Rolle','Stress','D  I  S  C','Balken'];
-      doc.setFillColor(...NAVY);
-      doc.rect(mg, y, cW, 6, 'F');
-      headers.forEach((h,i) => {
-        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...GOLD);
-        doc.text(h, colX[i]+1, y+4);
-      });
-      y += 7;
-
-      (discResults||[]).forEach((r, i) => {
-        const rowBg = i%2===0 ? [252,250,244] : [245,242,232];
-        doc.setFillColor(...rowBg); doc.rect(mg, y, cW, 7, 'F');
-        const stCol = (r.stress_index||0) < 34 ? [50,160,80] : (r.stress_index||0) < 67 ? [200,150,30] : [200,60,50];
-        const nc = catCols[r.natural_primary] || NAVY;
-        // Name
-        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...nc);
-        doc.text((r.alias||'?').substring(0,16), colX[0]+1, y+5);
-        // Natürlich
-        doc.setTextColor(...nc); doc.text(r.natural_primary||'-', colX[1]+5, y+5);
-        // Rolle
-        doc.setTextColor(60,50,20); doc.text(r.role_primary||'-', colX[2]+5, y+5);
-        // Stress
-        doc.setFont('helvetica','bold'); doc.setTextColor(...stCol);
-        doc.text((r.stress_index||0)+'%', colX[3]+5, y+5);
-        // DISC Werte
-        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(60,50,20);
-        doc.text(`${r.natural_d||0}  ${r.natural_i||0}  ${r.natural_s||0}  ${r.natural_c||0}`, colX[4]+1, y+5);
+      y+=bMax+18;
+      // Tabelle
+      doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...NAVY);
+      doc.text('EINZELPROFILE',ML,y);y+=5;
+      const cX=[ML,ML+36,ML+57,ML+74,ML+91,ML+110];
+      const hd=['Name','Natürlich','Rolle','Stress','D  I  S  C',''];
+      doc.setFillColor(...NAVY);doc.rect(ML,y,cW,6,'F');
+      hd.forEach((h,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(...GOLD);doc.text(h,cX[i]+1,y+4);});
+      y+=7;
+      (disc||[]).forEach((r,i)=>{
+        need(8);
+        doc.setFillColor(i%2===0?252:246,i%2===0?250:245,i%2===0?244:235);
+        doc.rect(ML,y,cW,7,'F');
+        const sc=(r.stress_index||0),stC=sc<34?[50,160,80]:sc<67?[200,150,30]:[200,60,50];
+        const nc=cC[r.natural_primary]||NAVY;
+        doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...nc);
+        doc.text((r.alias||'?').substring(0,15),cX[0]+1,y+5);
+        doc.setTextColor(...nc);doc.text(r.natural_primary||'-',cX[1]+5,y+5);
+        doc.setTextColor(60,50,20);doc.text(r.role_primary||'-',cX[2]+4,y+5);
+        doc.setFont('helvetica','bold');doc.setTextColor(...stC);doc.text(sc+'%',cX[3]+4,y+5);
+        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(60,50,20);
+        doc.text(`${r.natural_d||0}  ${r.natural_i||0}  ${r.natural_s||0}  ${r.natural_c||0}`,cX[4]+1,y+5);
         // Mini-Balken
-        const barTotalW = cols[5]-2;
-        ['D','I','S','C'].forEach((d,di) => {
-          const val = ({D:r.natural_d,I:r.natural_i,S:r.natural_s,C:r.natural_c}[d]||0);
-          const bW2 = (val/100)*barTotalW;
-          doc.setFillColor(...catCols[d]);
-          doc.rect(colX[5]+1, y+1+di*1.4, bW2, 1.2, 'F');
+        const bTW=cW-cX[4]+ML-2;
+        ['D','I','S','C'].forEach((d,di)=>{
+          const v=({D:r.natural_d,I:r.natural_i,S:r.natural_s,C:r.natural_c}[d]||0);
+          doc.setFillColor(...cC[d]);
+          doc.rect(cX[4]+(cX[5]-cX[4]),y+1+di*1.4,(v/100)*bTW,1.2,'F');
         });
-        y += 8;
+        y+=8;
       });
-      y += 4;
-    } else {
-      writeBlock('Für diesen Workshop wurden noch keine DISC-Auswertungen erfasst.', 9, [100,90,60], 'italic');
-      y += 4;
+      y+=4;
     }
+    kiBox(k3);
 
-    kiInterpret(kiDisc);
-
-    // ════════════════════════════════════════════════════════════════
-    // SEITE 4: TEAM-NORMEN-ANALYSE
-    // ════════════════════════════════════════════════════════════════
-    startPage();
-    secHeader('06  Team-Normen-Analyse — Was das Team über sich erkannte');
-
-    if (tnaScores && Object.keys(tnaScores).length > 0) {
-      const dims = [
-        {key:'1', label:'Konflikt & Dissens',          sub:'Darf Widerspruch gezeigt werden?'},
-        {key:'2', label:'Fehler & Verantwortung',       sub:'Ist Scheitern sicher?'},
-        {key:'3', label:'Feedback & Anerkennung',       sub:'Wissen wir wie wir wirken?'},
-        {key:'4', label:'Entscheidungen unter Unsicherheit', sub:'Wie entscheiden wir?'},
-        {key:'5', label:'Hilfe & Verletzlichkeit',      sub:'Darf man "ich weiss nicht" sagen?'},
-        {key:'6', label:'Unausgesprochene Erwartungen', sub:'Wer hat die Spielregeln bestimmt?'},
+    // ════ SEITE 4: TNA ════════════════════════════════════════════════
+    newPage();
+    secH('06  Team-Normen-Analyse');
+    if(tnaScores&&Object.keys(tnaScores).length>0){
+      const dims=[
+        {k:'1',l:'Konflikt & Dissens'},
+        {k:'2',l:'Fehler & Verantwortung'},
+        {k:'3',l:'Feedback & Anerkennung'},
+        {k:'4',l:'Entscheidungen unter Unsicherheit'},
+        {k:'5',l:'Hilfe & Verletzlichkeit'},
+        {k:'6',l:'Unausgesprochene Erwartungen'},
       ];
-      y += 2;
-      dims.forEach(dim => {
-        const score = parseFloat(tnaScores[dim.key] || tnaScores['d'+dim.key] || 0);
-        if (!score) return;
-        const pct = Math.max(0, Math.min(1, (score-1)/4));
-        const col = score < 2.5 ? [200,50,60] : score < 3.5 ? [200,150,30] : [50,160,80];
-        const barW2 = cW * 0.55;
-        // Background
-        doc.setFillColor(225,220,205); doc.rect(mg, y, barW2, 6, 'F');
-        // Fill
-        doc.setFillColor(...col); doc.rect(mg, y, pct*barW2, 6, 'F');
-        // Label
-        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...DARK);
-        doc.text(dim.label, mg+barW2+4, y+4.5);
-        // Score
-        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...col);
-        doc.text(score.toFixed(1), mg+barW2-3, y+4.5, {align:'right'});
-        // Sub
-        doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(100,90,60);
-        doc.text(dim.sub, mg+barW2+4, y+4.5+4.5);
-        y += 13;
+      y+=2;
+      dims.forEach(({k,l})=>{
+        const s=parseFloat(tnaScores[k]||tnaScores['d'+k]||0);
+        if(!s)return;
+        const p=Math.max(0,Math.min(1,(s-1)/4));
+        const col=s<2.5?[200,50,60]:s<3.5?[200,150,30]:[50,160,80];
+        const bW3=cW*0.52;
+        need(11);
+        doc.setFillColor(220,215,200);doc.rect(ML,y,bW3,6,'F');
+        doc.setFillColor(...col);doc.rect(ML,y,p*bW3,6,'F');
+        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...DARK);
+        // Label NUR rechts des Balkens, max cW-bW3-4 breit
+        const lbl=doc.splitTextToSize(l,cW-bW3-6);
+        doc.text(lbl[0],ML+bW3+4,y+4.5);
+        doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...col);
+        doc.text(s.toFixed(1),ML+bW3-4,y+4.5,{align:'right'});
+        y+=11;
       });
-
-      // Kernsatz
-      if (tnaKernsatz) {
-        y += 2;
-        doc.setFillColor(...NAVY); doc.rect(mg, y, cW, 10, 'F');
-        doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(201,168,76);
-        const kLines = doc.splitTextToSize('"'+tnaKernsatz+'"', cW-10);
-        doc.text(kLines, W/2, y+6.5, {align:'center'});
-        y += Math.max(10, kLines.length*5.5) + 4;
+      if(tnaKernsatz){
+        y+=2;need(11);
+        doc.setFillColor(...NAVY);doc.rect(ML,y,cW,11,'F');
+        const kl=doc.splitTextToSize('"'+tnaKernsatz+'"',cW-10);
+        doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(201,168,76);
+        doc.text(kl[0],W/2,y+7,{align:'center'});
+        y+=13;
       }
-
-      // KI-Muster-Texte
-      if (tnaNormen.length > 0) {
-        y += 2;
-        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...NAVY);
-        doc.text('ERKANNTE MUSTER (KI-Analyse)', mg, y); y += 5;
-        tnaNormen.slice(0,4).forEach(n => {
-          const col = n.typ==='dysfunktional' ? [200,50,60] : [50,160,80];
-          const bgCol = n.typ==='dysfunktional' ? [255,240,240] : [240,255,245];
-          const tLines = doc.splitTextToSize(stripMd(n.text||''), cW-6);
-          const bH = tLines.length*7.5*0.40+8;
-          checkPageBreak(bH+3);
-          doc.setFillColor(...bgCol); doc.setDrawColor(...col); doc.setLineWidth(0.2);
-          doc.rect(mg, y, cW, bH, 'FD');
-          doc.setFillColor(...col); doc.rect(mg, y, 3, bH, 'F');
-          doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...col);
-          doc.text(stripMd(n.titel||''), mg+5, y+5);
-          doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...DARK);
-          doc.text(tLines, mg+5, y+11);
-          y += bH+3;
+      if(tnaNormen.length>0){
+        y+=2;doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...NAVY);
+        doc.text('ERKANNTE MUSTER',ML,y);y+=5;
+        tnaNormen.slice(0,4).forEach(n=>{
+          const col=n.typ==='dysfunktional'?[200,50,60]:[50,160,80];
+          const bg=n.typ==='dysfunktional'?[255,242,242]:[242,255,248];
+          const tl=doc.splitTextToSize(strip(n.text||''),cW-8);
+          const bH=tl.length*7.5*0.40+9;
+          need(bH+3);
+          doc.setFillColor(...bg);doc.setDrawColor(...col);doc.setLineWidth(0.18);
+          doc.rect(ML,y,cW,bH,'FD');
+          doc.setFillColor(...col);doc.rect(ML,y,3,bH,'F');
+          doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...col);
+          doc.text(strip(n.titel||'').substring(0,40),ML+5,y+5.5);
+          doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...DARK);
+          doc.text(tl,ML+5,y+11);
+          y+=bH+3;
         });
       }
-    } else {
-      writeBlock('Für diesen Workshop wurden noch keine Team-Normen-Analyse-Daten erfasst.', 9, [100,90,60], 'italic');
     }
-    kiInterpret(kiTna);
+    kiBox(k4);
 
-    // ════════════════════════════════════════════════════════════════
-    // SEITE 5: STECKBRIEF + VERSPRECHEN
-    // ════════════════════════════════════════════════════════════════
-    startPage();
-    secHeader('07  Unser Team-Steckbrief');
-
-    if (normen.length > 0) {
-      const nColW = (cW-4)/2;
-      const leftN  = normen.slice(0, Math.ceil(normen.length/2));
-      const rightN = normen.slice(Math.ceil(normen.length/2));
-      const startY = y;
-      const renderNCol = (norms, xStart) => {
-        let cy = startY;
-        norms.forEach(n => {
-          const nl = doc.splitTextToSize('"'+n+'"', nColW-8);
-          const bH = nl.length*8.5*0.42+7;
-          doc.setFillColor(...LGOLD); doc.setDrawColor(...GOLD); doc.setLineWidth(0.2);
-          doc.rect(xStart, cy, nColW, bH, 'FD');
-          doc.setFillColor(...GOLD); doc.rect(xStart, cy, 2.5, bH, 'F');
-          doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...DARK);
-          doc.text(nl, xStart+5, cy+5.5);
-          cy += bH+3;
+    // ════ SEITE 5: STECKBRIEF + VERSPRECHEN ══════════════════════════
+    newPage();
+    secH('07  Unser Team-Steckbrief');
+    if(normen.length>0){
+      const nCW=(cW-4)/2;
+      const ln=normen.slice(0,Math.ceil(normen.length/2));
+      const rn=normen.slice(Math.ceil(normen.length/2));
+      const sy=y;
+      const drawNCol=(norms,x)=>{
+        let cy=sy;
+        norms.forEach(n=>{
+          const nl=doc.splitTextToSize('"'+n+'"',nCW-8);
+          const bH=nl.length*8.5*0.42+7;
+          doc.setFillColor(...LGOLD);doc.setDrawColor(...GOLD);doc.setLineWidth(0.18);
+          doc.rect(x,cy,nCW,bH,'FD');
+          doc.setFillColor(...GOLD);doc.rect(x,cy,2.5,bH,'F');
+          doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...DARK);
+          doc.text(nl,x+5,cy+5.5);
+          cy+=bH+3;
         });
         return cy;
       };
-      const lEnd = renderNCol(leftN, mg);
-      const rEnd = renderNCol(rightN, mg+nColW+4);
-      y = Math.max(lEnd, rEnd) + 5;
-    } else {
-      writeBlock('Der Team-Steckbrief wurde noch nicht erarbeitet.', 9, [100,90,60], 'italic');
-      y += 4;
+      y=Math.max(drawNCol(ln,ML),drawNCol(rn,ML+nCW+4))+5;
+    }
+    y+=3;secH('08  Die Versprechen — '+verspr.length+' Stimmen',[55,40,12]);
+    verspr.slice(0,14).forEach(v=>{
+      if(!v.satz)return;
+      const vl=doc.splitTextToSize('"'+v.satz+'"',cW-26);
+      const bH=vl.length*7.5*0.40+5;
+      need(bH+3);
+      doc.setFillColor(248,246,238);doc.setDrawColor(180,160,100);doc.setLineWidth(0.1);
+      doc.rect(ML,y,cW,bH,'FD');
+      doc.setFillColor(...GOLD);doc.rect(ML,y,2.5,bH,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(100,80,30);
+      doc.text((v.alias||'?').substring(0,14),ML+4,y+4);
+      doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(...DARK);
+      doc.text(vl,ML+24,y+4);
+      y+=bH+3;
+    });
+    if((byM['morgen_reflexion']||[]).length){
+      y+=3;secH('09  Morgen-Reflexion Tag 2',[55,40,12]);
+      (byM['morgen_reflexion']||[]).slice(0,5).forEach(it=>qCard(it.alias,it.text));
     }
 
-    secHeader('08  Die Versprechen — '+versprechen.length+' Stimmen', [60,45,15]);
-    if (versprechen.length > 0) {
-      versprechen.slice(0,16).forEach(v => {
-        if (!v.satz) return;
-        const vl = doc.splitTextToSize('"'+v.satz+'"', cW-26);
-        const bH = vl.length*7.5*0.40+5;
-        checkPageBreak(bH+3);
-        doc.setFillColor(248,246,238); doc.setDrawColor(180,160,100); doc.setLineWidth(0.1);
-        doc.rect(mg, y, cW, bH, 'FD');
-        doc.setFillColor(...GOLD); doc.rect(mg,y,2.5,bH,'F');
-        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(100,80,30);
-        doc.text((v.alias||'?').substring(0,14), mg+4, y+4);
-        doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(...DARK);
-        doc.text(vl, mg+24, y+4);
-        y += bH+3;
-      });
-    } else {
-      writeBlock('Noch keine Versprechen eingegangen.', 9, [100,90,60], 'italic');
+    // ════ SEITE 6: BRIEF ════════════════════════════════════════════
+    newPage();
+    doc.setFillColor(...NAVY);doc.rect(7,7,W-14,30,'F');
+    doc.setDrawColor(...GOLD);doc.setLineWidth(0.3);
+    doc.line(ML,22,W/2-20,22);doc.line(W/2+20,22,W-MR,22);
+    doc.setFillColor(...GOLD);doc.circle(W/2,22,1.8,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(17);doc.setTextColor(201,168,76);
+    doc.text('Ein Brief an euch',W/2,20,{align:'center'});
+    doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(175,155,95);
+    doc.text('Von der KI, die dabei war',W/2,28,{align:'center'});
+    y=44;
+    if(k5)wText(k5,11,DARK);
+    y+=10;need(12);
+    doc.setDrawColor(...GOLD);doc.setLineWidth(0.35);doc.line(ML,y,ML+55,y);y+=7;
+    doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(...GOLD);
+    doc.text('Claude — KI-Begleiterin des Workshops',ML,y);
+
+    // ════ SPEICHERN ══════════════════════════════════════════════════
+    const fn='Workshop-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf';
+    try{doc.save(fn);}
+    catch(e){
+      const b=doc.output('blob');
+      const u=URL.createObjectURL(b);
+      const a=document.createElement('a');a.href=u;a.download=fn;a.click();
+      setTimeout(()=>URL.revokeObjectURL(u),5000);
     }
+    setS('✓ '+pg+' Seiten · Download gestartet');
+    setTimeout(()=>{if(status)status.textContent='';},5000);
 
-    // Morgen-Reflexion falls vorhanden
-    if ((byModule['morgen_reflexion']||[]).length > 0) {
-      y += 3;
-      secHeader('09  Morgen-Reflexion Tag 2', [60,45,15]);
-      (byModule['morgen_reflexion']||[]).slice(0,6).forEach(item => quoteCard(item.alias, item.text));
-    }
-
-    // ════════════════════════════════════════════════════════════════
-    // SEITE 6: BRIEF DER KI
-    // ════════════════════════════════════════════════════════════════
-    startPage();
-    // Navy Kopf
-    doc.setFillColor(...NAVY); doc.rect(7,7,W-14,30,'F');
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.35);
-    doc.line(mg,22,W/2-22,22); doc.line(W/2+22,22,W-mg,22);
-    doc.setFillColor(...GOLD); doc.circle(W/2,22,2,'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(201,168,76);
-    doc.text('Ein Brief an euch', W/2, 20, {align:'center'});
-    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(175,155,95);
-    doc.text('Von der KI, die dabei war', W/2, 29, {align:'center'});
-    y = 46;
-
-    if (kiBrief) {
-      writeBlock(kiBrief, 11, DARK, 'normal');
-    }
-    y += 10;
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.4); doc.line(mg, y, mg+55, y); y += 6;
-    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(...GOLD);
-    doc.text('Claude — KI-Begleiterin des Workshops', mg, y);
-
-    // Footer letzte Seite extra
-    doc.setFillColor(...NAVY); doc.rect(7,H-16,W-14,9,'F');
-    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(155,135,75);
-    doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(), W/2, H-10.5, {align:'center'});
-
-    // ─── SPEICHERN ───────────────────────────────────────────────────
-    const fn = 'Workshop-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf';
-    try { doc.save(fn); }
-    catch(e) {
-      const blob = doc.output('blob');
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a'); a.href=url; a.download=fn; a.click();
-      setTimeout(()=>URL.revokeObjectURL(url), 5000);
-    }
-    setStatus('✓ Handout fertig! '+currentPage+' Seiten · Download gestartet');
-    setTimeout(()=>{ if(status) status.textContent=''; }, 5000);
-
-  } catch(e) {
-    setStatus('❌ Fehler: '+e.message);
-    console.error('generateHandoutPDF:', e);
-  } finally {
-    btn.disabled=false;
-    btn.textContent='✨ Workshop-Handout generieren (KI · 6 Seiten)';
+  }catch(e){
+    setS('❌ Fehler: '+e.message);console.error(e);
+  }finally{
+    btn.disabled=false;btn.textContent='✨ Workshop-Handout generieren (KI · 6 Seiten)';
   }
 }
 
