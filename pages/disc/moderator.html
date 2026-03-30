@@ -2268,11 +2268,14 @@ Nur die 5 Abschnitte, getrennt durch ===ABSCHNITT===.`;
     const kiRes=await fetch(`${EDGE_BASE}/ki-analyze`,{method:'POST',
       headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
       body:JSON.stringify({system:'Du bist ein einfühlsamer Workshop-Begleiter und Schreiber.',userPrompt:prompt,maxTokens:3000})});
+    if(!kiRes.ok) throw new Error('KI HTTP-Fehler: '+kiRes.status);
     const kiData=await kiRes.json();
     const kiText=(kiData.text||kiData.content?.[0]?.text||'').trim();
-    if(!kiText) throw new Error('KI hat keinen Text zurückgegeben');
+    console.log('KI fertig. Länge:', kiText.length, '| Erste 150:', kiText.substring(0,150));
+    if(!kiText) throw new Error('KI leer. Response: '+JSON.stringify(kiData).substring(0,300));
     const sections=kiText.split('===ABSCHNITT===').map(s=>s.trim()).filter(Boolean);
-    if(sections.length<4) throw new Error(`Nur ${sections.length} Abschnitte erhalten`);
+    console.log('Abschnitte:', sections.length);
+    if(sections.length<2) throw new Error(`Zu wenige Abschnitte (${sections.length}). Trennzeichen nicht gefunden?`);
     setStatus('📄 PDF wird gestaltet…');
     const {jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
@@ -2365,8 +2368,19 @@ Nur die 5 Abschnitte, getrennt durch ===ABSCHNITT===.`;
     doc.text('Claude — KI-Begleiterin des Workshops',mg,y4);
     doc.setTextColor(160,140,90);doc.setFontSize(7);doc.setFont('helvetica','normal');
     doc.text('Wahrheitsfähigkeit im Team · R&D Engineering · '+new Date().getFullYear(),W/2,H-10,{align:'center'});
-    doc.save('Workshop-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf');
-    setStatus('✓ Handout gespeichert! '+sections.length+' Abschnitte · 4 Seiten');
+    // PDF speichern — mit Fallback auf manuellen Link
+    const fileName='Workshop-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf';
+    try {
+      doc.save(fileName);
+    } catch(saveErr) {
+      // Fallback: Blob-URL erzeugen und Link anzeigen
+      const blob = doc.output('blob');
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = fileName; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
+    setStatus('✓ Handout generiert! '+sections.length+' Abschnitte · 4 Seiten — Download sollte starten.');
     setTimeout(()=>{ if(status) status.textContent=''; },5000);
   } catch(e) {
     setStatus('❌ Fehler: '+e.message); console.error(e);
