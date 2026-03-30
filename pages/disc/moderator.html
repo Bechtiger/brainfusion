@@ -2617,10 +2617,8 @@ async function generateHandoutPDF() {
           y += bH+3;
         });
       }
-    } else {
-      writeBlock('Für diesen Workshop wurden noch keine Team-Normen-Analyse-Daten erfasst.', 9, [100,90,60], 'italic');
     }
-    kiInterpret(kiTna);
+    if (kiTna) kiInterpret(kiTna);
 
     // ════════════════════════════════════════════════════════════════
     // SEITE 5: STECKBRIEF + VERSPRECHEN
@@ -2650,9 +2648,6 @@ async function generateHandoutPDF() {
       const lEnd = renderNCol(leftN, mg);
       const rEnd = renderNCol(rightN, mg+nColW+4);
       y = Math.max(lEnd, rEnd) + 5;
-    } else {
-      writeBlock('Der Team-Steckbrief wurde noch nicht erarbeitet.', 9, [100,90,60], 'italic');
-      y += 4;
     }
 
     secHeader('08  Die Versprechen — '+versprechen.length+' Stimmen', [60,45,15]);
@@ -2671,8 +2666,6 @@ async function generateHandoutPDF() {
         doc.text(vl, mg+24, y+4);
         y += bH+3;
       });
-    } else {
-      writeBlock('Noch keine Versprechen eingegangen.', 9, [100,90,60], 'italic');
     }
 
     // Morgen-Reflexion falls vorhanden
