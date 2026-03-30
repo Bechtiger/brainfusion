@@ -3134,6 +3134,7 @@ async function createOnlineWorkshop(){
 }
 
 async function connectOnlineWorkshop(){
+  // Falls Session im Cache → direkt wieder verbinden
   if(onlineSession?.code&&onlineSession?.adminToken){
     if(!confirm(`Bestehenden Workshop "${onlineSession.code}" wieder verbinden?`))return;
     showOnlineUI();
@@ -3141,18 +3142,106 @@ async function connectOnlineWorkshop(){
     startAutoRefresh();
     return;
   }
+  // Workshop-Liste aus Supabase laden und anzeigen
+  initSupabase();
+  try {
+    const { data: workshops } = await sb.from('workshops')
+      .select('id,code,admin_token,title,current_module,created_at')
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (workshops && workshops.length > 0) {
+      showWorkshopPicker(workshops);
+    } else {
+      // Fallback: manuell eingeben
+      connectManually();
+    }
+  } catch(e) {
+    connectManually();
+  }
+}
+
+function showWorkshopPicker(workshops) {
+  // Overlay erstellen
+  const overlay = document.createElement('div');
+  overlay.id = 'workshopPickerOverlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#141b2d;border:1px solid #2b3657;border-radius:12px;padding:28px;width:560px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5);';
+
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-size:18px;font-weight:700;color:#e4e4f0;">Workshop verbinden</div>
+        <div style="font-size:12px;color:#6a6a8a;margin-top:2px;">Wähle einen Workshop — sortiert nach Datum</div>
+      </div>
+      <button onclick="document.getElementById('workshopPickerOverlay').remove()" style="background:none;border:none;color:#6a6a8a;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div id="workshopList"></div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid #2b3657;">
+      <button onclick="document.getElementById('workshopPickerOverlay').remove();connectManually();"
+        style="width:100%;padding:10px;background:rgba(255,255,255,.05);border:1px solid #2b3657;border-radius:8px;color:#6a6a8a;cursor:pointer;font-size:13px;">
+        Code & Token manuell eingeben
+      </button>
+    </div>`;
+
+  const list = box.querySelector('#workshopList');
+  workshops.forEach(ws => {
+    const date = new Date(ws.created_at).toLocaleDateString('de-CH', {day:'2-digit',month:'2-digit',year:'numeric'});
+    const time = new Date(ws.created_at).toLocaleTimeString('de-CH', {hour:'2-digit',minute:'2-digit'});
+    const modLabel = ws.current_module || 'waiting';
+    const item = document.createElement('div');
+    item.style.cssText = 'padding:14px 16px;border:1px solid #2b3657;border-radius:10px;margin-bottom:8px;cursor:pointer;transition:.15s;background:rgba(255,255,255,.02);';
+    item.onmouseover = ()=>{ item.style.background='rgba(255,255,255,.06)'; item.style.borderColor='#c9a84c'; };
+    item.onmouseout  = ()=>{ item.style.background='rgba(255,255,255,.02)'; item.style.borderColor='#2b3657'; };
+    item.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;color:#c9a84c;letter-spacing:.08em;">${ws.code}</span>
+            <span style="font-size:12px;color:#6a6a8a;">${ws.title||'Workshop'}</span>
+          </div>
+          <div style="font-size:11px;color:#4a5568;margin-top:4px;">
+            📅 ${date} ${time}  ·  Modul: <span style="color:#2a9d8f;">${modLabel}</span>
+          </div>
+        </div>
+        <div style="font-size:11px;padding:3px 10px;border-radius:12px;background:rgba(42,157,143,.15);color:#2a9d8f;white-space:nowrap;">Verbinden →</div>
+      </div>`;
+    item.onclick = () => {
+      document.getElementById('workshopPickerOverlay').remove();
+      connectToWorkshop(ws.id, ws.code, ws.admin_token, ws.current_module);
+    };
+    list.appendChild(item);
+  });
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+async function connectToWorkshop(wsId, code, adminToken, currentModule) {
+  onlineSession = { workshopId:wsId, code:code, adminToken:adminToken, currentModule:currentModule||'waiting', title:'' };
+  try {
+    initSupabase();
+    const { data:ws } = await sb.from('workshops').select('title').eq('id',wsId).single();
+    if (ws?.title) onlineSession.title = ws.title;
+  } catch(e) {}
+  saveSession();
+  buildModuleGrid();
+  showOnlineUI();
+  await refreshOnlineWorkshop();
+  startAutoRefresh();
+}
+
+function connectManually() {
   const code=prompt('Workshop-Code:','');if(!code)return;
   const token=prompt('Admin-Token:','');if(!token)return;
   onlineSession={code:code.trim().toUpperCase(),adminToken:token.trim(),workshopId:null,currentModule:'waiting'};
   initSupabase();
-  try{
-    const{data:ws}=await sb.from('workshops').select('id,current_module').eq('code',code.trim().toUpperCase()).single();
-    if(ws){onlineSession.workshopId=ws.id;onlineSession.currentModule=ws.current_module||'waiting'}
-  }catch(e){console.warn('workshopId Lookup:',e.message)}
-  saveSession();
-  showOnlineUI();
-  await refreshOnlineWorkshop();
-  startAutoRefresh();
+  sb.from('workshops').select('id,current_module').eq('code',code.trim().toUpperCase()).single()
+    .then(({data:ws})=>{
+      if(ws){onlineSession.workshopId=ws.id;onlineSession.currentModule=ws.current_module||'waiting'}
+      saveSession(); showOnlineUI(); refreshOnlineWorkshop(); startAutoRefresh();
+    }).catch(()=>{ saveSession(); showOnlineUI(); refreshOnlineWorkshop(); startAutoRefresh(); });
 }
 
 async function refreshOnlineWorkshop(){
