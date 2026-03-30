@@ -2205,437 +2205,522 @@ function renderHandoutSection() {
   </div>`;
 }
 
+// Handout Generator v2 — clean, robust, no markdown artifacts
 async function generateHandoutPDF() {
   const btn    = document.getElementById('handoutBtn');
   const status = document.getElementById('handoutStatus');
   btn.disabled = true; btn.textContent = '⏳ Wird generiert…';
   const setStatus = (msg) => { if(status) status.innerHTML = msg; };
 
+  // Strip markdown from KI text
+  const stripMd = (text) => (text||'')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/^#+\s+/gm, '')
+    .replace(/^[-*]\s+/gm, '• ')
+    .trim();
+
   try {
     initSupabase();
     const wsId = onlineSession?.workshopId;
     if (!wsId) throw new Error('Kein aktiver Workshop');
 
-    // ════════════════════════════════════════════════════
-    // 1. ALLE DATEN LADEN
-    // ════════════════════════════════════════════════════
-    setStatus('📥 Lade alle Workshop-Daten…');
-
-    const [{ data: responses }, { data: discResults }, { data: participants }] = await Promise.all([
+    // ─── DATEN LADEN ─────────────────────────────────────────────────
+    setStatus('📥 Daten werden geladen…');
+    const [{ data: responses }, { data: discResults }] = await Promise.all([
       sb.from('exercise_responses').select('alias,module,response_type,content,created_at')
         .eq('workshop_id', wsId).order('created_at', { ascending: true }),
       sb.from('results').select('alias,natural_primary,role_primary,natural_d,natural_i,natural_s,natural_c,role_d,role_i,role_s,role_c,stress_index')
-        .eq('workshop_id', wsId),
-      sb.from('participants').select('alias').eq('workshop_id', wsId)
+        .eq('workshop_id', wsId)
     ]);
 
-    // Normen
-    const normenRow = (responses||[]).find(r => r.response_type === 'team_normen');
-    const normen = normenRow ? (typeof normenRow.content === 'string' ? JSON.parse(normenRow.content) : normenRow.content) || [] : [];
-
-    // TNA Scores aus module_data holen
     const { data: wsData } = await sb.from('workshops').select('module_data').eq('id', wsId).single();
-    const tnaScores = wsData?.module_data?.scores || null;
-    const tnaKernsatz = wsData?.module_data?.staerke || '';
-    const tnaNormen = wsData?.module_data?.normen || [];
+    const tnaScores  = wsData?.module_data?.scores  || null;
+    const tnaKernsatz = stripMd(wsData?.module_data?.staerke || '');
+    const tnaNormen  = (wsData?.module_data?.normen || []);
 
-    // Versprechen
-    const versprechen = (responses||[]).filter(r => r.response_type === 'urkunde').map(r => {
-      try { const c = typeof r.content === 'string' ? JSON.parse(r.content) : r.content; return { alias: r.alias||'?', satz: c?.satz||'' }; }
+    const normenRow = (responses||[]).find(r => r.response_type === 'team_normen');
+    const normen    = normenRow ? (typeof normenRow.content==='string' ? JSON.parse(normenRow.content) : normenRow.content)||[] : [];
+
+    const versprechen = (responses||[]).filter(r => r.response_type==='urkunde').map(r => {
+      try { const c = typeof r.content==='string' ? JSON.parse(r.content) : r.content; return { alias: r.alias||'?', satz: stripMd(c?.satz||'') }; }
       catch(e) { return null; }
     }).filter(Boolean);
 
-    // DISC-Verteilung
     const discDistrib = { D:0, I:0, S:0, C:0 };
-    (discResults||[]).forEach(r => { if(discDistrib[r.natural_primary] !== undefined) discDistrib[r.natural_primary]++; });
+    (discResults||[]).forEach(r => { if(r.natural_primary in discDistrib) discDistrib[r.natural_primary]++; });
 
-    // Antworten nach Modul
     const moduleOrder = [
-      { id:'intro_question',    label:'Einstiegsfrage',           icon:'💬' },
-      { id:'johari_reflexion',  label:'Johari — Blinder Fleck',   icon:'🪟' },
-      { id:'was_sage_ich_nicht',label:'Was ich nicht sage',        icon:'🤫' },
-      { id:'kernbotschaften',   label:'Kernbotschaften',           icon:'⚡' },
-      { id:'gfk',               label:'Gewaltfreie Kommunikation', icon:'🕊' },
-      { id:'morgen_reflexion',  label:'Morgen-Reflexion Tag 2',    icon:'🌅' },
+      { id:'intro_question',    label:'Einstiegsfrage'            },
+      { id:'johari_reflexion',  label:'Johari — Blinder Fleck'    },
+      { id:'was_sage_ich_nicht',label:'Was ich nicht sage'         },
+      { id:'kernbotschaften',   label:'Kernbotschaften'            },
+      { id:'gfk',               label:'Gewaltfreie Kommunikation'  },
+      { id:'morgen_reflexion',  label:'Morgen-Reflexion Tag 2'     },
     ];
     const byModule = {};
     (responses||[]).forEach(r => {
-      if (!moduleOrder.find(m => m.id === r.module)) return;
+      if (!moduleOrder.find(m => m.id===r.module)) return;
       if (!byModule[r.module]) byModule[r.module] = [];
-      let text = typeof r.content === 'object' ? JSON.stringify(r.content) : (r.content||'');
-      text = text.replace(/^"|"$/g,'').replace(/\\n/g,' ').substring(0, 300);
-      if (text.length > 15) byModule[r.module].push({ alias: r.alias||'Anonym', text });
+      let text = typeof r.content==='object' ? JSON.stringify(r.content) : (r.content||'');
+      text = text.replace(/^"|"$/g,'').replace(/\\n/g,' ').substring(0, 280);
+      if (text.length > 10) byModule[r.module].push({ alias: r.alias||'Anonym', text });
     });
 
-    // ════════════════════════════════════════════════════
-    // 2. KI-TEXTE GENERIEREN (parallel für Speed)
-    // ════════════════════════════════════════════════════
-    setStatus('🤖 KI schreibt Interpretationen…<br><small>Das dauert 30–60 Sekunden</small>');
+    // ─── KI-TEXTE ────────────────────────────────────────────────────
+    setStatus('🤖 KI generiert Texte…<br><small>30–60 Sekunden</small>');
 
-    const callKI = async (prompt, maxTokens=600) => {
-      const r = await fetch(`${EDGE_BASE}/ki-analyze`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
-        body: JSON.stringify({ system:'Du bist ein einfühlsamer Workshop-Begleiter. Schreibe prägnant auf Deutsch, emotional aber konkret. Maximal 4-5 Sätze pro Abschnitt.', userPrompt:prompt, maxTokens })
-      });
-      if (!r.ok) return '';
-      const d = await r.json();
-      return (d.text || d.content?.[0]?.text || '').trim();
+    const callKI = async (prompt, maxTok=500) => {
+      try {
+        const r = await fetch(`${EDGE_BASE}/ki-analyze`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
+          body: JSON.stringify({ system:'Du bist ein einfühlsamer Workshop-Begleiter. Schreibe auf Deutsch, ohne Markdown-Formatierung, ohne Sternchen, ohne Fettschrift-Zeichen. Nur normaler Fliesstext in 4-5 Sätzen.', userPrompt:prompt, maxTokens:maxTok })
+        });
+        if (!r.ok) return '';
+        const d = await r.json();
+        return stripMd(d.text || d.content?.[0]?.text || '');
+      } catch(e) { return ''; }
     };
 
-    // Alle KI-Calls parallel
-    const antwortenSample = moduleOrder.map(m => {
-      const items = (byModule[m.id]||[]).slice(0,5);
-      return items.length ? `[${m.label}]: ${items.map(i=>'"'+i.text+'"').join(' / ')}` : '';
-    }).filter(Boolean).join('\n');
+    const einstiegAntworten = (byModule['intro_question']||[]).slice(0,5).map(i=>'"'+i.text+'"').join(' / ');
+    const entdAntworten = [...(byModule['johari_reflexion']||[]),...(byModule['was_sage_ich_nicht']||[])].slice(0,5).map(i=>'"'+i.text+'"').join(' / ');
+    const discN = (discResults||[]).length;
 
-    const [kiEinstieg, kiJohari, kiDisc, kiTna, kiAbschluss] = await Promise.all([
-      callKI(`Diese Antworten gaben Workshopteilnehmer auf die Frage "Was macht es schwer, Dinge direkt anzusprechen?":\n${(byModule['intro_question']||[]).slice(0,6).map(i=>'"'+i.text+'"').join('\n')}\n\nSchreibe 3-4 Sätze: Was beschreiben diese Antworten über die Ausgangslage des Teams? Emotional, würdigend.`),
-      callKI(`Diese Antworten gaben Teilnehmer zu blinden Flecken und "Was ich nicht sage":\n${[...(byModule['johari_reflexion']||[]),...(byModule['was_sage_ich_nicht']||[])].slice(0,6).map(i=>'"'+i.text+'"').join('\n')}\n\nSchreibe 3-4 Sätze: Was haben sie über sich entdeckt? Was liegt im Verborgenen?`),
-      callKI(`Team-DISC-Profil: D=${discDistrib.D}, I=${discDistrib.I}, S=${discDistrib.S}, C=${discDistrib.C} Personen. ${(discResults||[]).length} Teilnehmende total.\n\nSchreibe 4-5 Sätze über diese Teamdynamik: Was sind die Stärken? Wo entstehen Spannungen? Was braucht dieses Team?`),
-      tnaScores ? callKI(`Team-Normen-Analyse Scores (1=dysfunktional, 5=gesund):\n${Object.entries(tnaScores).map(([k,v])=>`${k}: ${v}`).join(', ')}\n${tnaKernsatz ? 'Kernsatz: '+tnaKernsatz : ''}\n\nSchreibe 4-5 Sätze: Was sagen diese Scores über das Team? Konkret, schonungslos aber würdigend.`) : Promise.resolve(''),
-      callKI(`Ein R&D-Engineering-Team hat zwei Tage Workshop gemacht. Sie haben gemeinsam diese Normen erarbeitet:\n${normen.map((n,i)=>`${i+1}. "${n}"`).join('\n')}\nUnd ${versprechen.length} Personen haben unterzeichnet.\n\nSchreibe einen kurzen emotionalen Abschluss (4-5 Sätze): Was bedeutet es, dass sie das getan haben? Was könnte jetzt möglich sein?`, 400)
+    const [kiEinstieg, kiEntd, kiDisc, kiTna, kiBrief] = await Promise.all([
+      einstiegAntworten ? callKI(`Workshopteilnehmer antworteten auf "Was macht es schwer, Dinge direkt anzusprechen?": ${einstiegAntworten}\n\nSchreibe 3-4 Sätze: Was beschreibt das über die Ausgangslage? Emotional, würdigend. Kein Markdown.`) : Promise.resolve(''),
+      entdAntworten ? callKI(`Teilnehmer zu blinden Flecken: ${entdAntworten}\n\nSchreibe 3-4 Sätze: Was haben sie entdeckt? Kein Markdown.`) : Promise.resolve(''),
+      discN > 0 ? callKI(`Team DISC: D=${discDistrib.D}, I=${discDistrib.I}, S=${discDistrib.S}, C=${discDistrib.C} von ${discN} Personen.\n\nSchreibe 4-5 Sätze über Teamdynamik, Stärken, Spannungen. Kein Markdown.`) : Promise.resolve(''),
+      tnaScores ? callKI(`Team-Normen-Analyse (1=dysfunktional, 5=gesund): ${JSON.stringify(tnaScores)}. ${tnaKernsatz ? 'Kernsatz: '+tnaKernsatz : ''}\n\nSchreibe 4-5 Sätze über die Erkenntnisse. Kein Markdown.`) : Promise.resolve(''),
+      callKI(`Ein Team hat zwei Workshop-Tage gemacht. Normen: ${normen.slice(0,5).map((n,i)=>i+1+'. '+n).join('. ')}. ${versprechen.length} Personen haben unterzeichnet.\n\nSchreibe einen persönlichen Brief an das Team (4-5 Sätze, Du-Form, emotional). Kein Markdown.`, 450)
     ]);
 
-    // ════════════════════════════════════════════════════
-    // 3. PDF AUFBAUEN
-    // ════════════════════════════════════════════════════
-    setStatus('📄 PDF wird gestaltet…');
-
+    // ─── PDF SETUP ───────────────────────────────────────────────────
+    setStatus('📄 PDF wird aufgebaut…');
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-    const W=210, H=297, mg=16, cW=W-mg*2;
-    const gold=[180,140,50], navy=[22,22,45], cream=[252,250,244], darkText=[30,25,15];
-    const catCols = { D:[200,50,60], I:[220,130,30], S:[42,140,100], C:[60,110,200] };
 
-    // HILFSFUNKTIONEN
-    const newPage = (pageNum) => {
-      if (pageNum > 1) doc.addPage();
+    const W=210, H=297, mg=15, cW=W-mg*2;
+    const GOLD=[180,140,50], NAVY=[22,22,45], DARK=[30,25,15], LGOLD=[245,238,210];
+
+    let currentPage = 0;
+    let y = 0;
+
+    // ─── Hilfsfunktionen ─────────────────────────────────────────────
+    const startPage = () => {
+      if (currentPage > 0) doc.addPage();
+      currentPage++;
       doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F');
-      doc.setDrawColor(...gold); doc.setLineWidth(0.5); doc.rect(7,7,W-14,H-14,'S');
-      doc.setLineWidth(0.15); doc.rect(9,9,W-18,H-18,'S');
-      doc.setTextColor(160,140,80); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
-      doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(), W/2, H-9, {align:'center'});
-      doc.setTextColor(160,140,80); doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
-      doc.text(''+pageNum, W-13, H-9, {align:'right'});
-      return 18; // Start-Y
+      // Doppelrahmen
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.6); doc.rect(7,7,W-14,H-14,'S');
+      doc.setLineWidth(0.15); doc.rect(9.5,9.5,W-19,H-19,'S');
+      // Footer
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(150,130,70);
+      doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(), W/2, H-8.5, {align:'center'});
+      doc.text(''+currentPage, W-11, H-8.5, {align:'right'});
+      y = 18;
     };
 
-    const sectionHeader = (doc, text, y, color=navy) => {
-      doc.setFillColor(...color); doc.rect(mg-2, y-4, cW+4, 8, 'F');
-      doc.setTextColor(...gold); doc.setFont('helvetica','bold'); doc.setFontSize(11);
-      doc.text(text, mg+1, y+1);
-      return y + 10;
+    const checkPageBreak = (neededH) => {
+      if (y + neededH > H - 16) { startPage(); }
     };
 
-    const writeText = (text, x, y, maxW, fs, col, style='normal', lh=1.45) => {
-      if (!text) return 0;
+    const secHeader = (title, color=NAVY) => {
+      checkPageBreak(12);
+      doc.setFillColor(...color); doc.rect(mg-1, y-4, cW+2, 9, 'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...GOLD);
+      doc.text(title, mg+1, y+2);
+      y += 11;
+    };
+
+    const writeBlock = (text, fs=9.5, col=DARK, style='normal', indent=0) => {
+      if (!text || !text.trim()) return;
+      const clean = stripMd(text);
+      const lines = doc.splitTextToSize(clean, cW - indent);
+      checkPageBreak(lines.length * fs * 0.42 + 3);
       doc.setFont('helvetica', style); doc.setFontSize(fs); doc.setTextColor(...col);
-      const lines = doc.splitTextToSize(text, maxW);
-      doc.text(lines, x, y);
-      return lines.length * fs * lh * 0.353;
+      doc.text(lines, mg + indent, y);
+      y += lines.length * fs * 0.42 + 3;
     };
 
-    const kiBox = (text, x, y, w, fs=8.5) => {
-      if (!text) return 0;
-      doc.setFillColor(248,244,230); doc.setDrawColor(...gold); doc.setLineWidth(0.2);
-      const lines = doc.splitTextToSize(text, w-10);
-      const bH = lines.length * fs * 0.42 + 8;
-      doc.rect(x, y, w, bH, 'FD');
-      doc.setFont('helvetica','italic'); doc.setFontSize(fs); doc.setTextColor(60,45,15);
-      doc.text(lines, x+5, y+5.5);
-      // KI-Label
-      doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...gold);
-      doc.text('KI-INTERPRETATION', x+w-3, y+3, {align:'right'});
-      return bH + 4;
+    const kiInterpret = (text) => {
+      if (!text || !text.trim()) return;
+      checkPageBreak(20);
+      const lines = doc.splitTextToSize(stripMd(text), cW - 8);
+      const bH = lines.length * 8.5 * 0.40 + 9;
+      doc.setFillColor(...LGOLD); doc.setDrawColor(...GOLD); doc.setLineWidth(0.2);
+      doc.rect(mg, y, cW, bH, 'FD');
+      doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...GOLD);
+      doc.text('KI-INTERPRETATION', mg+cW-2, y+3.5, {align:'right'});
+      doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(50,40,10);
+      doc.text(lines, mg+4, y+7);
+      y += bH + 5;
     };
 
-    const quoteRow = (alias, text, x, y, w) => {
-      doc.setFillColor(248,248,248); doc.setDrawColor(200,190,160); doc.setLineWidth(0.1);
-      const tLines = doc.splitTextToSize('"'+text+'"', w-24);
-      const bH = Math.max(8, tLines.length*4.8+4);
-      doc.rect(x, y, w, bH, 'FD');
-      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(120,100,50);
-      doc.text(alias.substring(0,12), x+2, y+4);
-      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(40,35,20);
-      doc.text(tLines, x+22, y+4);
-      return bH + 2;
+    const quoteCard = (alias, text) => {
+      const clean = stripMd(text).substring(0,220);
+      const tLines = doc.splitTextToSize('"'+clean+'"', cW-26);
+      const bH = Math.max(8, tLines.length * 7.5 * 0.40 + 5);
+      checkPageBreak(bH + 2);
+      doc.setFillColor(248,248,243); doc.setDrawColor(200,185,145); doc.setLineWidth(0.15);
+      doc.rect(mg, y, cW, bH, 'FD');
+      doc.setFillColor(...GOLD); doc.rect(mg, y, 2.5, bH, 'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(110,90,40);
+      doc.text((alias||'Anonym').substring(0,14), mg+4, y+4.5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...DARK);
+      doc.text(tLines, mg+24, y+4.5);
+      y += bH + 2.5;
     };
 
-    // ════ SEITE 1: TITELSEITE ════════════════════════════════════════
-    let y = newPage(1);
-    // Navy Titelblock
-    doc.setFillColor(...navy); doc.rect(7,7,W-14,38,'F');
-    // Ornamentlinie
-    doc.setDrawColor(...gold); doc.setLineWidth(0.4);
-    doc.line(mg,26,W/2-22,26); doc.line(W/2+22,26,W-mg,26);
-    doc.setFillColor(...gold); doc.circle(W/2,26,2.2,'F');
-    doc.circle(W/2-12,26,1,'F'); doc.circle(W/2+12,26,1,'F');
+    // ════════════════════════════════════════════════════════════════
+    // SEITE 1: TITELSEITE
+    // ════════════════════════════════════════════════════════════════
+    startPage();
 
-    doc.setTextColor(201,168,76); doc.setFont('helvetica','bold'); doc.setFontSize(24);
-    doc.text('Wahrheitsfähigkeit im Team', W/2, 20, {align:'center'});
-    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(180,160,100);
-    doc.text('Workshop-Dokumentation  ·  R&D Engineering  ·  Swisstronics', W/2, 28, {align:'center'});
-    doc.setFontSize(9); doc.setTextColor(150,135,90);
-    doc.text(new Date().toLocaleDateString('de-CH',{year:'numeric',month:'long',day:'numeric'}), W/2, 35, {align:'center'});
-    y = 54;
+    // Navy Titelblock (fest, keine Überlappung)
+    doc.setFillColor(...NAVY); doc.rect(7,7,W-14,36,'F');
 
-    // Übersicht-Box
-    doc.setFillColor(250,247,238); doc.setDrawColor(...gold); doc.setLineWidth(0.3);
-    doc.rect(mg, y, cW, 28, 'FD');
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...navy);
-    doc.text('WORKSHOP-ÜBERSICHT', mg+4, y+6);
+    // Ornament
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.35);
+    doc.line(mg, 26, W/2-20, 26); doc.line(W/2+20, 26, W-mg, 26);
+    doc.setFillColor(...GOLD);
+    doc.circle(W/2, 26, 2, 'F');
+    doc.circle(W/2-11, 26, 1, 'F');
+    doc.circle(W/2+11, 26, 1, 'F');
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(201,168,76);
+    doc.text('Wahrheitsfähigkeit im Team', W/2, 21, {align:'center'});
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(175,155,95);
+    doc.text('Workshop-Dokumentation  ·  R&D Engineering  ·  Swisstronics', W/2, 29, {align:'center'});
+
+    doc.setFontSize(8.5); doc.setTextColor(145,128,78);
+    doc.text(new Date().toLocaleDateString('de-CH',{year:'numeric',month:'long',day:'numeric'}), W/2, 36, {align:'center'});
+
+    y = 52;
+
+    // Übersichts-Box
     const overviewItems = [
-      ['Teilnehmende', (participants||[]).length || (discResults||[]).length || '—'],
-      ['DISC-Auswertungen', (discResults||[]).length],
-      ['Eingehende Antworten', (responses||[]).filter(r=>r.response_type!=='team_normen'&&r.response_type!=='urkunde').length],
-      ['Team-Normen erarbeitet', normen.length],
+      ['Teilnehmende', (discResults||[]).length || (responses||[]).filter((r,i,a)=>a.findIndex(x=>x.alias===r.alias)===i).length || '—'],
+      ['DISC-Profile', (discResults||[]).length],
+      ['Antworten', (responses||[]).filter(r=>!['team_normen','urkunde'].includes(r.response_type)).length],
+      ['Normen', normen.length],
       ['Unterzeichnet', versprechen.length],
     ];
-    let ox = mg+4;
+    doc.setFillColor(...LGOLD); doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
+    doc.rect(mg, y, cW, 28, 'FD');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...NAVY);
+    doc.text('WORKSHOP-ÜBERSICHT', mg+4, y+6);
+    const iW = cW / overviewItems.length;
     overviewItems.forEach(([label, val], i) => {
-      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(80,70,40);
-      doc.text(label, ox, y+14);
-      doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...gold);
-      doc.text(''+val, ox, y+24);
-      ox += cW/overviewItems.length;
+      const ix = mg + 4 + i * iW;
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(80,65,30);
+      doc.text(label, ix, y+13);
+      doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...GOLD);
+      doc.text(''+val, ix, y+24);
     });
-    y += 36;
+    y += 34;
 
-    // Einstieg
-    y = sectionHeader(doc, '01  Der Anfang — Was in der Luft lag', y);
-    if (byModule['intro_question']?.length) {
-      (byModule['intro_question']||[]).slice(0,5).forEach(item => {
-        y += quoteRow(item.alias, item.text, mg, y, cW);
-      });
-      y += 2;
-    }
-    if (kiEinstieg) y += kiBox(kiEinstieg, mg, y, cW);
+    // Einstieg Seite 1
+    secHeader('01  Der Anfang — Was in der Luft lag');
+    (byModule['intro_question']||[]).slice(0,4).forEach(item => quoteCard(item.alias, item.text));
+    kiInterpret(kiEinstieg);
 
-    // ════ SEITE 2: ENTDECKUNGEN ══════════════════════════════════════
-    y = newPage(2);
-    y = sectionHeader(doc, '02  Was ihr über euch entdeckt habt', y);
+    // ════════════════════════════════════════════════════════════════
+    // SEITE 2: ENTDECKUNGEN + KERNBOTSCHAFTEN
+    // ════════════════════════════════════════════════════════════════
+    startPage();
+    secHeader('02  Was ihr über euch entdeckt habt');
+    const entdItems = [...(byModule['johari_reflexion']||[]),...(byModule['was_sage_ich_nicht']||[])];
+    entdItems.slice(0,6).forEach(item => quoteCard(item.alias, item.text));
+    kiInterpret(kiEntd);
 
-    // Johari + Was ich nicht sage
-    const entdData = [...(byModule['johari_reflexion']||[]), ...(byModule['was_sage_ich_nicht']||[])];
-    entdData.slice(0,6).forEach(item => { y += quoteRow(item.alias, item.text, mg, y, cW); });
-    y += 2;
-    if (kiJohari) y += kiBox(kiJohari, mg, y, cW);
-    y += 4;
-
-    // Kernbotschaften
-    if ((byModule['kernbotschaften']||[]).length) {
-      y = sectionHeader(doc, '03  Kernbotschaften — Was bewegt hat', y, [80,60,20]);
-      (byModule['kernbotschaften']||[]).slice(0,5).forEach(item => { y += quoteRow(item.alias, item.text, mg, y, cW); });
-      y += 4;
+    if ((byModule['kernbotschaften']||[]).length > 0) {
+      y += 3;
+      secHeader('03  Kernbotschaften — Was bewegt hat', [60,45,15]);
+      (byModule['kernbotschaften']||[]).slice(0,5).forEach(item => quoteCard(item.alias, item.text));
     }
 
-    // GFK
-    if ((byModule['gfk']||[]).length) {
-      y = sectionHeader(doc, '04  Gewaltfreie Kommunikation', y, [80,60,20]);
-      (byModule['gfk']||[]).slice(0,4).forEach(item => { y += quoteRow(item.alias, item.text, mg, y, cW); });
+    if ((byModule['gfk']||[]).length > 0) {
+      y += 3;
+      secHeader('04  Gewaltfreie Kommunikation', [60,45,15]);
+      (byModule['gfk']||[]).slice(0,4).forEach(item => quoteCard(item.alias, item.text));
     }
 
-    // ════ SEITE 3: DISC-PROFIL ═══════════════════════════════════════
-    y = newPage(3);
-    y = sectionHeader(doc, '05  Euer Team-Profil — DISC-Auswertung', y);
+    // ════════════════════════════════════════════════════════════════
+    // SEITE 3: DISC-PROFIL
+    // ════════════════════════════════════════════════════════════════
+    startPage();
+    secHeader('05  Euer Team-Profil — DISC-Auswertung');
 
-    // DISC Balkendiagramm
     if ((discResults||[]).length > 0) {
-      const barW = cW / 4 - 4;
+      // Balkendiagramm
+      y += 2;
+      const barAreaW = cW * 0.55;
+      const barMax = 32;
       const maxVal = Math.max(...Object.values(discDistrib), 1);
-      const barMaxH = 28;
-      let bx = mg;
+      const bW = barAreaW / 4 - 3;
+      const discLabels = {D:['Dominant','Ergebnisorientiert'],I:['Initiativ','Begeisternd'],S:['Stetig','Harmonisch'],C:['Gewissenhaft','Analytisch']};
+      const catCols = {D:[200,50,60],I:[220,130,30],S:[42,140,100],C:[60,110,200]};
+      let bx = mg + 4;
       ['D','I','S','C'].forEach(dim => {
         const count = discDistrib[dim] || 0;
-        const bH = (count / maxVal) * barMaxH;
+        const bH = maxVal > 0 ? (count/maxVal)*barMax : 0;
         const col = catCols[dim];
-        const labels = {D:'Dominant',I:'Initiativ',S:'Stetig',C:'Gewissenhaft'};
         // Balken
-        doc.setFillColor(...col);
-        doc.rect(bx+barW*0.2, y+barMaxH-bH, barW*0.6, bH, 'F');
+        if (bH > 0) { doc.setFillColor(...col); doc.rect(bx+2, y+barMax-bH, bW-4, bH, 'F'); }
+        // Rahmen
+        doc.setDrawColor(...col); doc.setLineWidth(0.2); doc.rect(bx+2, y, bW-4, barMax, 'S');
         // Zahl
-        doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...col);
-        doc.text(''+count, bx+barW/2, y+barMaxH-bH-2, {align:'center'});
+        doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...col);
+        doc.text(''+count, bx+bW/2, y+barMax-3, {align:'center'});
+        // Buchstabe
+        doc.setFontSize(11); doc.text(dim, bx+bW/2, y+barMax+7, {align:'center'});
         // Label
-        doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...col);
-        doc.text(dim, bx+barW/2, y+barMaxH+6, {align:'center'});
-        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(80,70,40);
-        doc.text(labels[dim], bx+barW/2, y+barMaxH+11, {align:'center'});
-        bx += barW + 4;
+        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(60,50,20);
+        doc.text(discLabels[dim][0], bx+bW/2, y+barMax+13, {align:'center'});
+        doc.text(discLabels[dim][1], bx+bW/2, y+barMax+17, {align:'center'});
+        bx += bW + 3;
       });
-      y += barMaxH + 16;
 
-      // Einzelprofile
-      y += 2;
-      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...navy);
+      // Stress-Legende rechts
+      const lx = mg + barAreaW + 8;
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...NAVY);
+      doc.text('STRESS-INDEX', lx, y+5);
+      const stressColors = [[50,160,80],[220,160,30],[200,60,50]];
+      const stressLabels = ['Niedrig 0-33%','Mittel 34-66%','Hoch 67-100%'];
+      stressColors.forEach((col,i) => {
+        doc.setFillColor(...col); doc.rect(lx, y+10+i*7, 5, 4, 'F');
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(50,40,15);
+        doc.text(stressLabels[i], lx+7, y+13+i*7);
+      });
+      y += barMax + 22;
+
+      // Einzelprofile Tabelle
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...NAVY);
       doc.text('EINZELPROFILE', mg, y); y += 5;
-      const profW = cW / 4 - 2;
-      let px = mg;
-      (discResults||[]).forEach((r, i) => {
-        if (i > 0 && i % 4 === 0) { y += 22; px = mg; }
-        doc.setFillColor(248,247,242); doc.setDrawColor(180,160,100); doc.setLineWidth(0.1);
-        doc.rect(px, y, profW, 18, 'FD');
-        const ncol = catCols[r.natural_primary] || navy;
-        doc.setFillColor(...ncol); doc.rect(px, y, 3, 18, 'F');
-        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...navy);
-        doc.text((r.alias||'?').substring(0,10), px+5, y+5);
-        doc.setFont('helvetica','normal'); doc.setFontSize(6);
-        doc.setTextColor(60,50,20);
-        doc.text('N: '+r.natural_primary+'  R: '+r.role_primary, px+5, y+10);
-        doc.text('Stress: '+(r.stress_index||0)+'%', px+5, y+15);
-        px += profW + 2;
+
+      // Tabellenkopf
+      const cols = [38, 22, 22, 22, 22, 20];
+      const colX = [mg, mg+38, mg+60, mg+82, mg+104, mg+126];
+      const headers = ['Name','Natürlich','Rolle','Stress','D  I  S  C','Balken'];
+      doc.setFillColor(...NAVY);
+      doc.rect(mg, y, cW, 6, 'F');
+      headers.forEach((h,i) => {
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...GOLD);
+        doc.text(h, colX[i]+1, y+4);
       });
-      y += 22;
-    }
-    y += 4;
-    if (kiDisc) y += kiBox(kiDisc, mg, y, cW);
+      y += 7;
 
-    // ════ SEITE 4: TEAM-NORMEN-ANALYSE ═══════════════════════════════
-    y = newPage(4);
-    y = sectionHeader(doc, '06  Team-Normen-Analyse — Was das Team über sich erkannte', y);
-
-    if (tnaScores) {
-      // Radar-Chart (6 Achsen als Balken)
-      const dims = [
-        {key:'1',label:'Konflikt & Dissens'},
-        {key:'2',label:'Fehler & Verantwortung'},
-        {key:'3',label:'Feedback & Anerkennung'},
-        {key:'4',label:'Entscheidungen'},
-        {key:'5',label:'Hilfe & Verletzlichkeit'},
-        {key:'6',label:'Unausgesprochene Erwartungen'},
-      ];
-      const barH = 5, barGap = 8, barsW = cW;
-      dims.forEach((dim, i) => {
-        const score = parseFloat(tnaScores[dim.key] || tnaScores['d'+dim.key] || 3);
-        const pct = (score - 1) / 4; // 0..1
-        const barFill = pct * (barsW * 0.6);
-        const col = score < 2.5 ? [200,50,60] : score < 3.5 ? [200,150,30] : [50,150,80];
-        // Hintergrund
-        doc.setFillColor(235,232,225); doc.rect(mg, y, barsW*0.6, barH, 'F');
-        // Füllbalken
-        doc.setFillColor(...col); doc.rect(mg, y, barFill, barH, 'F');
-        // Label
-        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(40,35,20);
-        doc.text(dim.label, mg+barsW*0.62, y+barH-0.5);
-        // Score
-        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...col);
-        doc.text(score.toFixed(1), mg+barsW*0.6-6, y+barH-0.5, {align:'right'});
-        y += barGap;
+      (discResults||[]).forEach((r, i) => {
+        const rowBg = i%2===0 ? [252,250,244] : [245,242,232];
+        doc.setFillColor(...rowBg); doc.rect(mg, y, cW, 7, 'F');
+        const stCol = (r.stress_index||0) < 34 ? [50,160,80] : (r.stress_index||0) < 67 ? [200,150,30] : [200,60,50];
+        const nc = catCols[r.natural_primary] || NAVY;
+        // Name
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...nc);
+        doc.text((r.alias||'?').substring(0,16), colX[0]+1, y+5);
+        // Natürlich
+        doc.setTextColor(...nc); doc.text(r.natural_primary||'-', colX[1]+5, y+5);
+        // Rolle
+        doc.setTextColor(60,50,20); doc.text(r.role_primary||'-', colX[2]+5, y+5);
+        // Stress
+        doc.setFont('helvetica','bold'); doc.setTextColor(...stCol);
+        doc.text((r.stress_index||0)+'%', colX[3]+5, y+5);
+        // DISC Werte
+        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(60,50,20);
+        doc.text(`${r.natural_d||0}  ${r.natural_i||0}  ${r.natural_s||0}  ${r.natural_c||0}`, colX[4]+1, y+5);
+        // Mini-Balken
+        const barTotalW = cols[5]-2;
+        ['D','I','S','C'].forEach((d,di) => {
+          const val = ({D:r.natural_d,I:r.natural_i,S:r.natural_s,C:r.natural_c}[d]||0);
+          const bW2 = (val/100)*barTotalW;
+          doc.setFillColor(...catCols[d]);
+          doc.rect(colX[5]+1, y+1+di*1.4, bW2, 1.2, 'F');
+        });
+        y += 8;
       });
       y += 4;
-      if (tnaKernsatz) {
-        doc.setFillColor(...navy); doc.rect(mg, y, cW, 10, 'F');
-        doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(201,168,76);
-        doc.text('"'+tnaKernsatz+'"', W/2, y+6.5, {align:'center', maxWidth:cW-8});
-        y += 14;
-      }
-      // KI-Normen-Texte
-      if (tnaNormen.length > 0) {
-        tnaNormen.slice(0,3).forEach(n => {
-          const col = n.typ === 'dysfunktional' ? [200,50,60] : [50,150,80];
-          doc.setFillColor(...col.map(c=>Math.min(255,c+180)));
-          doc.setDrawColor(...col); doc.setLineWidth(0.2);
-          const tLines = doc.splitTextToSize(n.titel+': '+n.text, cW-8);
-          const bH = tLines.length*4.5+6;
-          doc.rect(mg, y, cW, bH, 'FD');
-          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...col);
-          doc.text(n.titel||'', mg+4, y+4.5);
-          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(30,20,10);
-          doc.text(doc.splitTextToSize(n.text||'', cW-12), mg+4, y+9);
-          y += bH + 3;
-        });
-        y += 2;
-      }
+    } else {
+      writeBlock('Für diesen Workshop wurden noch keine DISC-Auswertungen erfasst.', 9, [100,90,60], 'italic');
+      y += 4;
     }
-    if (kiTna) y += kiBox(kiTna, mg, y, cW);
 
-    // ════ SEITE 5: STECKBRIEF + VERSPRECHEN ══════════════════════════
-    y = newPage(5);
-    y = sectionHeader(doc, '07  Unser Team-Steckbrief', y);
+    kiInterpret(kiDisc);
+
+    // ════════════════════════════════════════════════════════════════
+    // SEITE 4: TEAM-NORMEN-ANALYSE
+    // ════════════════════════════════════════════════════════════════
+    startPage();
+    secHeader('06  Team-Normen-Analyse — Was das Team über sich erkannte');
+
+    if (tnaScores && Object.keys(tnaScores).length > 0) {
+      const dims = [
+        {key:'1', label:'Konflikt & Dissens',          sub:'Darf Widerspruch gezeigt werden?'},
+        {key:'2', label:'Fehler & Verantwortung',       sub:'Ist Scheitern sicher?'},
+        {key:'3', label:'Feedback & Anerkennung',       sub:'Wissen wir wie wir wirken?'},
+        {key:'4', label:'Entscheidungen unter Unsicherheit', sub:'Wie entscheiden wir?'},
+        {key:'5', label:'Hilfe & Verletzlichkeit',      sub:'Darf man "ich weiss nicht" sagen?'},
+        {key:'6', label:'Unausgesprochene Erwartungen', sub:'Wer hat die Spielregeln bestimmt?'},
+      ];
+      y += 2;
+      dims.forEach(dim => {
+        const score = parseFloat(tnaScores[dim.key] || tnaScores['d'+dim.key] || 0);
+        if (!score) return;
+        const pct = Math.max(0, Math.min(1, (score-1)/4));
+        const col = score < 2.5 ? [200,50,60] : score < 3.5 ? [200,150,30] : [50,160,80];
+        const barW2 = cW * 0.55;
+        // Background
+        doc.setFillColor(225,220,205); doc.rect(mg, y, barW2, 6, 'F');
+        // Fill
+        doc.setFillColor(...col); doc.rect(mg, y, pct*barW2, 6, 'F');
+        // Label
+        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...DARK);
+        doc.text(dim.label, mg+barW2+4, y+4.5);
+        // Score
+        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...col);
+        doc.text(score.toFixed(1), mg+barW2-3, y+4.5, {align:'right'});
+        // Sub
+        doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(100,90,60);
+        doc.text(dim.sub, mg+barW2+4, y+4.5+4.5);
+        y += 13;
+      });
+
+      // Kernsatz
+      if (tnaKernsatz) {
+        y += 2;
+        doc.setFillColor(...NAVY); doc.rect(mg, y, cW, 10, 'F');
+        doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(201,168,76);
+        const kLines = doc.splitTextToSize('"'+tnaKernsatz+'"', cW-10);
+        doc.text(kLines, W/2, y+6.5, {align:'center'});
+        y += Math.max(10, kLines.length*5.5) + 4;
+      }
+
+      // KI-Muster-Texte
+      if (tnaNormen.length > 0) {
+        y += 2;
+        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...NAVY);
+        doc.text('ERKANNTE MUSTER (KI-Analyse)', mg, y); y += 5;
+        tnaNormen.slice(0,4).forEach(n => {
+          const col = n.typ==='dysfunktional' ? [200,50,60] : [50,160,80];
+          const bgCol = n.typ==='dysfunktional' ? [255,240,240] : [240,255,245];
+          const tLines = doc.splitTextToSize(stripMd(n.text||''), cW-6);
+          const bH = tLines.length*7.5*0.40+8;
+          checkPageBreak(bH+3);
+          doc.setFillColor(...bgCol); doc.setDrawColor(...col); doc.setLineWidth(0.2);
+          doc.rect(mg, y, cW, bH, 'FD');
+          doc.setFillColor(...col); doc.rect(mg, y, 3, bH, 'F');
+          doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...col);
+          doc.text(stripMd(n.titel||''), mg+5, y+5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...DARK);
+          doc.text(tLines, mg+5, y+11);
+          y += bH+3;
+        });
+      }
+    } else {
+      writeBlock('Für diesen Workshop wurden noch keine Team-Normen-Analyse-Daten erfasst.', 9, [100,90,60], 'italic');
+    }
+    kiInterpret(kiTna);
+
+    // ════════════════════════════════════════════════════════════════
+    // SEITE 5: STECKBRIEF + VERSPRECHEN
+    // ════════════════════════════════════════════════════════════════
+    startPage();
+    secHeader('07  Unser Team-Steckbrief');
 
     if (normen.length > 0) {
-      const normColW = (cW-4)/2;
-      const leftNorms  = normen.slice(0, Math.ceil(normen.length/2));
-      const rightNorms = normen.slice(Math.ceil(normen.length/2));
-      const renderNormCol = (norms, x) => {
-        let cy = y;
+      const nColW = (cW-4)/2;
+      const leftN  = normen.slice(0, Math.ceil(normen.length/2));
+      const rightN = normen.slice(Math.ceil(normen.length/2));
+      const startY = y;
+      const renderNCol = (norms, xStart) => {
+        let cy = startY;
         norms.forEach(n => {
-          doc.setFillColor(250,246,235); doc.setDrawColor(...gold); doc.setLineWidth(0.2);
-          const nl = doc.splitTextToSize('"'+n+'"', normColW-10);
-          const bH = nl.length*5.2+6;
-          doc.rect(x, cy, normColW, bH, 'FD');
-          doc.setFillColor(...gold); doc.rect(x, cy, 2, bH, 'F');
-          doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(40,35,20);
-          doc.text(nl, x+5, cy+5);
+          const nl = doc.splitTextToSize('"'+n+'"', nColW-8);
+          const bH = nl.length*8.5*0.42+7;
+          doc.setFillColor(...LGOLD); doc.setDrawColor(...GOLD); doc.setLineWidth(0.2);
+          doc.rect(xStart, cy, nColW, bH, 'FD');
+          doc.setFillColor(...GOLD); doc.rect(xStart, cy, 2.5, bH, 'F');
+          doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...DARK);
+          doc.text(nl, xStart+5, cy+5.5);
           cy += bH+3;
         });
         return cy;
       };
-      const leftEnd  = renderNormCol(leftNorms,  mg);
-      const rightEnd = renderNormCol(rightNorms, mg+normColW+4);
-      y = Math.max(leftEnd, rightEnd) + 6;
+      const lEnd = renderNCol(leftN, mg);
+      const rEnd = renderNCol(rightN, mg+nColW+4);
+      y = Math.max(lEnd, rEnd) + 5;
+    } else {
+      writeBlock('Der Team-Steckbrief wurde noch nicht erarbeitet.', 9, [100,90,60], 'italic');
+      y += 4;
     }
 
-    y = sectionHeader(doc, '08  Die Versprechen — '+versprechen.length+' Stimmen', y, [60,40,10]);
-    versprechen.slice(0,14).forEach(v => {
-      doc.setFillColor(248,246,238); doc.setDrawColor(180,160,100); doc.setLineWidth(0.1);
-      const vl = doc.splitTextToSize('"'+v.satz+'"', cW-22);
-      const bH = vl.length*4.8+4;
-      doc.rect(mg, y, cW, bH, 'FD');
-      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(120,100,50);
-      doc.text((v.alias||'?').substring(0,12), mg+2, y+4);
-      doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(40,35,20);
-      doc.text(vl, mg+22, y+4);
-      y += bH+2;
-      if (y > H-25) return;
-    });
+    secHeader('08  Die Versprechen — '+versprechen.length+' Stimmen', [60,45,15]);
+    if (versprechen.length > 0) {
+      versprechen.slice(0,16).forEach(v => {
+        if (!v.satz) return;
+        const vl = doc.splitTextToSize('"'+v.satz+'"', cW-26);
+        const bH = vl.length*7.5*0.40+5;
+        checkPageBreak(bH+3);
+        doc.setFillColor(248,246,238); doc.setDrawColor(180,160,100); doc.setLineWidth(0.1);
+        doc.rect(mg, y, cW, bH, 'FD');
+        doc.setFillColor(...GOLD); doc.rect(mg,y,2.5,bH,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(100,80,30);
+        doc.text((v.alias||'?').substring(0,14), mg+4, y+4);
+        doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(...DARK);
+        doc.text(vl, mg+24, y+4);
+        y += bH+3;
+      });
+    } else {
+      writeBlock('Noch keine Versprechen eingegangen.', 9, [100,90,60], 'italic');
+    }
 
-    // ════ SEITE 6: BRIEF DER KI ══════════════════════════════════════
-    y = newPage(6);
-    doc.setFillColor(...navy); doc.rect(7,7,W-14,30,'F');
-    doc.setDrawColor(...gold); doc.setLineWidth(0.3);
-    doc.line(mg,22,W/2-20,22); doc.line(W/2+20,22,W-mg,22);
-    doc.setFillColor(...gold); doc.circle(W/2,22,1.8,'F');
+    // Morgen-Reflexion falls vorhanden
+    if ((byModule['morgen_reflexion']||[]).length > 0) {
+      y += 3;
+      secHeader('09  Morgen-Reflexion Tag 2', [60,45,15]);
+      (byModule['morgen_reflexion']||[]).slice(0,6).forEach(item => quoteCard(item.alias, item.text));
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // SEITE 6: BRIEF DER KI
+    // ════════════════════════════════════════════════════════════════
+    startPage();
+    // Navy Kopf
+    doc.setFillColor(...NAVY); doc.rect(7,7,W-14,30,'F');
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.35);
+    doc.line(mg,22,W/2-22,22); doc.line(W/2+22,22,W-mg,22);
+    doc.setFillColor(...GOLD); doc.circle(W/2,22,2,'F');
     doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(201,168,76);
-    doc.text('Ein Brief an euch', W/2, 19, {align:'center'});
-    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(160,145,95);
-    doc.text('Von der KI, die dabei war', W/2, 28, {align:'center'});
+    doc.text('Ein Brief an euch', W/2, 20, {align:'center'});
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(175,155,95);
+    doc.text('Von der KI, die dabei war', W/2, 29, {align:'center'});
     y = 46;
 
-    if (kiAbschluss) {
-      const briefLines = doc.splitTextToSize(kiAbschluss, cW);
-      doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(40,35,20);
-      const lineH = 11 * 1.5 * 0.353;
-      briefLines.forEach(line => {
-        if (y > H-30) return;
-        doc.text(line, mg, y);
-        y += lineH;
-      });
+    if (kiBrief) {
+      writeBlock(kiBrief, 11, DARK, 'normal');
     }
-
-    y += 12;
-    doc.setDrawColor(...gold); doc.setLineWidth(0.4); doc.line(mg, y, mg+60, y); y += 7;
-    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(...gold);
+    y += 10;
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.4); doc.line(mg, y, mg+55, y); y += 6;
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(...GOLD);
     doc.text('Claude — KI-Begleiterin des Workshops', mg, y);
 
-    // Goldene Footer-Box letzte Seite
-    doc.setFillColor(...navy); doc.rect(7,H-16,W-14,9,'F');
-    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(160,140,80);
-    doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(), W/2, H-10, {align:'center'});
+    // Footer letzte Seite extra
+    doc.setFillColor(...NAVY); doc.rect(7,H-16,W-14,9,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(155,135,75);
+    doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(), W/2, H-10.5, {align:'center'});
 
-    // ════ SPEICHERN ═══════════════════════════════════════════════════
-    const fileName = 'Workshop-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf';
-    try {
-      doc.save(fileName);
-    } catch(e) {
+    // ─── SPEICHERN ───────────────────────────────────────────────────
+    const fn = 'Workshop-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf';
+    try { doc.save(fn); }
+    catch(e) {
       const blob = doc.output('blob');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download=fileName; a.click();
-      setTimeout(()=>URL.revokeObjectURL(url),5000);
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a'); a.href=url; a.download=fn; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 5000);
     }
-    setStatus('✓ Handout generiert! 6 Seiten · Download gestartet');
-    setTimeout(()=>{ if(status) status.textContent=''; },5000);
+    setStatus('✓ Handout fertig! '+currentPage+' Seiten · Download gestartet');
+    setTimeout(()=>{ if(status) status.textContent=''; }, 5000);
 
   } catch(e) {
     setStatus('❌ Fehler: '+e.message);
