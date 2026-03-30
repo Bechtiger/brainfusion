@@ -2225,12 +2225,19 @@ async function generateHandoutPDF() {
         .eq('workshop_id',wsId).order('created_at',{ascending:true}),
       sb.from('workshops').select('module_data').eq('id',wsId).single().then(r=>({data:r.data}))
     ]);
-    // DISC via REST direkt (gleicher Weg wie refreshOnlineWorkshop)
+    // DISC via REST mit participants JOIN (genau wie refreshOnlineWorkshop)
     let disc=[];
     try {
-      const discUrl='https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/results?select=alias,natural_primary,role_primary,natural_d,natural_i,natural_s,natural_c,stress_index&workshop_id=eq.'+wsId;
+      const discUrl='https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/results?select=alias,natural_primary,role_primary,natural_d,natural_i,natural_s,natural_c,stress_index,participants!inner(alias)&workshop_id=eq.'+wsId;
       const dr=await fetch(discUrl,{headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY}});
-      if(dr.ok) disc=await dr.json();
+      if(dr.ok){
+        const raw=await dr.json();
+        // alias aus participants!inner extrahieren falls nötig
+        disc=(Array.isArray(raw)?raw:[]).map(r=>({
+          ...r,
+          alias: r.alias || r.participants?.alias || '?'
+        }));
+      }
     } catch(e){ console.warn('DISC load:',e.message); }
 
     // TNA aus module_data der teamnormen_analyse Phase
@@ -2426,6 +2433,7 @@ async function generateHandoutPDF() {
     }
 
     // ════ SEITE 3: DISC ══════════════════════════════════════════════
+    if((disc||[]).length>0){
     newPage();
     secH('05  Euer Team-Profil — DISC-Auswertung');
     if((disc||[]).length>0){
@@ -2481,6 +2489,7 @@ async function generateHandoutPDF() {
       y+=4;
     }
     kiBox(k3);
+    } // end DISC
 
     // ════ SEITE 4: TNA ════════════════════════════════════════════════
     newPage();
