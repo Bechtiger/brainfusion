@@ -2225,42 +2225,49 @@ async function generateHandoutPDF() {
         .eq('workshop_id',wsId).order('created_at',{ascending:true}),
       sb.from('workshops').select('module_data').eq('id',wsId).single().then(r=>({data:r.data}))
     ]);
-    // DISC aus dem bereits geladenen participants-Array (von refreshOnlineWorkshop)
-    // Nur Einträge mit DISC-Daten (natural_primary gesetzt)
-    let disc = (participants||[]).filter(p => p.naturalType || p.natural_primary).map(p => ({
-      alias:          p.alias,
-      natural_primary: p.naturalType || p.natural_primary,
-      role_primary:   p.roleType    || p.role_primary,
-      natural_d: p.natural?.D || p.natural_d || 0,
-      natural_i: p.natural?.I || p.natural_i || 0,
-      natural_s: p.natural?.S || p.natural_s || 0,
-      natural_c: p.natural?.C || p.natural_c || 0,
-      stress_index: p.stress || p.stress_index || 0,
-    }));
-    // Fallback: direkt aus Supabase fetchen falls participants leer
-    if(disc.length===0){
-      try{
-        const dr=await fetch('https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/results?select=*,participants!inner(alias)&workshop_id=eq.'+wsId,
-          {headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY}});
-        if(dr.ok){
-          const raw=await dr.json();
-          disc=(Array.isArray(raw)?raw:[]).map(r=>({
-            alias: r.participants?.alias||r.alias||'?',
-            natural_primary: r.natural_primary,
-            role_primary:    r.role_primary,
-            natural_d: r.natural_d||0, natural_i: r.natural_i||0,
-            natural_s: r.natural_s||0, natural_c: r.natural_c||0,
-            stress_index: r.stress_index||0,
-          }));
-        }
-      }catch(e){ console.warn('DISC fallback:',e.message); }
-    }
-    console.log('DISC geladen:', disc.length, 'Profile');
+    // DISC direkt aus Supabase REST (sauber, kein participants-Cache)
+    let disc=[];
+    try{
+      const dr=await fetch('https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/results?select=*,participants!inner(alias)&workshop_id=eq.'+wsId,
+        {headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY}});
+      if(dr.ok){
+        const raw=await dr.json();
+        disc=(Array.isArray(raw)?raw:[]).map(r=>({
+          alias: r.participants?.alias||r.alias||'?',
+          natural_primary: r.natural_primary||'?',
+          role_primary:    r.role_primary||'?',
+          natural_d: r.natural_d||0, natural_i: r.natural_i||0,
+          natural_s: r.natural_s||0, natural_c: r.natural_c||0,
+          stress_index: r.stress_index||0,
+        }));
+      }
+    }catch(e){ console.warn('DISC load:',e.message); }
+    console.log('DISC:', disc.length, 'Profile');
 
     // TNA aus module_data der teamnormen_analyse Phase
-    const tnaScores  = wsData?.module_data?.scores  || null;
-    const tnaKernsatz= strip(wsData?.module_data?.staerke||'');
-    const tnaNormen  = wsData?.module_data?.normen  || [];
+    // TNA: zuerst aus module_data, dann aus exercise_responses
+    let tnaScores   = wsData?.module_data?.scores   || null;
+    let tnaKernsatz = strip(wsData?.module_data?.staerke || '');
+    let tnaNormen   = wsData?.module_data?.normen   || [];
+    // Fallback: TNA-Antworten direkt aus exercise_responses
+    if(!tnaScores){
+      const tnaRows=(resp||[]).filter(r=>r.module==='teamnormen_analyse');
+      if(tnaRows.length>0){
+        const scores={};
+        tnaRows.forEach(r=>{
+          try{
+            const c=typeof r.content==='string'?JSON.parse(r.content):r.content;
+            if(c&&typeof c==='object'){
+              Object.entries(c).forEach(([k,v])=>{ if(!isNaN(v)) scores[k]=(scores[k]||[]).concat(Number(v)); });
+            }
+          }catch(e){}
+        });
+        // Mittelwerte berechnen
+        const avgScores={};
+        Object.entries(scores).forEach(([k,vals])=>{ avgScores[k]=(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1); });
+        if(Object.keys(avgScores).length>0) tnaScores=avgScores;
+      }
+    }
 
     // Normen aus exercise_responses
     const normenRow=(resp||[]).find(r=>r.response_type==='team_normen');
@@ -2308,7 +2315,10 @@ async function generateHandoutPDF() {
       je?ki('Teilnehmer zu blinden Flecken: '+je+'\n\nSchreibe 3-4 Sätze. Kein Markdown.'):Promise.resolve(''),
       dn>0?ki('DISC: D='+dd.D+' I='+dd.I+' S='+dd.S+' C='+dd.C+' von '+dn+' Personen. Schreibe 4 Sätze über Dynamik. Kein Markdown.'):Promise.resolve(''),
       tnaScores?ki('TNA-Scores (1=schlecht,5=gut): '+JSON.stringify(tnaScores)+'. '+(tnaKernsatz?'Kernsatz: '+tnaKernsatz:'')+'\n\nSchreibe 4 Sätze über Erkenntnisse. Kein Markdown.'):Promise.resolve(''),
-      ki('Team hat 2 Workshop-Tage gemacht. Normen: '+(normen.slice(0,4).join('. '))+'. '+verspr.length+' Personen unterzeichneten. Schreibe persönlichen Brief (4-5 Sätze, Du-Form). Kein Markdown.',400)
+      ki('Ein R&D-Engineering-Team bei Swisstronics hat zwei Workshop-Tage zum Thema Wahrheitsfaehigkeit im Team abgeschlossen. '+
+         verspr.length+' Personen haben gemeinsam erarbeitete Normen unterzeichnet: '+normen.slice(0,3).join('; ')+'. '+
+         'Schreibe einen emotionalen persoenlichen Brief der KI an das gesamte Team (nicht an einzelne Personen, nicht "Liebe/r [Name]"). '+
+         'Beginne mit "Liebes Team" oder "Liebe Teilnehmende". 4-5 Saetze, emotional, zukunftsgerichtet, wuerdigend. Kein Markdown. Keine Platzhalter.',400)
     ]);
 
     // ── PDF ──────────────────────────────────────────────────────────
