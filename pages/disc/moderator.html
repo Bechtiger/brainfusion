@@ -920,7 +920,7 @@ async function renderModuleContent(moduleId){
     ${detail.beamer?`<div class="mod-beamer-info">📽 ${detail.beamer}</div>`:''}
     ${hintsHTML}
     ${dataHTML}
-    ${SNAPSHOT_MODULES[moduleId] ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
+    ${!['waiting','normen_info','normen_theorie','kognitive_verzerrungen_info','mut_info','gfk_info','gfk_fallbeispiel','raci_info','disc_role_profile','pairing_karten','disc_map'].includes(moduleId) ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
   </div>`;
 
   // Canvas für DISC-Map zeichnen (nach DOM-Insert)
@@ -2376,8 +2376,10 @@ function collectSnapshotData(moduleId, type) {
       catch(e){ return null; }
     }).filter(Boolean) };
   }
-  // Default: quotes
-  return { quotes: (liveResponses||[]).filter(r=>r.module===moduleId).map(r=>({
+  // Default: quotes - auch für Submodule (z.B. johari_fallbeispiele_fb1)
+  // Suche auch nach Teilstrings des moduleId
+  const baseModule = moduleId.replace(/_[a-z]{1,3}[0-9]+$/, ''); // z.B. johari_fallbeispiele_fb1 -> johari_fallbeispiele
+  return { quotes: (liveResponses||[]).filter(r=>r.module===moduleId||r.module===baseModule).map(r=>({
     alias: r.alias||'Anonym',
     text: (typeof r.content==='string' ? r.content : JSON.stringify(r.content)||'').replace(/^"|"$/g,'').substring(0,280)
   })).filter(r=>r.text.length>5) };
@@ -2404,7 +2406,10 @@ function buildSnapshotPrompt(moduleId, meta, data) {
 
 // Snapshot-Button HTML für Module-Panels
 function snapshotBtn(moduleId) {
-  if (!SNAPSHOT_MODULES[moduleId]) return '';
+  // Auch für Module die nicht explizit in SNAPSHOT_MODULES sind
+  if (!SNAPSHOT_MODULES[moduleId]) {
+    SNAPSHOT_MODULES[moduleId] = { title: moduleId, icon: '[+]', type: 'quotes' };
+  }
   const snaps = getSnapshots();
   const exists = snaps.some(s => s.moduleId === moduleId);
   return `<button id="snapBtn_${moduleId}" onclick="takeSnapshot('${moduleId}')"
