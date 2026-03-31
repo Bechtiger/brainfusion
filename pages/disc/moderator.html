@@ -917,7 +917,7 @@ async function renderModuleContent(moduleId){
         <div class="mod-desc">${detail.desc||''}</div>
       </div>
     </div>
-    ${detail.beamer?`<div class="mod-beamer-info">📽 ${detail.beamer}</div>`:''}
+    ${detail.beamer?`<div class="mod-beamer-info">📽 ${detail.beamer}${onlineSession?.code?screenshotModuleBtn(moduleId):''}</div>`:''}
     ${hintsHTML}
     ${dataHTML}
     ${!['waiting','normen_info','normen_theorie','kognitive_verzerrungen_info','mut_info','gfk_info','gfk_fallbeispiel','raci_info','disc_role_profile','pairing_karten','disc_map'].includes(moduleId) ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
@@ -2195,16 +2195,22 @@ function renderHandoutSection() {
 
     <!-- SCREENSHOT-HANDOUT (neu, einfach) -->
     <div style="padding:14px;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.06);margin-bottom:14px;">
-      <div style="font-size:13px;font-weight:600;color:#c9a84c;margin-bottom:6px;">📸 Screenshot-Handout</div>
+      <div style="font-size:13px;font-weight:600;color:#c9a84c;margin-bottom:6px;">Screenshot-Handout</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-        Klicke im Beamer-Fenster auf den <strong style="color:#c9a84c;">📸 Button</strong> (erscheint bei Mausbewegung unten rechts) — nach dem Workshop hier exportieren.
+        Klicke während des Workshops auf <strong style="color:#c9a84c;">Screenshot</strong> — der Beamer macht automatisch ein Bild des aktuellen Inhalts.
       </div>
-      <button onclick="generateScreenshotHandout()" id="screenshotHandoutBtn"
+      <button onclick="sendScreenshotCommand()" id="screenshotCmdBtn"
         style="width:100%;padding:12px;border-radius:8px;border:1px solid rgba(201,168,76,.4);
-        background:rgba(201,168,76,.12);color:#c9a84c;font-size:13px;font-weight:600;cursor:pointer;">
-        📄 Handout aus Screenshots exportieren
+        background:rgba(201,168,76,.12);color:#c9a84c;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+        Screenshot jetzt
       </button>
-      <div id="screenshotHandoutStatus" style="font-size:11px;color:var(--muted);margin-top:6px;text-align:center;min-height:14px;"></div>
+      <div id="screenshotCmdStatus" style="font-size:11px;color:var(--muted);text-align:center;min-height:14px;margin-bottom:8px;"></div>
+      <button onclick="generateScreenshotHandout()" id="screenshotHandoutBtn"
+        style="width:100%;padding:11px;border-radius:8px;border:1px solid rgba(74,144,217,.35);
+        background:rgba(74,144,217,.08);color:#4a90d9;font-size:12px;font-weight:600;cursor:pointer;">
+        Handout aus Screenshots exportieren
+      </button>
+      <div id="screenshotHandoutStatus" style="font-size:11px;color:var(--muted);margin-top:5px;text-align:center;min-height:14px;"></div>
     </div>
 
     <!-- SNAPSHOT-HANDOUT (bestehend) -->
@@ -2779,6 +2785,68 @@ async function generateHandoutPDF() {
 }
 
 
+
+/* ─── SCREENSHOT COMMAND ─────────────────────────────────────────────────── */
+async function sendScreenshotCommand() {
+  const btn = document.getElementById('screenshotCmdBtn');
+  const status = document.getElementById('screenshotCmdStatus');
+  if (btn) { btn.disabled=true; btn.textContent='Warte auf Beamer…'; }
+  const setS = (m) => { if(status) status.innerHTML = m; };
+
+  try {
+    initSupabase();
+    const wsId = onlineSession?.workshopId;
+    if (!wsId) throw new Error('Kein aktiver Workshop');
+
+    // Broadcast an Beamer via Supabase Realtime
+    await sb.channel('screenshot_cmd_'+wsId)
+      .send({ type:'broadcast', event:'take_screenshot', payload:{} });
+
+    setS('Screenshot-Befehl gesendet — Beamer macht Screenshot');
+    if (btn) { btn.textContent='Erneut Screenshot'; btn.style.background='rgba(42,157,143,.15)'; btn.style.borderColor='rgba(42,157,143,.4)'; btn.style.color='#2a9d8f'; }
+    setTimeout(() => {
+      if(btn){ btn.style.background=''; btn.style.borderColor=''; btn.style.color=''; }
+      setS('');
+    }, 3000);
+
+  } catch(e) {
+    setS('Fehler: '+e.message);
+    if (btn) btn.textContent='Screenshot jetzt';
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// Screenshot-Button für jeden Modul-Header (klein, diskret)
+function screenshotModuleBtn(moduleId) {
+  return `<button onclick="event.stopPropagation();sendScreenshotCommandForModule('${moduleId}')"
+    style="padding:5px 12px;border-radius:6px;border:1px solid rgba(201,168,76,.3);
+    background:rgba(201,168,76,.07);color:#c9a84c;font-size:11px;cursor:pointer;
+    margin-left:8px;vertical-align:middle;"
+    title="Screenshot des Beamers für Handout speichern">
+    Screenshot
+  </button>`;
+}
+
+async function sendScreenshotCommandForModule(moduleId) {
+  // Kurzes visuelles Feedback am Button
+  const allBtns = document.querySelectorAll(`[onclick*="sendScreenshotCommandForModule('${moduleId}')"]`);
+  allBtns.forEach(b => { b.textContent='...'; b.disabled=true; });
+
+  try {
+    initSupabase();
+    const wsId = onlineSession?.workshopId;
+    if (!wsId) return;
+    await sb.channel('screenshot_cmd_'+wsId)
+      .send({ type:'broadcast', event:'take_screenshot', payload:{ moduleId } });
+    allBtns.forEach(b => { b.textContent='OK'; b.style.color='#2a9d8f'; });
+  } catch(e) {
+    allBtns.forEach(b => { b.textContent='Fehler'; });
+  }
+  setTimeout(() => {
+    allBtns.forEach(b => { b.textContent='Screenshot'; b.style.color=''; b.disabled=false; });
+  }, 2000);
+}
 
 /* ─── SCREENSHOT HANDOUT ─────────────────────────────────────────────────── */
 async function generateScreenshotHandout() {

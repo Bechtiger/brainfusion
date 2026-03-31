@@ -2798,6 +2798,7 @@ window.addEventListener('resize', () => { if(currentModule==='disc_map'){ resize
   showWaiting();
 
   sb = window.supabase.createClient(SB_URL, SB_KEY);
+  window._sb = sb; // Für Screenshot-System zugänglich machen
   initRealtime();
 
   // Aktuelles Modul immer aus DB laden — das ist die einzige Wahrheit
@@ -3075,141 +3076,119 @@ window.addEventListener('load', ()=>{
   }
 });
 
-// ── SCREENSHOT SYSTEM ───────────────────────────────────────────────────────
-// Fügt einen diskreten Screenshot-Button ein der beim Hover erscheint
-
+// ── SCREENSHOT SYSTEM — ferngesteuert vom Moderator via Supabase Realtime ──
 (function(){
-  // Button erstellen
-  const btn = document.createElement('button');
-  btn.id = 'screenshotBtn';
-  btn.textContent = '📸';
-  btn.title = 'Screenshot für Handout speichern';
-  btn.style.cssText = `
-    position:fixed; bottom:20px; right:20px; z-index:9999;
-    width:44px; height:44px; border-radius:50%;
-    background:rgba(201,168,76,.15); border:1px solid rgba(201,168,76,.4);
-    color:#c9a84c; font-size:20px; cursor:pointer;
-    opacity:0; transition:opacity .3s;
-    display:flex; align-items:center; justify-content:center;
-  `;
+  const SHOT_KEY = 'disc-screenshots-v1';
+  const MODULE_LABELS = {
+    waiting:'Bereit', intro_question:'Einstiegsfrage',
+    johari_erklaerung:'Johari-Fenster', johari_fallbeispiele:'Johari Fallbeispiele',
+    johari_reflexion:'Johari Reflexion', was_sage_ich_nicht:'Was ich nicht sage',
+    bias_story:'Bestaedigungsfehler', verzerrungen_quiz:'Kognitive Verzerrungen',
+    gfk_info:'GFK Info', gfk_fallbeispiel:'GFK Fallbeispiel',
+    gfk_coaching:'GFK Coaching', gfk:'GFK Ergebnisse',
+    kernbotschaften:'Kernbotschaften', disc_test:'DISC-Test',
+    disc_map:'DISC Live-Map', disc_results:'DISC Resultate',
+    morgen_reflexion:'Morgen-Reflexion', teamnormen_analyse:'Team-Normen-Analyse',
+    normen_info:'Normen-Theorie', steckbrief_vorschlaege:'Steckbrief Vorschlaege',
+    steckbrief_normen:'Team-Steckbrief', steckbrief_urkunde:'Urkunde',
+    closing:'Abschluss',
+  };
 
-  // Zähler-Badge
+  // Flash-Overlay für visuelles Feedback
+  const flash = document.createElement('div');
+  flash.style.cssText = 'position:fixed;inset:0;background:white;opacity:0;pointer-events:none;z-index:99999;transition:opacity .15s;';
+  document.body.appendChild(flash);
+
+  // Zähler-Badge oben links
   const badge = document.createElement('div');
-  badge.id = 'screenshotBadge';
-  badge.style.cssText = `
-    position:fixed; bottom:52px; right:16px; z-index:9999;
-    background:#c9a84c; color:#0d0d20; font-size:11px; font-weight:700;
-    border-radius:10px; padding:2px 7px; opacity:0; transition:opacity .3s;
-    pointer-events:none;
-  `;
-
-  document.body.appendChild(btn);
+  badge.style.cssText = 'position:fixed;top:10px;left:10px;z-index:9999;background:rgba(201,168,76,.9);color:#0d0d20;font-size:12px;font-weight:700;border-radius:8px;padding:3px 10px;display:none;';
   document.body.appendChild(badge);
 
-  // Hover-Reveal (Mausbewegung zeigt Button kurz)
-  let hideTimer;
-  document.addEventListener('mousemove', () => {
-    btn.style.opacity = '0.7';
-    badge.style.opacity = badge.textContent ? '0.9' : '0';
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => { btn.style.opacity='0'; badge.style.opacity='0'; }, 2500);
-  });
-
-  // Screenshot-Zähler aus localStorage lesen
-  const SHOT_KEY = 'disc-screenshots-v1';
-  function getShots(){ try{ return JSON.parse(localStorage.getItem(SHOT_KEY)||'[]'); }catch(e){ return []; } }
-  function saveShots(s){ localStorage.setItem(SHOT_KEY, JSON.stringify(s)); }
-
-  function updateBadge(){
-    const n = getShots().length;
-    badge.textContent = n > 0 ? n+' 📷' : '';
+  function showBadge(txt) {
+    badge.textContent = txt;
+    badge.style.display = 'block';
+    clearTimeout(badge._t);
+    badge._t = setTimeout(() => { badge.style.display='none'; }, 2500);
   }
-  updateBadge();
 
-  btn.addEventListener('click', async () => {
-    btn.textContent = '⏳';
-    btn.style.opacity = '1';
+  async function doScreenshot() {
+    const session = JSON.parse(localStorage.getItem('disc-online-session-v2')||'{}');
+    const moduleId = session?.currentModule || 'modul';
+    const label = MODULE_LABELS[moduleId] || moduleId;
+
+    // Flash-Effekt
+    flash.style.opacity = '0.4';
+    setTimeout(() => { flash.style.opacity = '0'; }, 200);
+
     try {
-      // Aktuelles Modul ermitteln
-      const session = JSON.parse(localStorage.getItem('disc-online-session-v2')||'{}');
-      const moduleId = session?.currentModule || document.title || 'modul';
-
-      // Screenshot mit html2canvas
       const canvas = await html2canvas(document.body, {
-        scale: 0.6,           // Kompakt für PDF
+        scale: 0.55,
         useCORS: true,
         backgroundColor: '#060610',
         logging: false,
-        windowWidth: 1920,
-        windowHeight: 1080,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        imageTimeout: 5000,
       });
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.75);
-
-      // In Supabase exercise_responses speichern
+      const imgData = canvas.toDataURL('image/jpeg', 0.72);
       const wsId = session?.workshopId;
+
+      // In Supabase speichern
       if (wsId) {
         await fetch(SB_URL+'/rest/v1/exercise_responses', {
           method: 'POST',
           headers: { ...HDR, 'Prefer': 'return=minimal' },
           body: JSON.stringify({
-            workshop_id:   wsId,
+            workshop_id: wsId,
             participant_id: null,
-            alias:          '__beamer_screenshot__',
-            module:         moduleId,
-            response_type:  'beamer_screenshot',
-            content: JSON.stringify({
-              moduleId,
-              imgData,
-              ts: Date.now(),
-              label: getModuleLabel(moduleId),
-            })
+            alias: '__screenshot__',
+            module: moduleId,
+            response_type: 'beamer_screenshot',
+            content: JSON.stringify({ moduleId, imgData, ts: Date.now(), label })
           })
         });
       }
 
-      // Auch lokal speichern als Fallback
-      const shots = getShots();
-      shots.push({ moduleId, imgData, ts: Date.now(), label: getModuleLabel(moduleId) });
-      saveShots(shots);
-      updateBadge();
-
-      // Visuelles Feedback
-      btn.textContent = '✓';
-      btn.style.background = 'rgba(42,157,143,.3)';
-      btn.style.borderColor = 'rgba(42,157,143,.6)';
-      btn.style.color = '#2a9d8f';
-      setTimeout(() => {
-        btn.textContent = '📸';
-        btn.style.background = 'rgba(201,168,76,.15)';
-        btn.style.borderColor = 'rgba(201,168,76,.4)';
-        btn.style.color = '#c9a84c';
-        updateBadge();
-      }, 1500);
+      // Lokal als Backup
+      try {
+        const shots = JSON.parse(localStorage.getItem(SHOT_KEY)||'[]');
+        shots.push({ moduleId, imgData, ts: Date.now(), label });
+        localStorage.setItem(SHOT_KEY, JSON.stringify(shots));
+        showBadge('Screenshot ' + shots.length + ' gespeichert');
+      } catch(e) { showBadge('Screenshot gespeichert'); }
 
     } catch(e) {
-      console.error('Screenshot error:', e);
-      btn.textContent = '❌';
-      setTimeout(() => { btn.textContent = '📸'; }, 2000);
+      console.error('Screenshot Fehler:', e);
+      showBadge('Fehler: ' + e.message.substring(0,40));
     }
-  });
-
-  function getModuleLabel(id){
-    const labels = {
-      waiting:'Bereit', intro_question:'Einstiegsfrage',
-      johari_erklaerung:'Johari-Fenster', johari_fallbeispiele:'Johari Fallbeispiele',
-      johari_reflexion:'Johari Reflexion', was_sage_ich_nicht:'Was ich nicht sage',
-      bias_story:'Bestätigungsfehler', verzerrungen_quiz:'Kognitive Verzerrungen',
-      gfk_info:'GFK Info', gfk_fallbeispiel:'GFK Fallbeispiel',
-      gfk_coaching:'GFK Coaching', gfk:'GFK Ergebnisse',
-      kernbotschaften:'Kernbotschaften', disc_test:'DISC-Test',
-      disc_map:'DISC Live-Map', disc_results:'DISC Resultate',
-      morgen_reflexion:'Morgen-Reflexion', teamnormen_analyse:'Team-Normen-Analyse',
-      steckbrief_vorschlaege:'Steckbrief Vorschläge', steckbrief_normen:'Team-Steckbrief',
-      steckbrief_urkunde:'Urkunde & Versprechen', closing:'Abschluss',
-    };
-    return labels[id] || id;
   }
+
+  // Auf Supabase Realtime hören — Moderator sendet screenshot_command
+  // Warte bis Supabase-Client initialisiert ist
+  function waitForSbAndListen() {
+    if (typeof window._sb === 'undefined') {
+      // _sb wird im Haupt-Init-Code gesetzt — kurz warten
+      setTimeout(waitForSbAndListen, 500);
+      return;
+    }
+    const session = JSON.parse(localStorage.getItem('disc-online-session-v2')||'{}');
+    const wsId = session?.workshopId;
+    if (!wsId) { setTimeout(waitForSbAndListen, 1000); return; }
+
+    window._sb.channel('screenshot_cmd_' + wsId)
+      .on('broadcast', { event: 'take_screenshot' }, () => {
+        console.log('Screenshot-Befehl empfangen');
+        doScreenshot();
+      })
+      .subscribe();
+    console.log('Screenshot-Listener aktiv für Workshop', wsId);
+  }
+  setTimeout(waitForSbAndListen, 1500);
+
+  // Tastenkürzel Ctrl+Shift+S als Backup (direkt am Beamer)
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'S') { e.preventDefault(); doScreenshot(); }
+  });
 })();
 
 </script>
