@@ -920,7 +920,7 @@ async function renderModuleContent(moduleId){
     ${detail.beamer?`<div class="mod-beamer-info">📽 ${detail.beamer}</div>`:''}
     ${hintsHTML}
     ${dataHTML}
-    ${SNAPSHOT_MODULES[moduleId] ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
+    ${!['waiting','normen_info','normen_theorie','kognitive_verzerrungen_info','mut_info','gfk_info','raci_info','pairing_karten','disc_role_profile'].includes(moduleId) ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
   </div>`;
 
   // Canvas für DISC-Map zeichnen (nach DOM-Insert)
@@ -2251,16 +2251,27 @@ function renderSnapshotCount() {
 
 // Modul-Definitionen für Snapshots
 const SNAPSHOT_MODULES = {
-  intro_question:    { title: 'Der Anfang — Was in der Luft lag',       icon: '💬', type: 'quotes' },
-  johari_reflexion:  { title: 'Johari — Was ich über mich entdeckt habe', icon: '🪟', type: 'quotes' },
-  was_sage_ich_nicht:{ title: 'Was ich nicht sage',                       icon: '🤫', type: 'quotes' },
-  kernbotschaften:   { title: 'Kernbotschaften — Was bewegt hat',         icon: '⚡', type: 'quotes' },
-  gfk:               { title: 'Gewaltfreie Kommunikation',                icon: '🕊', type: 'quotes' },
-  disc_results:      { title: 'Euer Team-Profil — DISC-Auswertung',       icon: '🎯', type: 'disc'   },
-  teamnormen_analyse:{ title: 'Team-Normen-Analyse',                      icon: '🧭', type: 'tna'    },
-  steckbrief_normen: { title: 'Unser Team-Steckbrief',                    icon: '📋', type: 'normen' },
-  steckbrief_urkunde:{ title: 'Die Versprechen',                          icon: '✍', type: 'versprechen' },
-  morgen_reflexion:  { title: 'Morgen-Reflexion Tag 2',                   icon: '🌅', type: 'quotes' },
+  intro_question:       { title: 'Der Anfang — Was in der Luft lag',        icon: '💬', type: 'quotes' },
+  johari_erklaerung:    { title: 'Johari-Fenster',                           icon: '🪟', type: 'quotes' },
+  johari_fallbeispiele: { title: 'Johari Fallbeispiele',                     icon: '🪟', type: 'quotes' },
+  johari_reflexion:     { title: 'Johari — Was ich über mich entdeckt habe', icon: '🪟', type: 'quotes' },
+  was_sage_ich_nicht:   { title: 'Was ich nicht sage',                       icon: '🤫', type: 'quotes' },
+  bias_story:           { title: 'Bestätigungsfehler — Was wir daraus lernen',icon: '🕵', type: 'quotes' },
+  verzerrungen_quiz:    { title: 'Kognitive Verzerrungen — Quiz',            icon: '🧠', type: 'quotes' },
+  gfk_fallbeispiel:     { title: 'GFK — Fallbeispiel',                       icon: '🕊', type: 'quotes' },
+  gfk_coaching:         { title: 'GFK Coaching',                             icon: '🕊', type: 'quotes' },
+  gfk:                  { title: 'Gewaltfreie Kommunikation',                icon: '🕊', type: 'quotes' },
+  kernbotschaften:      { title: 'Kernbotschaften — Was bewegt hat',         icon: '⚡', type: 'quotes' },
+  disc_test:            { title: 'DISC-Test',                                icon: '🎯', type: 'quotes' },
+  disc_map:             { title: 'DISC Live-Map',                            icon: '🎯', type: 'disc'   },
+  disc_results:         { title: 'Euer Team-Profil — DISC-Auswertung',       icon: '🎯', type: 'disc'   },
+  morgen_reflexion:     { title: 'Morgen-Reflexion Tag 2',                   icon: '🌅', type: 'quotes' },
+  teamnormen_analyse:   { title: 'Team-Normen-Analyse',                      icon: '🧭', type: 'tna'    },
+  raci:                 { title: 'RACI — Rollen & Verantwortung',            icon: '📊', type: 'quotes' },
+  steckbrief_vorschlaege:{ title:'Steckbrief — Vorschläge',                  icon: '📋', type: 'quotes' },
+  steckbrief_normen:    { title: 'Unser Team-Steckbrief',                    icon: '📋', type: 'normen' },
+  steckbrief_urkunde:   { title: 'Die Versprechen',                          icon: '✍',  type: 'versprechen' },
+  closing:              { title: 'Abschluss',                                icon: '🏆', type: 'quotes' },
 };
 
 async function takeSnapshot(moduleId) {
