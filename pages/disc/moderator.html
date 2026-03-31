@@ -920,6 +920,7 @@ async function renderModuleContent(moduleId){
     ${detail.beamer?`<div class="mod-beamer-info">📽 ${detail.beamer}</div>`:''}
     ${hintsHTML}
     ${dataHTML}
+    ${SNAPSHOT_MODULES[moduleId] ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
   </div>`;
 
   // Canvas für DISC-Map zeichnen (nach DOM-Insert)
@@ -2189,474 +2190,552 @@ Falsche Antworten: ${wrongCount}/${total}`;
 
 /* ─── HANDOUT SECTION ─────────────────────────────────────────────────── */
 function renderHandoutSection() {
+  renderSnapshotCount(); // Zähler aktualisieren
   return `<div style="margin-top:16px;">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;">
-      Die KI liest alle Workshop-Antworten, DISC-Auswertung und Team-Normen —
-      und schreibt daraus ein emotionales, 3–4-seitiges Handout für alle TN.
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
+      Klicke bei jedem Modul auf <strong style="color:var(--gold);">📸 Snapshot</strong> —
+      das sammelt die Daten und die KI-Interpretation. Am Ende alles als Handout exportieren.
     </div>
-    <button onclick="generateHandoutPDF()" id="handoutBtn"
-      style="width:100%;padding:14px;border-radius:8px;border:1px solid rgba(74,144,217,.4);background:rgba(74,144,217,.1);color:#4a90d9;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">
-      ✨ Workshop-Handout generieren (KI · 3–4 Seiten)
-    </button>
-    <div id="handoutStatus" style="font-size:12px;color:var(--muted);margin-top:8px;text-align:center;min-height:16px;line-height:1.5;"></div>
-    <div style="font-size:11px;color:var(--muted);margin-top:10px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.02);line-height:1.6;">
-      Enthält: Einstieg · Entdeckungen · DISC-Profil · Normen · Versprechen · Brief der KI
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <button onclick="generateHandoutPDF()" id="handoutBtn"
+        style="flex:1;padding:13px;border-radius:8px;border:1px solid rgba(74,144,217,.4);
+        background:rgba(74,144,217,.1);color:#4a90d9;font-size:14px;font-weight:600;cursor:pointer;">
+        📄 Handout exportieren
+      </button>
+      <button onclick="if(confirm('Alle Snapshots löschen?'))clearSnapshots();"
+        title="Snapshots löschen"
+        style="padding:13px 14px;border-radius:8px;border:1px solid rgba(200,60,60,.3);
+        background:rgba(200,60,60,.08);color:rgba(200,80,80,.8);font-size:13px;cursor:pointer;">
+        🗑
+      </button>
+    </div>
+    <div id="snapshotCount" style="font-size:12px;text-align:center;min-height:14px;margin-bottom:6px;"></div>
+    <div id="handoutStatus" style="font-size:12px;color:var(--muted);text-align:center;min-height:16px;line-height:1.5;"></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px;padding:10px;border-radius:8px;
+    background:rgba(255,255,255,.02);line-height:1.7;">
+      <strong style="color:var(--gold);">So funktioniert's:</strong><br>
+      📸 Bei jedem Modul "Snapshot" klicken → KI schreibt Interpretation → am Ende hier exportieren.
     </div>
   </div>`;
 }
 
-// Handout Generator v2 — clean, robust, no markdown artifacts
-// Handout Generator v2 — clean, robust, no markdown artifacts
+// ══════════════════════════════════════════════════════
+// SNAPSHOT SYSTEM — Workshop-Handout aus Modul-Snapshots
+// ══════════════════════════════════════════════════════
+
+const SNAPSHOT_KEY = 'disc-handout-snapshots-v1';
+
+function getSnapshots() {
+  try { return JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || '[]'); } catch(e){ return []; }
+}
+function saveSnapshots(snaps) {
+  localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snaps));
+}
+function clearSnapshots() {
+  localStorage.removeItem(SNAPSHOT_KEY);
+  renderSnapshotCount();
+}
+
+function renderSnapshotCount() {
+  const n = getSnapshots().length;
+  const el = document.getElementById('snapshotCount');
+  if (el) {
+    el.textContent = n > 0 ? `(${n} Snapshots gespeichert)` : '';
+    el.style.color = n > 0 ? '#c9a84c' : '#6a6a8a';
+  }
+  const btn = document.getElementById('handoutBtn');
+  if (btn) btn.textContent = n > 0
+    ? `📄 Handout exportieren (${n} Snapshots)`
+    : '📄 Handout exportieren';
+}
+
+// Modul-Definitionen für Snapshots
+const SNAPSHOT_MODULES = {
+  intro_question:    { title: 'Der Anfang — Was in der Luft lag',       icon: '💬', type: 'quotes' },
+  johari_reflexion:  { title: 'Johari — Was ich über mich entdeckt habe', icon: '🪟', type: 'quotes' },
+  was_sage_ich_nicht:{ title: 'Was ich nicht sage',                       icon: '🤫', type: 'quotes' },
+  kernbotschaften:   { title: 'Kernbotschaften — Was bewegt hat',         icon: '⚡', type: 'quotes' },
+  gfk:               { title: 'Gewaltfreie Kommunikation',                icon: '🕊', type: 'quotes' },
+  disc_results:      { title: 'Euer Team-Profil — DISC-Auswertung',       icon: '🎯', type: 'disc'   },
+  teamnormen_analyse:{ title: 'Team-Normen-Analyse',                      icon: '🧭', type: 'tna'    },
+  steckbrief_normen: { title: 'Unser Team-Steckbrief',                    icon: '📋', type: 'normen' },
+  steckbrief_urkunde:{ title: 'Die Versprechen',                          icon: '✍', type: 'versprechen' },
+  morgen_reflexion:  { title: 'Morgen-Reflexion Tag 2',                   icon: '🌅', type: 'quotes' },
+};
+
+async function takeSnapshot(moduleId) {
+  const btn = document.getElementById('snapBtn_' + moduleId);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Snapshot…'; }
+
+  const meta = SNAPSHOT_MODULES[moduleId];
+  if (!meta) return;
+
+  // Daten sammeln
+  const data = collectSnapshotData(moduleId, meta.type);
+
+  // KI im Hintergrund
+  let kiText = '';
+  try {
+    const prompt = buildSnapshotPrompt(moduleId, meta, data);
+    const r = await fetch(`${EDGE_BASE}/ki-analyze`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
+      body: JSON.stringify({
+        system: 'Schreibe auf Deutsch, ohne Markdown, ohne Sternchen, nur Fliesstext, maximal 4 Sätze.',
+        userPrompt: prompt, maxTokens: 350
+      })
+    });
+    if (r.ok) {
+      const d = await r.json();
+      kiText = (d.text || d.content?.[0]?.text || '').replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').trim();
+    }
+  } catch(e) { console.warn('Snapshot KI:', e.message); }
+
+  // Snapshot speichern
+  const snaps = getSnapshots();
+  // Bestehenden Snapshot dieses Moduls ersetzen
+  const existing = snaps.findIndex(s => s.moduleId === moduleId);
+  const snap = { moduleId, title: meta.title, icon: meta.icon, type: meta.type, data, kiText, ts: Date.now() };
+  if (existing >= 0) snaps[existing] = snap; else snaps.push(snap);
+  saveSnapshots(snaps);
+  renderSnapshotCount();
+
+  if (btn) {
+    btn.textContent = '✅ Gespeichert';
+    btn.style.background = 'rgba(42,157,143,.2)';
+    btn.style.borderColor = 'rgba(42,157,143,.5)';
+    btn.style.color = '#2a9d8f';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '📸 Aktualisieren';
+    }, 2000);
+  }
+}
+
+function collectSnapshotData(moduleId, type) {
+  if (type === 'disc') {
+    // DISC aus participants
+    const disc = (participants||[]).filter(p => p.naturalType || p.natural_primary);
+    const dd = {D:0,I:0,S:0,C:0};
+    disc.forEach(p => { const t = p.naturalType||p.natural_primary; if(t in dd) dd[t]++; });
+    return { profiles: disc.map(p => ({
+      alias: p.alias,
+      naturalType: p.naturalType||p.natural_primary,
+      roleType: p.roleType||p.role_primary,
+      stress: p.stress||p.stress_index||0,
+      d: p.natural?.D||p.natural_d||0,
+      i: p.natural?.I||p.natural_i||0,
+      s: p.natural?.S||p.natural_s||0,
+      c: p.natural?.C||p.natural_c||0,
+    })), distribution: dd };
+  }
+  if (type === 'tna') {
+    // TNA aus onlineSession module_data oder liveResponses
+    const scores = {};
+    (liveResponses||[]).filter(r=>r.module==='teamnormen_analyse').forEach(r=>{
+      try {
+        const c = typeof r.content==='string'?JSON.parse(r.content):r.content;
+        if (c && typeof c==='object') {
+          Object.entries(c).forEach(([k,v])=>{
+            if (!isNaN(v)) { if(!scores[k])scores[k]=[]; scores[k].push(Number(v)); }
+          });
+        }
+      } catch(e){}
+    });
+    const avg = {};
+    Object.entries(scores).forEach(([k,vals])=>{ avg[k] = (vals.reduce((a,b)=>a+b,0)/vals.length); });
+    return { scores: avg };
+  }
+  if (type === 'normen') {
+    const normenState2 = {};
+    NORMEN_KATEGORIEN.forEach(k => { normenState2[k.id] = normenState[k.id]||[]; });
+    return { normen: normenState2, kategorien: NORMEN_KATEGORIEN };
+  }
+  if (type === 'versprechen') {
+    return { versprechen: (liveResponses||[]).filter(r=>r.response_type==='urkunde').map(r=>{
+      try { const c=typeof r.content==='string'?JSON.parse(r.content):r.content; return {alias:r.alias||'?',satz:c?.satz||''}; }
+      catch(e){ return null; }
+    }).filter(Boolean) };
+  }
+  // Default: quotes
+  return { quotes: (liveResponses||[]).filter(r=>r.module===moduleId).map(r=>({
+    alias: r.alias||'Anonym',
+    text: (typeof r.content==='string' ? r.content : JSON.stringify(r.content)||'').replace(/^"|"$/g,'').substring(0,280)
+  })).filter(r=>r.text.length>5) };
+}
+
+function buildSnapshotPrompt(moduleId, meta, data) {
+  if (data.quotes?.length > 0) {
+    const sample = data.quotes.slice(0,5).map(q=>'"'+q.text+'"').join(' / ');
+    return `Workshopteilnehmer antworteten zum Thema "${meta.title}": ${sample}\n\nSchreibe 3-4 Sätze KI-Interpretation. Emotional, würdigend. Kein Markdown.`;
+  }
+  if (data.profiles?.length > 0) {
+    const dd = data.distribution;
+    return `Team DISC-Profil: D=${dd.D}, I=${dd.I}, S=${dd.S}, C=${dd.C} von ${data.profiles.length} Personen.\n\nSchreibe 3-4 Sätze über Teamdynamik und Stärken. Kein Markdown.`;
+  }
+  if (data.scores && Object.keys(data.scores).length > 0) {
+    const scoreText = Object.entries(data.scores).map(([k,v])=>`${k}:${v.toFixed(1)}`).join(', ');
+    return `Team-Normen-Analyse Scores (1=dysfunktional,5=gesund): ${scoreText}.\n\nSchreibe 3-4 Sätze Interpretation. Kein Markdown.`;
+  }
+  if (data.versprechen?.length > 0) {
+    return `${data.versprechen.length} Personen haben Normen unterzeichnet.\n\nSchreibe 3-4 Sätze über die Bedeutung dieser Versprechen. Emotional. Kein Markdown.`;
+  }
+  return `Modul: ${meta.title}. Schreibe 2-3 Würdigungssätze. Kein Markdown.`;
+}
+
+// Snapshot-Button HTML für Module-Panels
+function snapshotBtn(moduleId) {
+  if (!SNAPSHOT_MODULES[moduleId]) return '';
+  const snaps = getSnapshots();
+  const exists = snaps.some(s => s.moduleId === moduleId);
+  return `<button id="snapBtn_${moduleId}" onclick="takeSnapshot('${moduleId}')"
+    style="margin-top:10px;padding:7px 14px;border-radius:7px;border:1px solid rgba(201,168,76,.3);
+    background:rgba(201,168,76,.08);color:#c9a84c;font-size:12px;font-weight:600;cursor:pointer;
+    ${exists ? 'background:rgba(42,157,143,.12);border-color:rgba(42,157,143,.35);color:#2a9d8f;' : ''}">
+    ${exists ? '📸 Aktualisieren' : '📸 Snapshot für Handout'}
+  </button>`;
+}
+
+
 async function generateHandoutPDF() {
-  const btn=document.getElementById('handoutBtn');
-  const status=document.getElementById('handoutStatus');
-  btn.disabled=true; btn.textContent='⏳ Wird generiert…';
-  const setS=(m)=>{ if(status) status.innerHTML=m; };
-  const strip=(t)=>(t||'').replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').replace(/^#+\s/gm,'').replace(/^[-*]\s/gm,'').trim();
+  const btn    = document.getElementById('handoutBtn');
+  const status = document.getElementById('handoutStatus');
+  btn.disabled = true;
+  const setS = (m) => { if(status) status.innerHTML = m; };
 
   try {
-    initSupabase();
-    const wsId=onlineSession?.workshopId;
-    if(!wsId) throw new Error('Kein aktiver Workshop');
-    setS('📥 Daten laden…');
-
-    const [{data:resp},{data:wsData}]=await Promise.all([
-      sb.from('exercise_responses').select('alias,module,response_type,content')
-        .eq('workshop_id',wsId).order('created_at',{ascending:true}),
-      sb.from('workshops').select('module_data').eq('id',wsId).single().then(r=>({data:r.data}))
-    ]);
-    // DISC direkt aus Supabase REST (sauber, kein participants-Cache)
-    let disc=[];
-    try{
-      const dr=await fetch('https://dnoecftuybkoqvrkfvei.supabase.co/rest/v1/results?select=*,participants!inner(alias)&workshop_id=eq.'+wsId,
-        {headers:{'apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY}});
-      if(dr.ok){
-        const raw=await dr.json();
-        disc=(Array.isArray(raw)?raw:[]).map(r=>({
-          alias: r.participants?.alias||r.alias||'?',
-          natural_primary: r.natural_primary||'?',
-          role_primary:    r.role_primary||'?',
-          natural_d: r.natural_d||0, natural_i: r.natural_i||0,
-          natural_s: r.natural_s||0, natural_c: r.natural_c||0,
-          stress_index: r.stress_index||0,
-        }));
-      }
-    }catch(e){ console.warn('DISC load:',e.message); }
-    console.log('DISC:', disc.length, 'Profile');
-
-    // TNA aus module_data der teamnormen_analyse Phase
-    // TNA: zuerst aus module_data, dann aus exercise_responses
-    let tnaScores   = wsData?.module_data?.scores   || null;
-    let tnaKernsatz = strip(wsData?.module_data?.staerke || '');
-    let tnaNormen   = wsData?.module_data?.normen   || [];
-    // Fallback: TNA-Antworten direkt aus exercise_responses
-    if(!tnaScores){
-      const tnaRows=(resp||[]).filter(r=>r.module==='teamnormen_analyse');
-      if(tnaRows.length>0){
-        const scores={};
-        tnaRows.forEach(r=>{
-          try{
-            const c=typeof r.content==='string'?JSON.parse(r.content):r.content;
-            if(c&&typeof c==='object'){
-              Object.entries(c).forEach(([k,v])=>{ if(!isNaN(v)) scores[k]=(scores[k]||[]).concat(Number(v)); });
-            }
-          }catch(e){}
-        });
-        // Mittelwerte berechnen
-        const avgScores={};
-        Object.entries(scores).forEach(([k,vals])=>{ avgScores[k]=(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1); });
-        if(Object.keys(avgScores).length>0) tnaScores=avgScores;
-      }
+    const snaps = getSnapshots();
+    if (snaps.length === 0) {
+      setS('⚠️ Keine Snapshots vorhanden — bitte zuerst 📸 bei den Modulen klicken.');
+      btn.disabled = false; return;
     }
+    setS('📄 PDF wird aufgebaut…');
 
-    // Normen aus exercise_responses
-    const normenRow=(resp||[]).find(r=>r.response_type==='team_normen');
-    const normen=normenRow?(typeof normenRow.content==='string'?JSON.parse(normenRow.content):normenRow.content)||[]:[];
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const W=210, H=297, ML=16, MR=16, cW=W-ML-MR;
+    const GOLD=[180,140,50], NAVY=[22,22,45], DARK=[30,25,15], LGOLD=[248,243,225];
+    const CC = { D:[200,50,60], I:[220,130,30], S:[42,140,100], C:[60,110,200] };
+    let pg = 0;
 
-    // Versprechen
-    const verspr=(resp||[]).filter(r=>r.response_type==='urkunde').map(r=>{
-      try{const c=typeof r.content==='string'?JSON.parse(r.content):r.content;return{alias:r.alias||'?',satz:strip(c?.satz||'')};}catch(e){return null;}
-    }).filter(Boolean);
+    const strip = (t) => (t||'').replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').trim();
 
-    // DISC
-    const dd={D:0,I:0,S:0,C:0};
-    (disc||[]).forEach(r=>{if(r.natural_primary in dd)dd[r.natural_primary]++;});
-
-    // Antworten nach Modul
-    const mods={intro_question:'Einstiegsfrage',johari_reflexion:'Johari — Blinder Fleck',
-      was_sage_ich_nicht:'Was ich nicht sage',kernbotschaften:'Kernbotschaften',
-      gfk:'Gewaltfreie Kommunikation',morgen_reflexion:'Morgen-Reflexion'};
-    const byM={};
-    (resp||[]).forEach(r=>{
-      if(!mods[r.module])return;
-      if(!byM[r.module])byM[r.module]=[];
-      let t=typeof r.content==='object'?JSON.stringify(r.content):(r.content||'');
-      t=t.replace(/^"|"$/g,'').replace(/\\n/g,' ').substring(0,260);
-      if(t.length>10)byM[r.module].push({alias:r.alias||'Anonym',text:t});
-    });
-
-    // ── KI ──────────────────────────────────────────────────────────
-    setS('🤖 KI schreibt…<br><small>30–60 Sek.</small>');
-    const ki=async(p,t=450)=>{
-      try{
-        const r=await fetch(`${EDGE_BASE}/ki-analyze`,{method:'POST',
-          headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
-          body:JSON.stringify({system:'Schreibe auf Deutsch ohne Markdown, ohne Sternchen, nur Fliesstext, maximal 4 Sätze.',userPrompt:p,maxTokens:t})});
-        if(!r.ok)return'';
-        const d=await r.json();
-        return strip(d.text||d.content?.[0]?.text||'');
-      }catch(e){return'';}
+    // ── Seiten-Setup ─────────────────────────────────────────────────
+    const startPage = (isTitle=false) => {
+      if (pg > 0) doc.addPage();
+      pg++;
+      doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F');
+      doc.setDrawColor(...GOLD); doc.setLineWidth(0.5); doc.rect(7,7,W-14,H-14,'S');
+      doc.setLineWidth(0.12); doc.rect(9.5,9.5,W-19,H-19,'S');
+      if (!isTitle) {
+        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(150,130,70);
+        doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(), W/2, H-8.5, {align:'center'});
+        doc.text(String(pg), W-11, H-8.5, {align:'right'});
+      }
+      return isTitle ? 18 : 16;
     };
-    const ea=(byM['intro_question']||[]).slice(0,4).map(i=>'"'+i.text+'"').join(' / ');
-    const je=([ ...(byM['johari_reflexion']||[]),...(byM['was_sage_ich_nicht']||[])]).slice(0,4).map(i=>'"'+i.text+'"').join(' / ');
-    const dn=(disc||[]).length;
-    const [k1,k2,k3,k4,k5]=await Promise.all([
-      ea?ki('Antworten auf "Was macht es schwer, direkt anzusprechen?": '+ea+'\n\nSchreibe 3-4 Sätze, emotional, würdigend. Kein Markdown.'):Promise.resolve(''),
-      je?ki('Teilnehmer zu blinden Flecken: '+je+'\n\nSchreibe 3-4 Sätze. Kein Markdown.'):Promise.resolve(''),
-      dn>0?ki('DISC: D='+dd.D+' I='+dd.I+' S='+dd.S+' C='+dd.C+' von '+dn+' Personen. Schreibe 4 Sätze über Dynamik. Kein Markdown.'):Promise.resolve(''),
-      tnaScores?ki('TNA-Scores (1=schlecht,5=gut): '+JSON.stringify(tnaScores)+'. '+(tnaKernsatz?'Kernsatz: '+tnaKernsatz:'')+'\n\nSchreibe 4 Sätze über Erkenntnisse. Kein Markdown.'):Promise.resolve(''),
-      ki('Ein R&D-Engineering-Team bei Swisstronics hat zwei Workshop-Tage zum Thema Wahrheitsfaehigkeit im Team abgeschlossen. '+
-         verspr.length+' Personen haben gemeinsam erarbeitete Normen unterzeichnet: '+normen.slice(0,3).join('; ')+'. '+
-         'Schreibe einen emotionalen persoenlichen Brief der KI an das gesamte Team (nicht an einzelne Personen, nicht "Liebe/r [Name]"). '+
-         'Beginne mit "Liebes Team" oder "Liebe Teilnehmende". 4-5 Saetze, emotional, zukunftsgerichtet, wuerdigend. Kein Markdown. Keine Platzhalter.',400)
-    ]);
 
-    // ── PDF ──────────────────────────────────────────────────────────
-    setS('📄 PDF aufbauen…');
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const W=210,H=297,ML=16,MR=16,cW=W-ML-MR; // content width = 178mm
-    const GOLD=[180,140,50],NAVY=[22,22,45],DARK=[30,25,15],LGOLD=[248,243,225];
-    let pg=0, y=18;
+    // ── Hilfsfunktionen ───────────────────────────────────────────────
+    let y = 16;
+    const need = (h) => { if (y+h > H-14) { y = startPage(); } };
 
-    // ── Helpers ──────────────────────────────────────────────────────
-    const deco=()=>{
-      doc.setDrawColor(...GOLD);doc.setLineWidth(0.5);doc.rect(7,7,W-14,H-14,'S');
-      doc.setLineWidth(0.12);doc.rect(9.5,9.5,W-19,H-19,'S');
-      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(150,130,70);
-      doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(),W/2,H-8.5,{align:'center'});
-      doc.text(String(pg),W-11,H-8.5,{align:'right'});
+    const wLines = (text, fs, col, style='normal', x=ML, maxW=cW) => {
+      if (!text || !text.trim()) return;
+      const lines = doc.splitTextToSize(strip(text), maxW);
+      need(lines.length * fs * 0.42 + 2);
+      doc.setFont('helvetica',style); doc.setFontSize(fs); doc.setTextColor(...col);
+      doc.text(lines, x, y);
+      y += lines.length * fs * 0.42 + 3;
     };
-    const newPage=()=>{
-      doc.addPage();pg++;
-      doc.setFillColor(255,255,255);doc.rect(0,0,W,H,'F');
-      deco();y=18;
+
+    const modHeader = (icon, title, col=NAVY) => {
+      need(14);
+      doc.setFillColor(...col); doc.rect(ML-1, y-5, cW+2, 10, 'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...GOLD);
+      doc.text(icon+'  '+title, ML+2, y+2);
+      y += 12;
     };
-    // Gibt benötigte Höhe zurück OHNE zu zeichnen
-    const calcH=(text,fs,maxW)=>{
-      if(!text||!text.trim())return 0;
-      doc.setFontSize(fs);
-      return doc.splitTextToSize(strip(text),maxW).length*fs*0.42+3;
-    };
-    // Bricht automatisch auf neue Seite wenn nicht genug Platz
-    const need=(h)=>{ if(y+h>H-14)newPage(); };
-    // Text schreiben
-    const wText=(text,fs,col,style='normal',x=ML,maxW=cW)=>{
-      if(!text||!text.trim())return;
-      const t=strip(text);
-      const lines=doc.splitTextToSize(t,maxW);
-      need(lines.length*fs*0.42+3);
-      doc.setFont('helvetica',style);doc.setFontSize(fs);doc.setTextColor(...col);
-      doc.text(lines,x,y);
-      y+=lines.length*fs*0.42+3;
-    };
-    // Section-Header
-    const secH=(title,col=NAVY)=>{
-      need(12);
-      doc.setFillColor(...col);doc.rect(ML-1,y-4,cW+2,9,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(...GOLD);
-      // Sicherstellen dass title in cW passt
-      const tl=doc.splitTextToSize(title,cW-4);
-      doc.text(tl[0],ML+1,y+2); // Nur erste Zeile
-      y+=11;
-    };
-    // KI-Box
-    const kiBox=(text)=>{
-      if(!text||!text.trim())return;
-      const t=strip(text);
-      const lines=doc.splitTextToSize(t,cW-8);
-      const bH=lines.length*8.5*0.40+10;
+
+    const kiBox = (text) => {
+      if (!text || !text.trim()) return;
+      const lines = doc.splitTextToSize(strip(text), cW-10);
+      const bH = lines.length * 8.5 * 0.40 + 10;
       need(bH+4);
-      doc.setFillColor(...LGOLD);doc.setDrawColor(...GOLD);doc.setLineWidth(0.2);
-      doc.rect(ML,y,cW,bH,'FD');
-      doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(...GOLD);
-      doc.text('KI-INTERPRETATION',ML+cW-2,y+3.5,{align:'right'});
-      doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(50,40,10);
-      doc.text(lines,ML+4,y+7.5);
-      y+=bH+5;
+      doc.setFillColor(...LGOLD); doc.setDrawColor(...GOLD); doc.setLineWidth(0.18);
+      doc.rect(ML, y, cW, bH, 'FD');
+      doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...GOLD);
+      doc.text('KI-INTERPRETATION', ML+cW-2, y+3.5, {align:'right'});
+      doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(50,40,10);
+      doc.text(lines, ML+5, y+7.5);
+      y += bH+5;
     };
-    // Zitat-Karte
-    const qCard=(alias,text)=>{
-      const t=strip(text).substring(0,230);
-      const lines=doc.splitTextToSize('"'+t+'"',cW-26);
-      const bH=Math.max(9,lines.length*7.5*0.40+6);
+
+    const qCard = (alias, text) => {
+      const t = strip(text).substring(0,230);
+      const lines = doc.splitTextToSize('"'+t+'"', cW-28);
+      const bH = Math.max(9, lines.length*8*0.40+6);
       need(bH+3);
-      doc.setFillColor(248,247,242);doc.setDrawColor(200,185,145);doc.setLineWidth(0.12);
-      doc.rect(ML,y,cW,bH,'FD');
-      doc.setFillColor(...GOLD);doc.rect(ML,y,2.5,bH,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(100,85,35);
-      doc.text((alias||'Anonym').substring(0,14),ML+4,y+4.5);
-      doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...DARK);
-      doc.text(lines,ML+24,y+4.5);
-      y+=bH+2.5;
+      doc.setFillColor(248,247,242); doc.setDrawColor(200,185,145); doc.setLineWidth(0.12);
+      doc.rect(ML, y, cW, bH, 'FD');
+      doc.setFillColor(...GOLD); doc.rect(ML, y, 2.5, bH, 'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,85,35);
+      doc.text((alias||'Anonym').substring(0,14), ML+4, y+5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...DARK);
+      doc.text(lines, ML+25, y+5);
+      y += bH+2.5;
     };
 
-    // ════ SEITE 1: TITEL ════════════════════════════════════════════
-    pg=1;
-    doc.setFillColor(255,255,255);doc.rect(0,0,W,H,'F');
-    deco();
+    // ════ TITELSEITE ══════════════════════════════════════════════════
+    y = startPage(true);
+    doc.setFillColor(...NAVY); doc.rect(7,7,W-14,38,'F');
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.35);
+    doc.line(ML,26,W/2-20,26); doc.line(W/2+20,26,W-MR,26);
+    doc.setFillColor(...GOLD); doc.circle(W/2,26,2,'F');
+    doc.circle(W/2-11,26,1,'F'); doc.circle(W/2+11,26,1,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(201,168,76);
+    doc.text('Wahrheitsfähigkeit im Team', W/2, 21, {align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(175,155,95);
+    doc.text('Workshop-Dokumentation  ·  R&D Engineering  ·  Swisstronics', W/2, 29, {align:'center'});
+    doc.setFontSize(8.5); doc.setTextColor(145,128,78);
+    doc.text(new Date().toLocaleDateString('de-CH',{year:'numeric',month:'long',day:'numeric'}), W/2, 36, {align:'center'});
+    y = 52;
 
-    doc.setFillColor(...NAVY);doc.rect(7,7,W-14,36,'F');
-    doc.setDrawColor(...GOLD);doc.setLineWidth(0.3);
-    doc.line(ML,25,W/2-20,25);doc.line(W/2+20,25,W-MR,25);
-    doc.setFillColor(...GOLD);doc.circle(W/2,25,1.8,'F');
-    doc.circle(W/2-11,25,0.9,'F');doc.circle(W/2+11,25,0.9,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(21);doc.setTextColor(201,168,76);
-    doc.text('Wahrheitsfähigkeit im Team',W/2,21,{align:'center'});
-    doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(175,155,95);
-    doc.text('Workshop-Dokumentation  ·  R&D Engineering  ·  Swisstronics',W/2,29,{align:'center'});
-    doc.setFontSize(8.5);doc.setTextColor(145,128,78);
-    doc.text(new Date().toLocaleDateString('de-CH',{year:'numeric',month:'long',day:'numeric'}),W/2,36,{align:'center'});
-    y=52;
-
-    // Übersicht
-    const ov=[
-      ['Teilnehmende',(disc||[]).length||'—'],
-      ['DISC-Profile',(disc||[]).length],
-      ['Antworten',(resp||[]).filter(r=>!['team_normen','urkunde'].includes(r.response_type)).length],
-      ['Normen',normen.length],
-      ['Unterzeichnet',verspr.length],
-    ];
-    doc.setFillColor(...LGOLD);doc.setDrawColor(...GOLD);doc.setLineWidth(0.25);
-    doc.rect(ML,y,cW,26,'FD');
-    doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...NAVY);
-    doc.text('WORKSHOP-ÜBERSICHT',ML+4,y+5.5);
-    const iW=cW/ov.length;
-    ov.forEach(([lbl,val],i)=>{
-      const ix=ML+4+i*iW;
-      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(75,60,25);
-      doc.text(lbl,ix,y+12);
-      doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(...GOLD);
-      doc.text(String(val),ix,y+22);
+    // Inhaltsübersicht
+    doc.setFillColor(...LGOLD); doc.setDrawColor(...GOLD); doc.setLineWidth(0.25);
+    doc.rect(ML, y, cW, snaps.length*9+14, 'FD');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...NAVY);
+    doc.text('INHALT DIESES HANDOUTS', ML+4, y+7);
+    y += 13;
+    snaps.forEach((s,i) => {
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(50,40,15);
+      doc.text((i+1)+'.  '+s.icon+'  '+s.title, ML+6, y);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(150,130,70);
+      doc.text(new Date(s.ts).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'}), W-MR-4, y, {align:'right'});
+      y += 9;
     });
-    y+=32;
+    y += 8;
 
-    secH('01  Der Anfang — Was in der Luft lag');
-    (byM['intro_question']||[]).slice(0,4).forEach(it=>qCard(it.alias,it.text));
-    kiBox(k1);
+    // Kleiner Intro-Text
+    doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(80,65,25);
+    const introLines = doc.splitTextToSize('"Was in diesen zwei Tagen passiert ist, lässt sich nicht in einem Protokoll festhalten — es lässt sich nur würdigen."', cW-20);
+    doc.text(introLines, W/2, y, {align:'center'});
+    y += introLines.length * 6.5;
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
+    doc.line(ML+10, y+4, W-MR-10, y+4);
 
-    // ════ SEITE 2 ════════════════════════════════════════════════════
-    newPage();
-    secH('02  Was ihr über euch entdeckt habt');
-    [...(byM['johari_reflexion']||[]),...(byM['was_sage_ich_nicht']||[])].slice(0,6).forEach(it=>qCard(it.alias,it.text));
-    kiBox(k2);
-    if((byM['kernbotschaften']||[]).length){
-      y+=3;secH('03  Kernbotschaften — Was bewegt hat',[55,40,12]);
-      (byM['kernbotschaften']||[]).slice(0,5).forEach(it=>qCard(it.alias,it.text));
-    }
-    if((byM['gfk']||[]).length){
-      y+=3;secH('04  Gewaltfreie Kommunikation',[55,40,12]);
-      (byM['gfk']||[]).slice(0,4).forEach(it=>qCard(it.alias,it.text));
-    }
+    // Footer Titelseite
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(150,130,70);
+    doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(), W/2, H-8.5, {align:'center'});
 
-    // ════ SEITE 3: DISC ══════════════════════════════════════════════
-    if((disc||[]).length>0){
-    newPage();
-    secH('05  Euer Team-Profil — DISC-Auswertung');
-    if((disc||[]).length>0){
-      // Balken
-      y+=2;
-      const bAW=cW*0.52,bMax=30,mV=Math.max(...Object.values(dd),1);
-      const bW2=(bAW/4)-2;
-      const dLbls={D:['Dominant','Ergebnis'],I:['Initiativ','Begeisternd'],S:['Stetig','Harmonisch'],C:['Gewissenhaft','Analytisch']};
-      const cC={D:[200,50,60],I:[220,130,30],S:[42,140,100],C:[60,110,200]};
-      let bx=ML+2;
-      ['D','I','S','C'].forEach(d=>{
-        const cnt=dd[d]||0,bH2=mV>0?(cnt/mV)*bMax:0,col=cC[d];
-        if(bH2>0){doc.setFillColor(...col);doc.rect(bx+2,y+bMax-bH2,bW2-4,bH2,'F');}
-        doc.setDrawColor(...col);doc.setLineWidth(0.18);doc.rect(bx+2,y,bW2-4,bMax,'S');
-        doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...col);
-        doc.text(String(cnt),bx+bW2/2,y+bMax-3,{align:'center'});
-        doc.setFontSize(10);doc.text(d,bx+bW2/2,y+bMax+7,{align:'center'});
-        doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(60,50,20);
-        doc.text(dLbls[d][0],bx+bW2/2,y+bMax+12,{align:'center'});
-        bx+=bW2+2;
-      });
-      y+=bMax+18;
-      // Tabelle
-      doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...NAVY);
-      doc.text('EINZELPROFILE',ML,y);y+=5;
-      const cX=[ML,ML+36,ML+57,ML+74,ML+91,ML+110];
-      const hd=['Name','Natürlich','Rolle','Stress','D  I  S  C',''];
-      doc.setFillColor(...NAVY);doc.rect(ML,y,cW,6,'F');
-      hd.forEach((h,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(...GOLD);doc.text(h,cX[i]+1,y+4);});
-      y+=7;
-      (disc||[]).forEach((r,i)=>{
-        need(8);
-        doc.setFillColor(i%2===0?252:246,i%2===0?250:245,i%2===0?244:235);
-        doc.rect(ML,y,cW,7,'F');
-        const sc=(r.stress_index||0),stC=sc<34?[50,160,80]:sc<67?[200,150,30]:[200,60,50];
-        const nc=cC[r.natural_primary]||NAVY;
-        doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...nc);
-        doc.text((r.alias||'?').substring(0,15),cX[0]+1,y+5);
-        doc.setTextColor(...nc);doc.text(r.natural_primary||'-',cX[1]+5,y+5);
-        doc.setTextColor(60,50,20);doc.text(r.role_primary||'-',cX[2]+4,y+5);
-        doc.setFont('helvetica','bold');doc.setTextColor(...stC);doc.text(sc+'%',cX[3]+4,y+5);
-        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(60,50,20);
-        doc.text(`${r.natural_d||0}  ${r.natural_i||0}  ${r.natural_s||0}  ${r.natural_c||0}`,cX[4]+1,y+5);
-        // Mini-Balken
-        const bTW=cW-cX[4]+ML-2;
-        ['D','I','S','C'].forEach((d,di)=>{
-          const v=({D:r.natural_d,I:r.natural_i,S:r.natural_s,C:r.natural_c}[d]||0);
-          doc.setFillColor(...cC[d]);
-          doc.rect(cX[4]+(cX[5]-cX[4]),y+1+di*1.4,(v/100)*bTW,1.2,'F');
+    // ════ SNAPSHOT-SEITEN ══════════════════════════════════════════════
+    snaps.forEach(snap => {
+      y = startPage();
+      modHeader(snap.icon, snap.title);
+
+      if (snap.type === 'quotes' && snap.data.quotes?.length > 0) {
+        snap.data.quotes.slice(0,8).forEach(q => qCard(q.alias, q.text));
+
+      } else if (snap.type === 'disc' && snap.data.profiles?.length > 0) {
+        const dd = snap.data.distribution;
+        const profiles = snap.data.profiles;
+
+        // Balkendiagramm
+        y += 2;
+        const bAW = cW*0.55, bMax = 32, mV = Math.max(...Object.values(dd),1);
+        const bW2 = (bAW/4)-3;
+        const dLbl = {D:['Dominant','Ergebnis-\norientiert'],I:['Initiativ','Begeisternd'],S:['Stetig','Harmonisch'],C:['Gewissenhaft','Analytisch']};
+        let bx = ML+4;
+        ['D','I','S','C'].forEach(d => {
+          const cnt=dd[d]||0, bH2=mV>0?(cnt/mV)*bMax:0, col=CC[d];
+          if(bH2>0){doc.setFillColor(...col);doc.rect(bx+2,y+bMax-bH2,bW2-4,bH2,'F');}
+          doc.setDrawColor(...col);doc.setLineWidth(0.2);doc.rect(bx+2,y,bW2-4,bMax,'S');
+          doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...col);
+          doc.text(String(cnt),bx+bW2/2,y+bMax-3,{align:'center'});
+          doc.setFontSize(11);doc.text(d,bx+bW2/2,y+bMax+7,{align:'center'});
+          doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(60,50,20);
+          doc.text(dLbl[d][0],bx+bW2/2,y+bMax+12,{align:'center'});
+          bx+=bW2+3;
         });
-        y+=8;
-      });
-      y+=4;
-    }
-    kiBox(k3);
-    } // end DISC
+        y += bMax+18;
 
-    // ════ SEITE 4: TNA ════════════════════════════════════════════════
-    newPage();
-    secH('06  Team-Normen-Analyse');
-    if(tnaScores&&Object.keys(tnaScores).length>0){
-      const dims=[
-        {k:'1',l:'Konflikt & Dissens'},
-        {k:'2',l:'Fehler & Verantwortung'},
-        {k:'3',l:'Feedback & Anerkennung'},
-        {k:'4',l:'Entscheidungen unter Unsicherheit'},
-        {k:'5',l:'Hilfe & Verletzlichkeit'},
-        {k:'6',l:'Unausgesprochene Erwartungen'},
-      ];
-      y+=2;
-      dims.forEach(({k,l})=>{
-        const s=parseFloat(tnaScores[k]||tnaScores['d'+k]||0);
-        if(!s)return;
-        const p=Math.max(0,Math.min(1,(s-1)/4));
-        const col=s<2.5?[200,50,60]:s<3.5?[200,150,30]:[50,160,80];
-        const bW3=cW*0.52;
-        need(11);
-        doc.setFillColor(220,215,200);doc.rect(ML,y,bW3,6,'F');
-        doc.setFillColor(...col);doc.rect(ML,y,p*bW3,6,'F');
-        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...DARK);
-        // Label NUR rechts des Balkens, max cW-bW3-4 breit
-        const lbl=doc.splitTextToSize(l,cW-bW3-6);
-        doc.text(lbl[0],ML+bW3+4,y+4.5);
-        doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...col);
-        doc.text(s.toFixed(1),ML+bW3-4,y+4.5,{align:'right'});
-        y+=11;
-      });
-      if(tnaKernsatz){
-        y+=2;need(11);
-        doc.setFillColor(...NAVY);doc.rect(ML,y,cW,11,'F');
-        const kl=doc.splitTextToSize('"'+tnaKernsatz+'"',cW-10);
-        doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(201,168,76);
-        doc.text(kl[0],W/2,y+7,{align:'center'});
-        y+=13;
-      }
-      if(tnaNormen.length>0){
-        y+=2;doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...NAVY);
-        doc.text('ERKANNTE MUSTER',ML,y);y+=5;
-        tnaNormen.slice(0,4).forEach(n=>{
-          const col=n.typ==='dysfunktional'?[200,50,60]:[50,160,80];
-          const bg=n.typ==='dysfunktional'?[255,242,242]:[242,255,248];
-          const tl=doc.splitTextToSize(strip(n.text||''),cW-8);
-          const bH=tl.length*7.5*0.40+9;
-          need(bH+3);
-          doc.setFillColor(...bg);doc.setDrawColor(...col);doc.setLineWidth(0.18);
-          doc.rect(ML,y,cW,bH,'FD');
-          doc.setFillColor(...col);doc.rect(ML,y,3,bH,'F');
+        // Profil-Tabelle
+        doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...NAVY);
+        doc.text('EINZELPROFILE',ML,y);y+=5;
+        const cX=[ML,ML+38,ML+57,ML+74,ML+91,ML+130];
+        const hd=['Name','Natürlich','Rolle','Stress','D   I   S   C','Ø-Profil'];
+        doc.setFillColor(...NAVY);doc.rect(ML,y,cW,6,'F');
+        hd.forEach((h,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(...GOLD);doc.text(h,cX[i]+1,y+4);});
+        y+=7;
+        profiles.forEach((r,i)=>{
+          need(8);
+          doc.setFillColor(i%2===0?252:246,i%2===0?250:245,i%2===0?244:235);
+          doc.rect(ML,y,cW,7,'F');
+          const sc=r.stress||0;
+          const stC=sc<34?[50,160,80]:sc<67?[200,150,30]:[200,60,50];
+          const nc=CC[r.naturalType]||NAVY;
+          doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...nc);
+          doc.text((r.alias||'?').substring(0,15),cX[0]+1,y+5);
+          doc.setTextColor(...nc);doc.text(r.naturalType||'-',cX[1]+5,y+5);
+          doc.setTextColor(60,50,20);doc.text(r.roleType||'-',cX[2]+4,y+5);
+          doc.setFont('helvetica','bold');doc.setTextColor(...stC);doc.text(sc+'%',cX[3]+4,y+5);
+          doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(60,50,20);
+          doc.text(`${r.d}   ${r.i}   ${r.s}   ${r.c}`,cX[4]+1,y+5);
+          // Mini-Profil-Balken
+          const bTW=cW-(cX[5]-ML)-2;
+          ['D','I','S','C'].forEach((d,di)=>{
+            const v=({D:r.d,I:r.i,S:r.s,C:r.c}[d]||0);
+            doc.setFillColor(...CC[d]);
+            doc.rect(cX[5]+1,y+1+di*1.4,(v/100)*bTW,1.2,'F');
+          });
+          y+=8;
+        });
+        y+=4;
+
+      } else if (snap.type === 'tna' && snap.data.scores && Object.keys(snap.data.scores).length > 0) {
+        const scores = snap.data.scores;
+        const dims = [
+          {k:'1',l:'Konflikt & Dissens',          sub:'Darf Widerspruch gezeigt werden?'},
+          {k:'2',l:'Fehler & Verantwortung',       sub:'Ist Scheitern sicher?'},
+          {k:'3',l:'Feedback & Anerkennung',       sub:'Wissen wir wie wir wirken?'},
+          {k:'4',l:'Entscheidungen unter Unsicherheit',sub:'Wie entscheiden wir?'},
+          {k:'5',l:'Hilfe & Verletzlichkeit',      sub:'Darf man "ich weiss nicht" sagen?'},
+          {k:'6',l:'Unausgesprochene Erwartungen', sub:'Wer bestimmt die Spielregeln?'},
+        ];
+        y += 3;
+        dims.forEach(({k,l,sub}) => {
+          const s = parseFloat(Object.entries(scores).find(([key])=>key===k||key==='d'+k)?.[1] || 0);
+          if (!s) return;
+          const p = Math.max(0,Math.min(1,(s-1)/4));
+          const col = s<2.5?[200,50,60]:s<3.5?[200,150,30]:[50,160,80];
+          const bW3 = cW*0.52;
+          need(13);
+          doc.setFillColor(220,215,200);doc.rect(ML,y,bW3,6,'F');
+          doc.setFillColor(...col);doc.rect(ML,y,p*bW3,6,'F');
           doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...col);
-          doc.text(strip(n.titel||'').substring(0,40),ML+5,y+5.5);
-          doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...DARK);
-          doc.text(tl,ML+5,y+11);
+          doc.text(s.toFixed(1),ML+bW3-4,y+4.5,{align:'right'});
+          doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...DARK);
+          doc.text(l,ML+bW3+5,y+4);
+          doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(110,95,60);
+          doc.text(sub,ML+bW3+5,y+9);
+          y += 13;
+        });
+        y += 3;
+
+      } else if (snap.type === 'normen') {
+        const normen = [];
+        (snap.data.kategorien||[]).forEach(k => {
+          (snap.data.normen?.[k.id]||[]).forEach(text => normen.push({kat:k,text}));
+        });
+        if (normen.length > 0) {
+          const nCW = (cW-4)/2;
+          const left  = normen.slice(0, Math.ceil(normen.length/2));
+          const right = normen.slice(Math.ceil(normen.length/2));
+          const startY = y;
+          const drawNCol = (norms, x) => {
+            let cy = startY;
+            norms.forEach(({kat,text}) => {
+              const nl = doc.splitTextToSize('"'+text+'"', nCW-9);
+              const bH = nl.length*8.5*0.42+7;
+              doc.setFillColor(...LGOLD);doc.setDrawColor(...GOLD);doc.setLineWidth(0.18);
+              doc.rect(x,cy,nCW,bH,'FD');
+              doc.setFillColor(...GOLD);doc.rect(x,cy,2.5,bH,'F');
+              doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...DARK);
+              doc.text(nl,x+5,cy+5.5);
+              cy+=bH+3;
+            });
+            return cy;
+          };
+          y = Math.max(drawNCol(left,ML), drawNCol(right,ML+nCW+4))+5;
+        }
+
+      } else if (snap.type === 'versprechen' && snap.data.versprechen?.length > 0) {
+        snap.data.versprechen.slice(0,16).forEach(v => {
+          if (!v.satz) return;
+          const vl = doc.splitTextToSize('"'+v.satz+'"', cW-28);
+          const bH = vl.length*8*0.40+6;
+          need(bH+3);
+          doc.setFillColor(248,246,238);doc.setDrawColor(180,160,100);doc.setLineWidth(0.12);
+          doc.rect(ML,y,cW,bH,'FD');
+          doc.setFillColor(...GOLD);doc.rect(ML,y,2.5,bH,'F');
+          doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(100,80,30);
+          doc.text((v.alias||'?').substring(0,14),ML+4,y+4.5);
+          doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(...DARK);
+          doc.text(vl,ML+26,y+4.5);
           y+=bH+3;
         });
       }
-    }
-    kiBox(k4);
 
-    // ════ SEITE 5: STECKBRIEF + VERSPRECHEN ══════════════════════════
-    newPage();
-    secH('07  Unser Team-Steckbrief');
-    if(normen.length>0){
-      const nCW=(cW-4)/2;
-      const ln=normen.slice(0,Math.ceil(normen.length/2));
-      const rn=normen.slice(Math.ceil(normen.length/2));
-      const sy=y;
-      const drawNCol=(norms,x)=>{
-        let cy=sy;
-        norms.forEach(n=>{
-          const nl=doc.splitTextToSize('"'+n+'"',nCW-8);
-          const bH=nl.length*8.5*0.42+7;
-          doc.setFillColor(...LGOLD);doc.setDrawColor(...GOLD);doc.setLineWidth(0.18);
-          doc.rect(x,cy,nCW,bH,'FD');
-          doc.setFillColor(...GOLD);doc.rect(x,cy,2.5,bH,'F');
-          doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...DARK);
-          doc.text(nl,x+5,cy+5.5);
-          cy+=bH+3;
-        });
-        return cy;
-      };
-      y=Math.max(drawNCol(ln,ML),drawNCol(rn,ML+nCW+4))+5;
-    }
-    y+=3;secH('08  Die Versprechen — '+verspr.length+' Stimmen',[55,40,12]);
-    verspr.slice(0,14).forEach(v=>{
-      if(!v.satz)return;
-      const vl=doc.splitTextToSize('"'+v.satz+'"',cW-26);
-      const bH=vl.length*7.5*0.40+5;
-      need(bH+3);
-      doc.setFillColor(248,246,238);doc.setDrawColor(180,160,100);doc.setLineWidth(0.1);
-      doc.rect(ML,y,cW,bH,'FD');
-      doc.setFillColor(...GOLD);doc.rect(ML,y,2.5,bH,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(100,80,30);
-      doc.text((v.alias||'?').substring(0,14),ML+4,y+4);
-      doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(...DARK);
-      doc.text(vl,ML+24,y+4);
-      y+=bH+3;
+      // KI-Interpretation
+      if (snap.kiText) kiBox(snap.kiText);
     });
-    if((byM['morgen_reflexion']||[]).length){
-      y+=3;secH('09  Morgen-Reflexion Tag 2',[55,40,12]);
-      (byM['morgen_reflexion']||[]).slice(0,5).forEach(it=>qCard(it.alias,it.text));
+
+    // ════ BRIEF DER KI ═════════════════════════════════════════════
+    y = startPage();
+    doc.setFillColor(...NAVY); doc.rect(7,7,W-14,30,'F');
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
+    doc.line(ML,22,W/2-20,22); doc.line(W/2+20,22,W-MR,22);
+    doc.setFillColor(...GOLD); doc.circle(W/2,22,1.8,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.setTextColor(201,168,76);
+    doc.text('Ein Brief an euch', W/2, 20, {align:'center'});
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(175,155,95);
+    doc.text('Von der KI, die dabei war', W/2, 28, {align:'center'});
+    y = 44;
+
+    // KI-Brief generieren
+    setS('🤖 KI schreibt den Abschlussbrief…');
+    try {
+      const normenSnap  = snaps.find(s=>s.type==='normen');
+      const versprSnap  = snaps.find(s=>s.type==='versprechen');
+      const normen = normenSnap ? Object.values(normenSnap.data.normen||{}).flat().slice(0,4).join('; ') : '';
+      const versprN = versprSnap?.data?.versprechen?.length || 0;
+      const r = await fetch(`${EDGE_BASE}/ki-analyze`,{method:'POST',
+        headers:{'Content-Type':'application/json','apikey':ANON_KEY,'Authorization':'Bearer '+ANON_KEY},
+        body:JSON.stringify({
+          system:'Schreibe auf Deutsch ohne Markdown, nur Fliesstext.',
+          userPrompt:`Ein R&D-Engineering-Team bei Swisstronics hat zwei intensive Workshop-Tage zum Thema Wahrheitsfähigkeit im Team abgeschlossen. `+
+            `${versprN} Personen haben gemeinsam erarbeitete Normen unterzeichnet. Normen: ${normen}. `+
+            `Schreibe einen persönlichen, emotionalen Abschlussbrief der KI an das GANZE Team (beginne mit "Liebes Team,"). `+
+            `5-6 Sätze. Würdigend, zukunftsgerichtet, ehrlich. Kein Markdown. Keine Platzhalter.`,
+          maxTokens:450
+        })});
+      if (r.ok) {
+        const d=await r.json();
+        const brief=(d.text||d.content?.[0]?.text||'').replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').trim();
+        wLines(brief, 11, DARK);
+      }
+    } catch(e){}
+
+    y += 12;
+    need(12);
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.35); doc.line(ML,y,ML+55,y); y+=7;
+    doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+    doc.text('Claude — KI-Begleiterin des Workshops', ML, y);
+
+    // Navy-Footer letzte Seite
+    doc.setFillColor(...NAVY); doc.rect(7,H-16,W-14,9,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(155,135,75);
+    doc.text('Wahrheitsfähigkeit im Team  ·  R&D Engineering Swisstronics  ·  '+new Date().getFullYear(), W/2, H-10.5, {align:'center'});
+
+    // ════ SPEICHERN ════════════════════════════════════════════════════
+    const fn = 'Workshop-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf';
+    try { doc.save(fn); }
+    catch(e) {
+      const blob=doc.output('blob');
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=fn;a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
     }
+    setS(`✓ ${pg} Seiten · ${snaps.length} Module · Download gestartet`);
+    setTimeout(()=>{ if(status) status.textContent=''; },5000);
 
-    // ════ SEITE 6: BRIEF ════════════════════════════════════════════
-    newPage();
-    doc.setFillColor(...NAVY);doc.rect(7,7,W-14,30,'F');
-    doc.setDrawColor(...GOLD);doc.setLineWidth(0.3);
-    doc.line(ML,22,W/2-20,22);doc.line(W/2+20,22,W-MR,22);
-    doc.setFillColor(...GOLD);doc.circle(W/2,22,1.8,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(17);doc.setTextColor(201,168,76);
-    doc.text('Ein Brief an euch',W/2,20,{align:'center'});
-    doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(175,155,95);
-    doc.text('Von der KI, die dabei war',W/2,28,{align:'center'});
-    y=44;
-    if(k5)wText(k5,11,DARK);
-    y+=10;need(12);
-    doc.setDrawColor(...GOLD);doc.setLineWidth(0.35);doc.line(ML,y,ML+55,y);y+=7;
-    doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(...GOLD);
-    doc.text('Claude — KI-Begleiterin des Workshops',ML,y);
-
-    // ════ SPEICHERN ══════════════════════════════════════════════════
-    const fn='Workshop-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf';
-    try{doc.save(fn);}
-    catch(e){
-      const b=doc.output('blob');
-      const u=URL.createObjectURL(b);
-      const a=document.createElement('a');a.href=u;a.download=fn;a.click();
-      setTimeout(()=>URL.revokeObjectURL(u),5000);
-    }
-    setS('✓ '+pg+' Seiten · Download gestartet');
-    setTimeout(()=>{if(status)status.textContent='';},5000);
-
-  }catch(e){
-    setS('❌ Fehler: '+e.message);console.error(e);
-  }finally{
-    btn.disabled=false;btn.textContent='✨ Workshop-Handout generieren (KI · 6 Seiten)';
+  } catch(e) {
+    setS('❌ Fehler: '+e.message); console.error(e);
+  } finally {
+    btn.disabled=false;
+    renderSnapshotCount();
   }
 }
+
 
 
 /* ─── VORSCHLÄGE FEED SECTION ────────────────────────── */
