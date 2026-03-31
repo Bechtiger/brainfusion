@@ -2190,31 +2190,38 @@ Falsche Antworten: ${wrongCount}/${total}`;
 
 /* ─── HANDOUT SECTION ─────────────────────────────────────────────────── */
 function renderHandoutSection() {
-  renderSnapshotCount(); // Zähler aktualisieren
+  renderSnapshotCount();
   return `<div style="margin-top:16px;">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
-      Klicke bei jedem Modul auf <strong style="color:var(--gold);">📸 Snapshot</strong> —
-      das sammelt die Daten und die KI-Interpretation. Am Ende alles als Handout exportieren.
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-      <button onclick="generateHandoutPDF()" id="handoutBtn"
-        style="flex:1;padding:13px;border-radius:8px;border:1px solid rgba(74,144,217,.4);
-        background:rgba(74,144,217,.1);color:#4a90d9;font-size:14px;font-weight:600;cursor:pointer;">
-        📄 Handout exportieren
+
+    <!-- SCREENSHOT-HANDOUT (neu, einfach) -->
+    <div style="padding:14px;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.06);margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:600;color:#c9a84c;margin-bottom:6px;">📸 Screenshot-Handout</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+        Klicke im Beamer-Fenster auf den <strong style="color:#c9a84c;">📸 Button</strong> (erscheint bei Mausbewegung unten rechts) — nach dem Workshop hier exportieren.
+      </div>
+      <button onclick="generateScreenshotHandout()" id="screenshotHandoutBtn"
+        style="width:100%;padding:12px;border-radius:8px;border:1px solid rgba(201,168,76,.4);
+        background:rgba(201,168,76,.12);color:#c9a84c;font-size:13px;font-weight:600;cursor:pointer;">
+        📄 Handout aus Screenshots exportieren
       </button>
-      <button onclick="if(confirm('Alle Snapshots löschen?'))clearSnapshots();"
-        title="Snapshots löschen"
-        style="padding:13px 14px;border-radius:8px;border:1px solid rgba(200,60,60,.3);
-        background:rgba(200,60,60,.08);color:rgba(200,80,80,.8);font-size:13px;cursor:pointer;">
-        🗑
-      </button>
+      <div id="screenshotHandoutStatus" style="font-size:11px;color:var(--muted);margin-top:6px;text-align:center;min-height:14px;"></div>
     </div>
-    <div id="snapshotCount" style="font-size:12px;text-align:center;min-height:14px;margin-bottom:6px;"></div>
-    <div id="handoutStatus" style="font-size:12px;color:var(--muted);text-align:center;min-height:16px;line-height:1.5;"></div>
-    <div style="font-size:11px;color:var(--muted);margin-top:10px;padding:10px;border-radius:8px;
-    background:rgba(255,255,255,.02);line-height:1.7;">
-      <strong style="color:var(--gold);">So funktioniert's:</strong><br>
-      📸 Bei jedem Modul "Snapshot" klicken → KI schreibt Interpretation → am Ende hier exportieren.
+
+    <!-- SNAPSHOT-HANDOUT (bestehend) -->
+    <div style="padding:14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.02);">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Text-Handout (Snapshot-System)</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="generateHandoutPDF()" id="handoutBtn"
+          style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(74,144,217,.3);
+          background:rgba(74,144,217,.08);color:#4a90d9;font-size:12px;cursor:pointer;">
+          📄 Text-Handout exportieren
+        </button>
+        <button onclick="if(confirm('Alle Snapshots löschen?'))clearSnapshots();"
+          style="padding:10px 12px;border-radius:8px;border:1px solid rgba(200,60,60,.25);
+          background:rgba(200,60,60,.06);color:rgba(200,80,80,.7);font-size:12px;cursor:pointer;">🗑</button>
+      </div>
+      <div id="snapshotCount" style="font-size:11px;color:var(--muted);margin-top:5px;text-align:center;"></div>
+      <div id="handoutStatus" style="font-size:11px;color:var(--muted);margin-top:4px;text-align:center;min-height:14px;"></div>
     </div>
   </div>`;
 }
@@ -2772,6 +2779,124 @@ async function generateHandoutPDF() {
 }
 
 
+
+/* ─── SCREENSHOT HANDOUT ─────────────────────────────────────────────────── */
+async function generateScreenshotHandout() {
+  const btn = document.getElementById('screenshotHandoutBtn');
+  const status = document.getElementById('screenshotHandoutStatus');
+  btn.disabled = true;
+  const setS = (m) => { if(status) status.innerHTML = m; };
+
+  try {
+    setS('📥 Screenshots laden…');
+    initSupabase();
+    const wsId = onlineSession?.workshopId;
+
+    // Screenshots aus Supabase holen
+    let shots = [];
+    if (wsId) {
+      const { data } = await sb.from('exercise_responses')
+        .select('content, created_at')
+        .eq('workshop_id', wsId)
+        .eq('response_type', 'beamer_screenshot')
+        .order('created_at', { ascending: true });
+
+      shots = (data||[]).map(r => {
+        try {
+          const c = typeof r.content==='string' ? JSON.parse(r.content) : r.content;
+          return { ...c, savedAt: r.created_at };
+        } catch(e){ return null; }
+      }).filter(Boolean);
+    }
+
+    // Fallback: aus localStorage (Beamer auf demselben Gerät)
+    if (shots.length === 0) {
+      try {
+        const local = JSON.parse(localStorage.getItem('disc-screenshots-v1')||'[]');
+        shots = local;
+      } catch(e){}
+    }
+
+    if (shots.length === 0) {
+      setS('⚠️ Keine Screenshots gefunden.<br><small>Im Beamer-Fenster auf 📸 klicken (erscheint bei Mausbewegung).</small>');
+      btn.disabled = false; return;
+    }
+
+    setS(`📄 PDF mit ${shots.length} Screenshots wird aufgebaut…`);
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
+    // A4 Landscape: 297 x 210mm
+    const W=297, H=210;
+    const GOLD=[180,140,50], NAVY=[22,22,45];
+
+    // ── Titelseite ────────────────────────────────────────────────────
+    doc.setFillColor(...NAVY); doc.rect(0,0,W,H,'F');
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.6);
+    doc.rect(6,6,W-12,H-12,'S');
+    doc.setLineWidth(0.15);
+    doc.rect(9,9,W-18,H-18,'S');
+
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
+    doc.line(20,H/2-2,W/2-25,H/2-2); doc.line(W/2+25,H/2-2,W-20,H/2-2);
+    doc.setFillColor(...GOLD); doc.circle(W/2,H/2-2,2.5,'F');
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(28); doc.setTextColor(201,168,76);
+    doc.text('Wahrheitsfähigkeit im Team', W/2, H/2-8, {align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(12); doc.setTextColor(175,155,95);
+    doc.text('Workshop-Dokumentation  ·  R&D Engineering  ·  Swisstronics', W/2, H/2+2, {align:'center'});
+    doc.setFontSize(10); doc.setTextColor(145,128,78);
+    doc.text(new Date().toLocaleDateString('de-CH',{year:'numeric',month:'long',day:'numeric'}), W/2, H/2+10, {align:'center'});
+
+    // Übersicht unten
+    doc.setFontSize(9); doc.setTextColor(120,105,65);
+    doc.text(`${shots.length} Beamer-Screenshots  ·  ${shots.map(s=>s.label||s.moduleId).filter((v,i,a)=>a.indexOf(v)===i).join(', ')}`,
+      W/2, H-14, {align:'center', maxWidth:W-40});
+
+    // ── Screenshot-Seiten ──────────────────────────────────────────────
+    for (let i = 0; i < shots.length; i++) {
+      const shot = shots[i];
+      doc.addPage([297,210], 'landscape');
+
+      // Bild einfügen (volle Seite mit kleinem Rand)
+      try {
+        const imgFormat = shot.imgData.includes('image/jpeg') ? 'JPEG' : 'PNG';
+        doc.addImage(shot.imgData, imgFormat, 5, 5, W-10, H-18);
+      } catch(e) {
+        doc.setFillColor(20,20,40); doc.rect(5,5,W-10,H-18,'F');
+        doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(100,90,60);
+        doc.text('Bild konnte nicht geladen werden', W/2, H/2, {align:'center'});
+      }
+
+      // Schmaler Footer-Streifen
+      doc.setFillColor(10,10,25,0.8);
+      doc.setFillColor(10,10,25); doc.rect(5,H-13,W-10,8,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+      doc.text(shot.label||shot.moduleId||'Modul', 12, H-8);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(130,115,70);
+      const ts = shot.savedAt || (shot.ts ? new Date(shot.ts).toISOString() : '');
+      const timeStr = ts ? new Date(ts).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'}) : '';
+      doc.text(`${i+1} / ${shots.length}  ·  ${timeStr}  ·  Wahrheitsfähigkeit im Team  ·  Swisstronics`, W-12, H-8, {align:'right'});
+    }
+
+    // ── Speichern ──────────────────────────────────────────────────────
+    const fn = 'Workshop-Beamer-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf';
+    try { doc.save(fn); }
+    catch(e) {
+      const blob=doc.output('blob');
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download=fn; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+    }
+    setS(`✓ ${shots.length} Screenshots · PDF heruntergeladen`);
+    setTimeout(()=>{ if(status) status.textContent=''; },5000);
+
+  } catch(e) {
+    setS('❌ Fehler: '+e.message); console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+}
 
 /* ─── VORSCHLÄGE FEED SECTION ────────────────────────── */
 function renderVorschlaegeFeedSection() {
