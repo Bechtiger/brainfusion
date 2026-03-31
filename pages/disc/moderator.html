@@ -920,7 +920,7 @@ async function renderModuleContent(moduleId){
     ${detail.beamer?`<div class="mod-beamer-info">📽 ${detail.beamer}</div>`:''}
     ${hintsHTML}
     ${dataHTML}
-    ${!['waiting','normen_info','normen_theorie','kognitive_verzerrungen_info','mut_info','gfk_info','raci_info','pairing_karten','disc_role_profile'].includes(moduleId) ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
+    ${SNAPSHOT_MODULES[moduleId] ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
   </div>`;
 
   // Canvas für DISC-Map zeichnen (nach DOM-Insert)
@@ -2251,27 +2251,27 @@ function renderSnapshotCount() {
 
 // Modul-Definitionen für Snapshots
 const SNAPSHOT_MODULES = {
-  intro_question:       { title: 'Der Anfang — Was in der Luft lag',        icon: '💬', type: 'quotes' },
-  johari_erklaerung:    { title: 'Johari-Fenster',                           icon: '🪟', type: 'quotes' },
-  johari_fallbeispiele: { title: 'Johari Fallbeispiele',                     icon: '🪟', type: 'quotes' },
-  johari_reflexion:     { title: 'Johari — Was ich über mich entdeckt habe', icon: '🪟', type: 'quotes' },
-  was_sage_ich_nicht:   { title: 'Was ich nicht sage',                       icon: '🤫', type: 'quotes' },
-  bias_story:           { title: 'Bestätigungsfehler — Was wir daraus lernen',icon: '🕵', type: 'quotes' },
-  verzerrungen_quiz:    { title: 'Kognitive Verzerrungen — Quiz',            icon: '🧠', type: 'quotes' },
-  gfk_fallbeispiel:     { title: 'GFK — Fallbeispiel',                       icon: '🕊', type: 'quotes' },
-  gfk_coaching:         { title: 'GFK Coaching',                             icon: '🕊', type: 'quotes' },
-  gfk:                  { title: 'Gewaltfreie Kommunikation',                icon: '🕊', type: 'quotes' },
-  kernbotschaften:      { title: 'Kernbotschaften — Was bewegt hat',         icon: '⚡', type: 'quotes' },
-  disc_test:            { title: 'DISC-Test',                                icon: '🎯', type: 'quotes' },
-  disc_map:             { title: 'DISC Live-Map',                            icon: '🎯', type: 'disc'   },
-  disc_results:         { title: 'Euer Team-Profil — DISC-Auswertung',       icon: '🎯', type: 'disc'   },
-  morgen_reflexion:     { title: 'Morgen-Reflexion Tag 2',                   icon: '🌅', type: 'quotes' },
-  teamnormen_analyse:   { title: 'Team-Normen-Analyse',                      icon: '🧭', type: 'tna'    },
-  raci:                 { title: 'RACI — Rollen & Verantwortung',            icon: '📊', type: 'quotes' },
-  steckbrief_vorschlaege:{ title:'Steckbrief — Vorschläge',                  icon: '📋', type: 'quotes' },
-  steckbrief_normen:    { title: 'Unser Team-Steckbrief',                    icon: '📋', type: 'normen' },
-  steckbrief_urkunde:   { title: 'Die Versprechen',                          icon: '✍',  type: 'versprechen' },
-  closing:              { title: 'Abschluss',                                icon: '🏆', type: 'quotes' },
+  intro_question:       { title: 'Der Anfang — Was in der Luft lag',        icon: '[1]', type: 'quotes' },
+  johari_erklaerung:    { title: 'Johari-Fenster',                           icon: '[2]', type: 'quotes' },
+  johari_fallbeispiele: { title: 'Johari Fallbeispiele',                     icon: '[3]', type: 'quotes' },
+  johari_reflexion:     { title: 'Johari — Blinder Fleck',                   icon: '[4]', type: 'quotes' },
+  was_sage_ich_nicht:   { title: 'Was ich nicht sage',                        icon: '[5]', type: 'quotes' },
+  bias_story:           { title: 'Bestaedigungsfehler — Was wir lernten',    icon: '[6]', type: 'quotes' },
+  verzerrungen_quiz:    { title: 'Kognitive Verzerrungen — Quiz',            icon: '[7]', type: 'quotes' },
+  gfk_fallbeispiel:     { title: 'GFK — Fallbeispiel',                       icon: '[8]', type: 'quotes' },
+  gfk_coaching:         { title: 'GFK Coaching',                             icon: '[9]', type: 'quotes' },
+  gfk:                  { title: 'Gewaltfreie Kommunikation',                icon: '[10]', type: 'quotes' },
+  kernbotschaften:      { title: 'Kernbotschaften — Was bewegt hat',         icon: '[11]', type: 'quotes' },
+  disc_test:            { title: 'DISC-Test',                                icon: '[12]', type: 'quotes' },
+  disc_map:             { title: 'DISC Live-Map',                            icon: '[13]', type: 'disc'   },
+  disc_results:         { title: 'Euer Team-Profil — DISC-Auswertung',       icon: '[14]', type: 'disc'   },
+  morgen_reflexion:     { title: 'Morgen-Reflexion Tag 2',                   icon: '[15]', type: 'quotes' },
+  teamnormen_analyse:   { title: 'Team-Normen-Analyse',                      icon: '[16]', type: 'tna'    },
+  raci:                 { title: 'RACI — Rollen & Verantwortung',            icon: '[17]', type: 'quotes' },
+  steckbrief_vorschlaege:{ title:'Steckbrief — Vorschlaege',                 icon: '[18]', type: 'quotes' },
+  steckbrief_normen:    { title: 'Unser Team-Steckbrief',                    icon: '[19]', type: 'normen' },
+  steckbrief_urkunde:   { title: 'Die Versprechen',                          icon: '[20]', type: 'versprechen' },
+  closing:              { title: 'Abschluss',                                icon: '[21]', type: 'quotes' },
 };
 
 async function takeSnapshot(moduleId) {
@@ -2341,21 +2341,29 @@ function collectSnapshotData(moduleId, type) {
     })), distribution: dd };
   }
   if (type === 'tna') {
-    // TNA aus onlineSession module_data oder liveResponses
-    const scores = {};
+    // TNA: Berechne Dimension-Durchschnitte (d1q1..d6q4 -> dim1..dim6)
+    const rawScores = {};
     (liveResponses||[]).filter(r=>r.module==='teamnormen_analyse').forEach(r=>{
       try {
         const c = typeof r.content==='string'?JSON.parse(r.content):r.content;
         if (c && typeof c==='object') {
           Object.entries(c).forEach(([k,v])=>{
-            if (!isNaN(v)) { if(!scores[k])scores[k]=[]; scores[k].push(Number(v)); }
+            if (!isNaN(v)) { if(!rawScores[k])rawScores[k]=[]; rawScores[k].push(Number(v)); }
           });
         }
       } catch(e){}
     });
-    const avg = {};
-    Object.entries(scores).forEach(([k,vals])=>{ avg[k] = (vals.reduce((a,b)=>a+b,0)/vals.length); });
-    return { scores: avg };
+    // Aggregiere nach Dimension (d1q1-d1q4 -> dim1, etc.)
+    const dimScores = {};
+    for (let d=1; d<=6; d++) {
+      const vals = [];
+      for (let q=1; q<=4; q++) {
+        const key = 'd'+d+'q'+q;
+        if (rawScores[key]) vals.push(...rawScores[key]);
+      }
+      if (vals.length > 0) dimScores[String(d)] = vals.reduce((a,b)=>a+b,0)/vals.length;
+    }
+    return { scores: Object.keys(dimScores).length > 0 ? dimScores : rawScores };
   }
   if (type === 'normen') {
     const normenState2 = {};
@@ -2403,7 +2411,7 @@ function snapshotBtn(moduleId) {
     style="margin-top:10px;padding:7px 14px;border-radius:7px;border:1px solid rgba(201,168,76,.3);
     background:rgba(201,168,76,.08);color:#c9a84c;font-size:12px;font-weight:600;cursor:pointer;
     ${exists ? 'background:rgba(42,157,143,.12);border-color:rgba(42,157,143,.35);color:#2a9d8f;' : ''}">
-    ${exists ? '📸 Aktualisieren' : '📸 Snapshot für Handout'}
+    ${exists ? '+ Aktualisieren' : '+ Snapshot für Handout'}
   </button>`;
 }
 
@@ -2463,7 +2471,8 @@ async function generateHandoutPDF() {
       need(14);
       doc.setFillColor(...col); doc.rect(ML-1, y-5, cW+2, 10, 'F');
       doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...GOLD);
-      doc.text(icon+'  '+title, ML+2, y+2);
+      const titleLines = doc.splitTextToSize(title, cW-4);
+      doc.text(titleLines[0], ML+2, y+2);
       y += 12;
     };
 
@@ -2519,7 +2528,7 @@ async function generateHandoutPDF() {
     y += 13;
     snaps.forEach((s,i) => {
       doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(50,40,15);
-      doc.text((i+1)+'.  '+s.icon+'  '+s.title, ML+6, y);
+      doc.text((i+1)+'.   '+s.title, ML+6, y);
       doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(150,130,70);
       doc.text(new Date(s.ts).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'}), W-MR-4, y, {align:'right'});
       y += 9;
@@ -2676,8 +2685,18 @@ async function generateHandoutPDF() {
         });
       }
 
-      // KI-Interpretation
-      if (snap.kiText) kiBox(snap.kiText);
+      // KI-Interpretation nur wenn Daten vorhanden
+      const hasData = (snap.type==='quotes' && snap.data.quotes?.length>0) ||
+                      (snap.type==='disc' && snap.data.profiles?.length>0) ||
+                      (snap.type==='tna' && snap.data.scores && Object.keys(snap.data.scores).length>0) ||
+                      (snap.type==='normen') || (snap.type==='versprechen');
+      if (snap.kiText && hasData) kiBox(snap.kiText);
+      else if (!hasData) {
+        need(12);
+        doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(130,115,70);
+        doc.text('Keine Teilnehmer-Antworten für dieses Modul erfasst.', ML, y);
+        y += 10;
+      }
     });
 
     // ════ BRIEF DER KI ═════════════════════════════════════════════
