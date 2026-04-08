@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -12,20 +13,37 @@ serve(async (req) => {
   }
 
   try {
-    const { participantId, joinToken, module, content, responseType, alias: aliasOverride, anonymous } = await req.json()
-
-    if (!participantId || !joinToken || !module || !content) {
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
+    const body = await req.json()
+    const { participantId, joinToken, module, content, responseType, alias: aliasOverride, anonymous } = body
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Verify participant exists and token matches
+    // ── Screenshot-Bypass (kein participant nötig) ──────────────────
+    if (responseType === 'beamer_screenshot' && body.workshopId) {
+      const { error } = await supabase.from('exercise_responses').insert({
+        workshop_id: body.workshopId,
+        participant_id: null,
+        alias: '__screenshot__',
+        module: module || 'unknown',
+        response_type: 'beamer_screenshot',
+        content: content.trim()
+      })
+      if (error && error.code !== '23505') throw error
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // ── Normaler Pfad ───────────────────────────────────────────────
+    if (!participantId || !joinToken || !module || !content) {
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     const { data: participant, error: pErr } = await supabase
       .from('participants')
       .select('id, alias, workshop_id')
@@ -39,7 +57,6 @@ serve(async (req) => {
       })
     }
 
-    // Insert response (unique constraint prevents duplicates)
     const { data: response, error: iErr } = await supabase
       .from('exercise_responses')
       .insert({
@@ -54,7 +71,6 @@ serve(async (req) => {
       .single()
 
     if (iErr) {
-      // Unique constraint violation = already submitted
       if (iErr.code === '23505') {
         return new Response(JSON.stringify({ error: 'Already submitted', alreadySubmitted: true }), {
           status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' }

@@ -491,3 +491,113 @@ const sigDataUrl = urkSigCanvas.toDataURL('image/jpeg', 0.92);
 - [ ] KI-generiertes Handout (Gesamtzusammenfassung des Workshops)
 - [ ] Kosmetische Feinschliffe nach ersten Drucktests
 - [ ] CLAUDE.md → memory_user_edits aktualisieren
+
+---
+
+## 19. NEU: Screenshot-Handout System + Pending Bugs (Session 08.04.2026)
+
+### 19.1 Was gebaut wurde
+
+**Screenshot-System (beamer.html):**
+- html2canvas lädt Screenshots des Beamers
+- Beamer pollt `localStorage` alle 1 Sekunde auf Key `disc-screenshot-request`
+- Moderator schreibt Request in localStorage → Beamer reagiert
+- Screenshots werden via Edge Function `submit-exercise` in Supabase gespeichert (response_type: 'beamer_screenshot', alias: '__screenshot__')
+- Edge Function wurde erweitert: wenn `responseType === 'beamer_screenshot'` → direkter Insert ohne participant_id (Service Role Key umgeht RLS)
+
+**Moderator-Panel (closing-Modul):**
+- "Screenshot jetzt" Button → schreibt `disc-screenshot-request` in localStorage
+- "Screenshot" Button neben jedem Beamer-Info-Badge → ruft `sendScreenshotCommandForModule(moduleId)` auf
+- "Handout aus Screenshots exportieren" → liest aus Supabase (primary) oder localStorage (fallback)
+- "Text-Handout exportieren" → Snapshot-System (Text + KI)
+
+### 19.2 PENDING BUGS — Muss im nächsten Chat gefixt werden
+
+**BUG 1: PDF-Export der Screenshots schlägt fehl**
+- Screenshots werden in Supabase gefunden (Meldung erscheint)
+- Aber danach passiert nichts — kein Download
+- Vermutlich: `doc.addImage()` schlägt still fehl wegen imgData-Format oder jsPDF-Fehler
+- Fix-Ansatz: Console-Logging in den try/catch von `doc.addImage()` verbessern
+- Datei: `moderator.html` → Funktion `generateScreenshotHandout()`
+- Screenshot-Qualität: scale 0.35, quality 0.50
+
+**BUG 2: Nicht alle Module haben Screenshot-Button**
+- Blacklist in moderator.html: `['waiting','normen_info','normen_theorie','mut_info','gfk_info','raci_info','disc_role_profile','pairing_karten']`
+- Fehlende Module müssen geprüft werden
+- Fix: Blacklist weiter reduzieren oder jeden Modul einzeln prüfen
+
+**BUG 3: Text-Handout zeigt Demo-Daten statt echte Test-Daten**
+- `generateHandoutPDF()` lädt Daten aus Supabase
+- DISC-Daten kommen aus `participants`-Array (globale Variable) — enthält möglicherweise Demo-Daten
+- Fix: DISC direkt aus Supabase via REST laden (wie in refreshOnlineWorkshop)
+- INTERACTIVE-Liste in refreshOnlineWorkshop prüfen: enthält sie alle relevanten Module?
+
+### 19.3 Architektur Screenshot-System
+
+```
+Moderator klickt "Screenshot"
+    → localStorage.setItem('disc-screenshot-request', {moduleId, label, ts})
+
+Beamer pollt setInterval(1000ms)
+    → liest 'disc-screenshot-request'
+    → wenn ts > lastReqTs: doScreenshot()
+    → html2canvas (scale:0.35, quality:0.50)
+    → fetch(EDGE+'/submit-exercise', {responseType:'beamer_screenshot', workshopId, content:JSON})
+    → localStorage 'disc-screenshots-v1' als Backup
+
+Moderator "Handout exportieren"
+    → sb.from('exercise_responses').eq('response_type','beamer_screenshot').eq('alias','__screenshot__')
+    → Fallback: localStorage 'disc-screenshots-v1'
+    → jsPDF A4 Landscape mit Screenshots
+```
+
+### 19.4 submit-exercise Edge Function (wichtige Änderung)
+
+Screenshot-Bypass wurde hinzugefügt (kein participantId nötig):
+```typescript
+if (responseType === 'beamer_screenshot' && body.workshopId) {
+  // Direkter Insert mit Service Role Key, participant_id = null
+}
+```
+
+### 19.5 KI_FEED_MODULES und INTERACTIVE (wichtig!)
+
+Diese Listen müssen SYNCHRON sein — wenn ein Modul KI-Analyse haben soll:
+1. In `KI_FEED_MODULES` Set eintragen
+2. In `INTERACTIVE` Array eintragen (sonst werden liveResponses nicht geladen)
+
+Aktueller Stand (moderator.html):
+```javascript
+const KI_FEED_MODULES = new Set(['intro_question','kernbotschaften','johari_reflexion',
+  'was_sage_ich_nicht','morgen_reflexion','gfk','gfk_coaching','steckbrief_vorschlaege', ...]);
+
+const INTERACTIVE=['intro_question','johari_quiz','johari_reflexion','kernbotschaften',
+  'was_sage_ich_nicht','morgen_reflexion','gfk','gfk_coaching','raci', ...];
+```
+
+### 19.6 Snapshot-System (Text-Handout)
+
+- Snapshots in `localStorage` Key `disc-handout-snapshots-v1`
+- `takeSnapshot(moduleId)` → sammelt liveResponses → KI schreibt Interpretation
+- Button-Label: "+ Text-Snapshot speichern" / "+ Text aktualisieren"
+- `generateHandoutPDF()` → baut Text-PDF aus Snapshots
+- Problem: Demo-Daten im DISC-Abschnitt wenn participants-Array Demo-Daten enthält
+
+### 19.7 Deploy-Befehle
+
+```bash
+# Frontend deployen
+C:\Users\chbec\miniconda3\python.exe C:\Users\chbec\deploy_steckbrief.py
+
+# Edge Function deployen
+cd /d E:\Programme\Homepage Brainfusion
+npx supabase functions deploy submit-exercise --project-ref dnoecftuybkoqvrkfvei
+```
+
+### 19.8 Nächste Schritte (Priorität)
+
+1. **KRITISCH: Screenshot-PDF-Export debuggen** — Logging verbessern, herausfinden warum `doc.save()` nicht ausgeführt wird
+2. **Screenshot-Button auf allen Modulen** — Blacklist prüfen
+3. **Demo-Daten aus Text-Handout entfernen** — DISC direkt aus Supabase laden
+4. **Workshop 22./23. April** — Kompletten Durchlauf testen
+
