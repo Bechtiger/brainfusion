@@ -1043,16 +1043,24 @@ async function handleModule(mod, data) {
   if (mod !== 'waiting') {
     // KI-Module brauchen längere Wartezeit (bis KI-Analyse dargestellt ist)
     const KI_DELAY = {
-      teamnormen_analyse: 12000, // Radar + KI-Text
-      disc_results: 4000,        // DISC Auswertung
-      disc_map: 3500,            // Karte rendert
-      johari_erklaerung: 3000,   // Johari-Animation
-      gfk_coaching: 8000,        // KI-Coaching
-      kernbotschaften: 8000,     // KI-Analyse
-      intro_question: 6000,      // KI-Analyse
+      teamnormen_analyse: 12000,         // Radar + KI-Text
+      disc_results: 4500,                // DISC Auswertung
+      disc_map: 4000,                    // Karte rendert
+      johari_erklaerung: 3500,           // Johari-Animation
+      kognitive_verzerrungen_info: 3500, // Content-Render
+      normen_info: 3500,                 // Normen-Screens
+      gfk_coaching: 9000,               // KI-Coaching
+      kernbotschaften: 9000,            // KI-Analyse
+      intro_question: 7000,             // KI-Analyse
+      morgen_reflexion: 7000,           // KI-Analyse
     };
-    const delay = KI_DELAY[mod] || 2200; // Standard: 2.2s für Render
+    const delay = KI_DELAY[mod] || 2500; // Standard: 2.5s für Render
     setTimeout(() => {
+      // Race-Condition-Schutz: nur screenshotten wenn Modul noch aktiv ist
+      if (currentModule !== mod) {
+        console.log('Auto-Screenshot abgebrochen (Modul gewechselt):', mod, '→', currentModule);
+        return;
+      }
       doScreenshot(mod, MODULE_LABELS[mod] || mod);
     }, delay);
   }
