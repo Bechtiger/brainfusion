@@ -1038,6 +1038,24 @@ async function handleModule(mod, data) {
     case 'sClosing':  showClosing(); break;
     default:          showGeneric(meta, data);
   }
+
+  // Auto-Screenshot nach Modulwechsel (ausser Waiting)
+  if (mod !== 'waiting') {
+    // KI-Module brauchen längere Wartezeit (bis KI-Analyse dargestellt ist)
+    const KI_DELAY = {
+      teamnormen_analyse: 12000, // Radar + KI-Text
+      disc_results: 4000,        // DISC Auswertung
+      disc_map: 3500,            // Karte rendert
+      johari_erklaerung: 3000,   // Johari-Animation
+      gfk_coaching: 8000,        // KI-Coaching
+      kernbotschaften: 8000,     // KI-Analyse
+      intro_question: 6000,      // KI-Analyse
+    };
+    const delay = KI_DELAY[mod] || 2200; // Standard: 2.2s für Render
+    setTimeout(() => {
+      doScreenshot(mod, MODULE_LABELS[mod] || mod);
+    }, delay);
+  }
 }
 
 function handleGenericModule(mod, data) {
@@ -3138,13 +3156,29 @@ window.addEventListener('load', ()=>{
       });
       const imgData = canvas.toDataURL('image/jpeg', 0.72);
       // Helligkeit für PDF-Export aufhellen (Beamer ist dunkel designed)
+      // Gamma-Korrektur auf Pixel-Ebene (viel effektiver als CSS filter für dunkle Screens)
       const brightCanvas = document.createElement('canvas');
       brightCanvas.width = canvas.width;
       brightCanvas.height = canvas.height;
       const bCtx = brightCanvas.getContext('2d');
-      bCtx.filter = 'brightness(1.8) contrast(1.15) saturate(1.2)';
-      bCtx.drawImage(canvas, 0, 0);
-      const imgDataBright = brightCanvas.toDataURL('image/jpeg', 0.78);
+      bCtx.drawImage(canvas, 0, 0); // zuerst zeichnen, dann Pixel manipulieren
+      const imageData = bCtx.getImageData(0, 0, brightCanvas.width, brightCanvas.height);
+      const px = imageData.data;
+      const gamma = 0.38; // Gamma < 1 hebt Dunkeltöne stark an
+      const gain  = 1.35; // Gesamthelligkeit
+      // Precompute LUT für Speed
+      const lut = new Uint8Array(256);
+      for (let v = 0; v < 256; v++) {
+        lut[v] = Math.min(255, Math.round(Math.pow(v / 255, gamma) * 255 * gain));
+      }
+      for (let i = 0; i < px.length; i += 4) {
+        px[i]   = lut[px[i]];    // R
+        px[i+1] = lut[px[i+1]]; // G
+        px[i+2] = lut[px[i+2]]; // B
+        // Alpha (px[i+3]) unverändert
+      }
+      bCtx.putImageData(imageData, 0, 0);
+      const imgDataBright = brightCanvas.toDataURL('image/jpeg', 0.82);
       console.log('Screenshot Größe (orig/hell):', Math.round(imgData.length/1024)+'KB /', Math.round(imgDataBright.length/1024)+'KB');
 
       // Via Edge Function speichern (Service Role Key = kein RLS Problem)
