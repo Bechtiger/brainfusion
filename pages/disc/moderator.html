@@ -2424,7 +2424,7 @@ function snapshotBtn(moduleId) {
     style="margin-top:10px;padding:7px 14px;border-radius:7px;border:1px solid rgba(201,168,76,.3);
     background:rgba(201,168,76,.08);color:#c9a84c;font-size:12px;font-weight:600;cursor:pointer;
     ${exists ? 'background:rgba(42,157,143,.12);border-color:rgba(42,157,143,.35);color:#2a9d8f;' : ''}">
-    ${exists ? '+ Aktualisieren' : '+ Snapshot für Handout'}
+    ${exists ? '+ Text aktualisieren' : '+ Text-Snapshot speichern'}
   </button>`;
 }
 
@@ -2785,62 +2785,55 @@ async function generateHandoutPDF() {
 async function sendScreenshotCommand() {
   const btn = document.getElementById('screenshotCmdBtn');
   const status = document.getElementById('screenshotCmdStatus');
-  if (btn) { btn.disabled=true; btn.textContent='Warte auf Beamer…'; }
+  if (btn) { btn.disabled=true; btn.textContent='Sende...'; }
   const setS = (m) => { if(status) status.innerHTML = m; };
-
   try {
     initSupabase();
     const wsId = onlineSession?.workshopId;
     if (!wsId) throw new Error('Kein aktiver Workshop');
-
-    // Broadcast an Beamer via Supabase Realtime
-    await sb.channel('screenshot_cmd_'+wsId)
-      .send({ type:'broadcast', event:'take_screenshot', payload:{} });
-
-    setS('Screenshot-Befehl gesendet — Beamer macht Screenshot');
-    if (btn) { btn.textContent='Erneut Screenshot'; btn.style.background='rgba(42,157,143,.15)'; btn.style.borderColor='rgba(42,157,143,.4)'; btn.style.color='#2a9d8f'; }
-    setTimeout(() => {
-      if(btn){ btn.style.background=''; btn.style.borderColor=''; btn.style.color=''; }
-      setS('');
-    }, 3000);
-
+    // Supabase Broadcast: zuerst subscriben, dann senden
+    const ch = sb.channel('screenshot_cmd_'+wsId);
+    await new Promise(resolve => {
+      ch.subscribe(status => { if(status==='SUBSCRIBED') resolve(); });
+      setTimeout(resolve, 2000); // Fallback
+    });
+    await ch.send({ type:'broadcast', event:'take_screenshot', payload:{} });
+    setS('Befehl gesendet — Beamer fotografiert');
+    if(btn){ btn.textContent='Erneut'; btn.style.color='#2a9d8f'; }
+    setTimeout(()=>{ if(btn){btn.style.color='';btn.textContent='Screenshot jetzt';} setS(''); }, 3000);
   } catch(e) {
     setS('Fehler: '+e.message);
-    if (btn) btn.textContent='Screenshot jetzt';
-  } finally {
-    if (btn) btn.disabled = false;
-  }
-}
-
-// Screenshot-Button für jeden Modul-Header (klein, diskret)
-function screenshotModuleBtn(moduleId) {
-  return `<button onclick="event.stopPropagation();sendScreenshotCommandForModule('${moduleId}')"
-    style="padding:5px 12px;border-radius:6px;border:1px solid rgba(201,168,76,.3);
-    background:rgba(201,168,76,.07);color:#c9a84c;font-size:11px;cursor:pointer;
-    margin-left:8px;vertical-align:middle;"
-    title="Screenshot des Beamers für Handout speichern">
-    Screenshot
-  </button>`;
+    if(btn) btn.textContent='Screenshot jetzt';
+  } finally { if(btn) btn.disabled=false; }
 }
 
 async function sendScreenshotCommandForModule(moduleId) {
-  // Kurzes visuelles Feedback am Button
-  const allBtns = document.querySelectorAll(`[onclick*="sendScreenshotCommandForModule('${moduleId}')"]`);
-  allBtns.forEach(b => { b.textContent='...'; b.disabled=true; });
-
+  const allBtns = document.querySelectorAll(`button[data-screenshot="${moduleId}"]`);
+  allBtns.forEach(b=>{ b.textContent='Sende...'; b.disabled=true; });
   try {
     initSupabase();
     const wsId = onlineSession?.workshopId;
     if (!wsId) return;
-    await sb.channel('screenshot_cmd_'+wsId)
-      .send({ type:'broadcast', event:'take_screenshot', payload:{ moduleId } });
-    allBtns.forEach(b => { b.textContent='OK'; b.style.color='#2a9d8f'; });
-  } catch(e) {
-    allBtns.forEach(b => { b.textContent='Fehler'; });
-  }
-  setTimeout(() => {
-    allBtns.forEach(b => { b.textContent='Screenshot'; b.style.color=''; b.disabled=false; });
-  }, 2000);
+    // Zuerst subscriben, dann senden
+    const ch = sb.channel('screenshot_cmd_'+wsId);
+    await new Promise(resolve => {
+      ch.subscribe(s => { if(s==='SUBSCRIBED') resolve(); });
+      setTimeout(resolve, 2000);
+    });
+    await ch.send({ type:'broadcast', event:'take_screenshot', payload:{ moduleId } });
+    allBtns.forEach(b=>{ b.textContent='OK ✓'; b.style.color='#2a9d8f'; });
+  } catch(e) { allBtns.forEach(b=>{ b.textContent='Fehler'; }); }
+  setTimeout(()=>{ allBtns.forEach(b=>{ b.textContent='Screenshot'; b.style.color=''; b.disabled=false; }); }, 2500);
+}
+
+// Screenshot-Button mit data-Attribut statt onclick-String (sicherer)
+function screenshotModuleBtn(moduleId) {
+  return `<button data-screenshot="${moduleId}"
+    onclick="sendScreenshotCommandForModule('${moduleId}')"
+    style="padding:5px 12px;border-radius:6px;border:1px solid rgba(201,168,76,.3);
+    background:rgba(201,168,76,.07);color:#c9a84c;font-size:11px;cursor:pointer;margin-left:8px;">
+    Screenshot
+  </button>`;
 }
 
 /* ─── SCREENSHOT HANDOUT ─────────────────────────────────────────────────── */
