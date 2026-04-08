@@ -3122,7 +3122,7 @@ window.addEventListener('load', ()=>{
 
     try {
       const canvas = await html2canvas(document.body, {
-        scale: 0.55,
+        scale: 0.35,           // Sehr klein für Broadcast-Limit
         useCORS: true,
         backgroundColor: '#060610',
         logging: false,
@@ -3130,8 +3130,8 @@ window.addEventListener('load', ()=>{
         windowHeight: window.innerHeight,
         imageTimeout: 5000,
       });
-      const imgData = canvas.toDataURL('image/jpeg', 0.72);
-      const wsId = session?.workshopId;
+      const imgData = canvas.toDataURL('image/jpeg', 0.50);
+      console.log('Screenshot Größe:', Math.round(imgData.length/1024), 'KB');
 
       // Lokal speichern (Moderator holt sie via Broadcast)
       try {
