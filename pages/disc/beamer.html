@@ -3111,10 +3111,10 @@ window.addEventListener('load', ()=>{
     badge._t = setTimeout(() => { badge.style.display='none'; }, 2500);
   }
 
-  async function doScreenshot() {
+  async function doScreenshot(overrideModuleId, overrideLabel) {
     const session = JSON.parse(localStorage.getItem('disc-online-session-v2')||'{}');
-    const moduleId = session?.currentModule || 'modul';
-    const label = MODULE_LABELS[moduleId] || moduleId;
+    const moduleId = overrideModuleId || session?.currentModule || 'modul';
+    const label = overrideLabel || MODULE_LABELS[moduleId] || moduleId;
 
     // Flash-Effekt
     flash.style.opacity = '0.4';
@@ -3157,47 +3157,20 @@ window.addEventListener('load', ()=>{
     }
   }
 
-  // Auf Supabase Realtime hören — Moderator sendet screenshot_command
-  // Warte bis Supabase-Client initialisiert ist
-  function waitForSbAndListen() {
-    if (typeof window._sb === 'undefined') {
-      // _sb wird im Haupt-Init-Code gesetzt — kurz warten
-      setTimeout(waitForSbAndListen, 500);
-      return;
-    }
-    const session = JSON.parse(localStorage.getItem('disc-online-session-v2')||'{}');
-    const wsId = session?.workshopId;
-    if (!wsId) { setTimeout(waitForSbAndListen, 1000); return; }
+  // Screenshot via localStorage-Polling (zuverlässiger als Realtime Broadcast)
+  const REQ_KEY  = 'disc-screenshot-request';
+  const SHOT_KEY2 = 'disc-screenshots-v1';
+  let lastReqTs = 0;
 
-    window._sb.channel('screenshot_cmd_' + wsId)
-      .on('broadcast', { event: 'take_screenshot' }, () => {
-        console.log('Screenshot-Befehl empfangen');
-        doScreenshot();
-      })
-      .on('broadcast', { event: 'request_screenshots' }, async () => {
-        // Moderator fragt nach allen gespeicherten Screenshots
-        const shots = JSON.parse(localStorage.getItem(SHOT_KEY)||'[]');
-        console.log('Sende', shots.length, 'Screenshots an Moderator');
-        // In Chunks senden (localStorage-Daten können gross sein)
-        for (let i = 0; i < shots.length; i++) {
-          await window._sb.channel('screenshot_cmd_' + wsId).send({
-            type: 'broadcast',
-            event: 'screenshot_data',
-            payload: { index: i, total: shots.length, shot: shots[i] }
-          });
-          await new Promise(r => setTimeout(r, 100)); // Kurze Pause
-        }
-        if (shots.length === 0) {
-          await window._sb.channel('screenshot_cmd_' + wsId).send({
-            type: 'broadcast', event: 'screenshot_data',
-            payload: { index: 0, total: 0, shot: null }
-          });
-        }
-      })
-      .subscribe();
-    console.log('Screenshot-Listener aktiv für Workshop', wsId);
-  }
-  setTimeout(waitForSbAndListen, 1500);
+  setInterval(async () => {
+    try {
+      const req = JSON.parse(localStorage.getItem(REQ_KEY) || 'null');
+      if (!req || req.ts <= lastReqTs) return;
+      lastReqTs = req.ts;
+      console.log('Screenshot-Request erkannt:', req.moduleId);
+      await doScreenshot(req.moduleId, req.label);
+    } catch(e) {}
+  }, 1000); // Jede Sekunde prüfen
 
   // Tastenkürzel Ctrl+Shift+S als Backup (direkt am Beamer)
   document.addEventListener('keydown', e => {

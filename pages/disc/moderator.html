@@ -2792,17 +2792,10 @@ async function sendScreenshotCommand() {
   if (btn) { btn.disabled=true; btn.textContent='Sende...'; }
   const setS = (m) => { if(status) status.innerHTML = m; };
   try {
-    initSupabase();
-    const wsId = onlineSession?.workshopId;
-    if (!wsId) throw new Error('Kein aktiver Workshop');
-    // Supabase Broadcast: zuerst subscriben, dann senden
-    const ch = sb.channel('screenshot_cmd_'+wsId);
-    await new Promise(resolve => {
-      ch.subscribe(status => { if(status==='SUBSCRIBED') resolve(); });
-      setTimeout(resolve, 2000); // Fallback
-    });
-    await ch.send({ type:'broadcast', event:'take_screenshot', payload:{} });
-    setS('Befehl gesendet — Beamer fotografiert');
+    const mod = onlineSession?.currentModule || 'modul';
+    const labels = {intro_question:'Einstiegsfrage',disc_map:'DISC Live-Map',disc_results:'DISC Resultate',teamnormen_analyse:'Team-Normen-Analyse',steckbrief_normen:'Steckbrief',closing:'Abschluss'};
+    localStorage.setItem('disc-screenshot-request', JSON.stringify({ moduleId: mod, label: labels[mod]||mod, ts: Date.now() }));
+    setS('Befehl gesendet — Beamer fotografiert in ~1 Sek.');
     if(btn){ btn.textContent='Erneut'; btn.style.color='#2a9d8f'; }
     setTimeout(()=>{ if(btn){btn.style.color='';btn.textContent='Screenshot jetzt';} setS(''); }, 3000);
   } catch(e) {
@@ -2815,16 +2808,9 @@ async function sendScreenshotCommandForModule(moduleId) {
   const allBtns = document.querySelectorAll(`button[data-screenshot="${moduleId}"]`);
   allBtns.forEach(b=>{ b.textContent='Sende...'; b.disabled=true; });
   try {
-    initSupabase();
-    const wsId = onlineSession?.workshopId;
-    if (!wsId) return;
-    // Zuerst subscriben, dann senden
-    const ch = sb.channel('screenshot_cmd_'+wsId);
-    await new Promise(resolve => {
-      ch.subscribe(s => { if(s==='SUBSCRIBED') resolve(); });
-      setTimeout(resolve, 2000);
-    });
-    await ch.send({ type:'broadcast', event:'take_screenshot', payload:{ moduleId } });
+    const labels = {intro_question:'Einstiegsfrage',johari_erklaerung:'Johari-Fenster',johari_reflexion:'Johari Reflexion',was_sage_ich_nicht:'Was ich nicht sage',bias_story:'Bestaedigungsfehler',kernbotschaften:'Kernbotschaften',gfk:'GFK',disc_map:'DISC Live-Map',disc_results:'DISC Resultate',teamnormen_analyse:'Team-Normen-Analyse',steckbrief_normen:'Steckbrief',steckbrief_urkunde:'Urkunde',morgen_reflexion:'Morgen-Reflexion',closing:'Abschluss'};
+    // Schreibe Request in localStorage — Beamer pollt und reagiert
+    localStorage.setItem('disc-screenshot-request', JSON.stringify({ moduleId, label: labels[moduleId]||moduleId, ts: Date.now() }));
     allBtns.forEach(b=>{ b.textContent='OK ✓'; b.style.color='#2a9d8f'; });
   } catch(e) { allBtns.forEach(b=>{ b.textContent='Fehler'; }); }
   setTimeout(()=>{ allBtns.forEach(b=>{ b.textContent='Screenshot'; b.style.color=''; b.disabled=false; }); }, 2500);
