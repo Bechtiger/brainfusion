@@ -2205,7 +2205,11 @@ function renderHandoutSection() {
         background:rgba(74,144,217,.08);color:#4a90d9;font-size:12px;font-weight:600;cursor:pointer;">
         Handout aus Screenshots exportieren
       </button>
-      <div id="screenshotHandoutStatus" style="font-size:11px;color:var(--muted);margin-top:5px;text-align:center;min-height:14px;"></div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <div id="screenshotHandoutStatus" style="flex:1;font-size:11px;color:var(--muted);text-align:center;min-height:14px;padding-top:2px;"></div>
+        <button onclick="if(confirm('Alle Screenshots löschen?')){localStorage.removeItem('disc-screenshots-v1');this.previousElementSibling.textContent='Gelöscht';}"
+          style="padding:4px 10px;border-radius:6px;border:1px solid rgba(200,60,60,.25);background:rgba(200,60,60,.06);color:rgba(200,80,80,.7);font-size:11px;cursor:pointer;">🗑</button>
+      </div>
     </div>
 
     <!-- SNAPSHOT-HANDOUT (bestehend) -->
@@ -2844,36 +2848,18 @@ async function generateScreenshotHandout() {
   const setS = (m) => { if(status) status.innerHTML = m; };
 
   try {
-    setS('📡 Hole Screenshots vom Beamer…');
-    initSupabase();
-    const wsId = onlineSession?.workshopId;
-    if (!wsId) throw new Error('Kein aktiver Workshop');
+    setS('📥 Screenshots werden geladen…');
 
-    // Screenshots via Broadcast vom Beamer holen
-    const shots = await new Promise(async (resolve) => {
-      const collected = [];
-      let expectedTotal = -1;
-      let resolved = false;
+    // Direkt aus localStorage lesen — gleicher Browser, gleiche Domain
+    let shots = [];
+    try {
+      shots = JSON.parse(localStorage.getItem('disc-screenshots-v1') || '[]');
+    } catch(e) { shots = []; }
 
-      const ch = sb.channel('screenshot_cmd_'+wsId);
-      await new Promise(r => { ch.subscribe(s => { if(s==='SUBSCRIBED') r(); }); setTimeout(r, 2000); });
-
-      ch.on('broadcast', { event: 'screenshot_data' }, ({ payload }) => {
-        if (payload.total === 0) { if(!resolved){ resolved=true; resolve([]); } return; }
-        expectedTotal = payload.total;
-        if (payload.shot) collected.push(payload.shot);
-        if (collected.length >= expectedTotal && !resolved) { resolved=true; resolve(collected); }
-      });
-
-      // Broadcast senden
-      await ch.send({ type:'broadcast', event:'request_screenshots', payload:{} });
-
-      // Timeout 8 Sekunden
-      setTimeout(() => { if(!resolved){ resolved=true; resolve(collected); } }, 8000);
-    });
+    console.log('Gefundene Screenshots im localStorage:', shots.length);
 
     if (shots.length === 0) {
-      setS('⚠️ Keine Screenshots gefunden.<br><small>Klicke zuerst bei jedem Modul auf <strong>Screenshot</strong> — der Beamer muss geöffnet sein.</small>');
+      setS('⚠️ Keine Screenshots gefunden.<br><small>Klicke bei jedem Modul auf <strong>Screenshot</strong> — Beamer und Moderator müssen im gleichen Browser geöffnet sein.</small>');
       btn.disabled = false; return;
     }
 
