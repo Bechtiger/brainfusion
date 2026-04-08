@@ -2895,22 +2895,29 @@ async function generateScreenshotHandout() {
       W/2, H-14, {align:'center', maxWidth:W-40});
 
     // ── Screenshot-Seiten ──────────────────────────────────────────────
+    let successCount = 0;
     for (let i = 0; i < shots.length; i++) {
       const shot = shots[i];
+      setS(`🖼 Seite ${i+1} / ${shots.length} wird gerendert…`);
       doc.addPage([297,210], 'landscape');
 
       // Bild einfügen (volle Seite mit kleinem Rand)
       try {
-        if (!shot.imgData || shot.imgData.length < 100) throw new Error('Kein Bild');
+        if (!shot.imgData || shot.imgData.length < 100) throw new Error('Kein imgData');
+        // WICHTIG: jsPDF 2.5.1 braucht reines Base64 (ohne data:... prefix)
         const imgFormat = shot.imgData.includes('image/jpeg') ? 'JPEG' : 'PNG';
-        doc.addImage(shot.imgData, imgFormat, 5, 5, W-10, H-18);
+        const base64 = shot.imgData.includes(',') ? shot.imgData.split(',')[1] : shot.imgData;
+        console.log(`Bild ${i+1}: format=${imgFormat}, base64-Länge=${base64?.length}, shot-keys=${Object.keys(shot).join(',')}`);
+        if (!base64 || base64.length < 50) throw new Error('Base64 leer oder zu kurz: ' + base64?.length);
+        doc.addImage(base64, imgFormat, 5, 5, W-10, H-18);
+        successCount++;
       } catch(e) {
-        console.warn('Bild '+i+' Fehler:', e.message, 'Länge:', shot.imgData?.length);
+        console.warn(`Bild ${i+1} Fehler:`, e.message, '| imgData-Länge:', shot.imgData?.length, '| shot:', JSON.stringify(shot).substring(0,200));
         doc.setFillColor(20,20,40); doc.rect(5,5,W-10,H-18,'F');
         doc.setFont('helvetica','normal'); doc.setFontSize(14); doc.setTextColor(180,160,80);
         doc.text(shot.label||shot.moduleId||'Modul', W/2, H/2-6, {align:'center'});
         doc.setFontSize(10); doc.setTextColor(100,90,60);
-        doc.text('Screenshot nicht verfügbar', W/2, H/2+4, {align:'center'});
+        doc.text('Screenshot nicht verfügbar: '+e.message.substring(0,60), W/2, H/2+4, {align:'center', maxWidth: W-20});
       }
 
       // Schmaler Footer-Streifen
@@ -2926,14 +2933,16 @@ async function generateScreenshotHandout() {
 
     // ── Speichern ──────────────────────────────────────────────────────
     const fn = 'Workshop-Beamer-Handout-'+new Date().toLocaleDateString('de-CH').replace(/\./g,'-')+'.pdf';
+    setS(`💾 PDF wird gespeichert (${successCount} von ${shots.length} Bilder OK)…`);
     try { doc.save(fn); }
     catch(e) {
+      console.warn('doc.save Fehler, versuche Blob-Fallback:', e.message);
       const blob=doc.output('blob');
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a'); a.href=url; a.download=fn; a.click();
       setTimeout(()=>URL.revokeObjectURL(url),5000);
     }
-    setS(`✓ ${shots.length} Screenshots · PDF heruntergeladen`);
+    setS(`✓ ${shots.length} Screenshots (${successCount} mit Bild) · PDF heruntergeladen`);
     setTimeout(()=>{ if(status) status.textContent=''; },5000);
 
   } catch(e) {
