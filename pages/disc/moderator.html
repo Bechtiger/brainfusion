@@ -920,7 +920,7 @@ async function renderModuleContent(moduleId){
     ${detail.beamer?`<div class="mod-beamer-info">📽 ${detail.beamer}${onlineSession?.code?screenshotModuleBtn(moduleId):''}</div>`:''}
     ${hintsHTML}
     ${dataHTML}
-    ${!['waiting','normen_info','normen_theorie','kognitive_verzerrungen_info','mut_info','gfk_info','gfk_fallbeispiel','raci_info','disc_role_profile','pairing_karten','disc_map'].includes(moduleId) ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
+    ${!['waiting','normen_info','normen_theorie','mut_info','gfk_info','raci_info','disc_role_profile','pairing_karten'].includes(moduleId) ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
   </div>`;
 
   // Canvas für DISC-Map zeichnen (nach DOM-Insert)
