@@ -3083,7 +3083,9 @@ window.addEventListener('load', ()=>{
     waiting:'Bereit', intro_question:'Einstiegsfrage',
     johari_erklaerung:'Johari-Fenster', johari_fallbeispiele:'Johari Fallbeispiele',
     johari_reflexion:'Johari Reflexion', was_sage_ich_nicht:'Was ich nicht sage',
-    bias_story:'Bestaedigungsfehler', verzerrungen_quiz:'Kognitive Verzerrungen',
+    bias_story:'Bestätigungsfehler', verzerrungen_quiz:'Kognitive Verzerrungen',
+    kognitive_verzerrungen_info:'Kognitive Verzerrungen — Theorie',
+    disc_role_profile:'DISC Rollenprofil', mut_info:'Mut zur Wahrheit',
     gfk_info:'GFK Info', gfk_fallbeispiel:'GFK Fallbeispiel',
     gfk_coaching:'GFK Coaching', gfk:'GFK Ergebnisse',
     kernbotschaften:'Kernbotschaften', disc_test:'DISC-Test',
@@ -3134,8 +3136,16 @@ window.addEventListener('load', ()=>{
         imageTimeout: 8000,
         ignoreElements: (el) => el === flash, // Flash-Overlay ignorieren
       });
-      const imgData = canvas.toDataURL('image/jpeg', 0.72); // Bessere Qualität (war 0.50)
-      console.log('Screenshot Größe:', Math.round(imgData.length/1024), 'KB');
+      const imgData = canvas.toDataURL('image/jpeg', 0.72);
+      // Helligkeit für PDF-Export aufhellen (Beamer ist dunkel designed)
+      const brightCanvas = document.createElement('canvas');
+      brightCanvas.width = canvas.width;
+      brightCanvas.height = canvas.height;
+      const bCtx = brightCanvas.getContext('2d');
+      bCtx.filter = 'brightness(1.8) contrast(1.15) saturate(1.2)';
+      bCtx.drawImage(canvas, 0, 0);
+      const imgDataBright = brightCanvas.toDataURL('image/jpeg', 0.78);
+      console.log('Screenshot Größe (orig/hell):', Math.round(imgData.length/1024)+'KB /', Math.round(imgDataBright.length/1024)+'KB');
 
       // Via Edge Function speichern (Service Role Key = kein RLS Problem)
       const wsId = session?.workshopId;
@@ -3145,7 +3155,7 @@ window.addEventListener('load', ()=>{
           body: JSON.stringify({
             workshopId: wsId, module: moduleId,
             responseType: 'beamer_screenshot',
-            content: JSON.stringify({ moduleId, label, imgData, ts: Date.now() })
+            content: JSON.stringify({ moduleId, label, imgData: imgDataBright, ts: Date.now(), workshopId: wsId })
           })
         }).then(r=>r.json()).then(d=>{ console.log('Screenshot DB:', d.success?'OK':d.error); })
           .catch(e=>console.warn('Screenshot save:', e));
@@ -3153,7 +3163,7 @@ window.addEventListener('load', ()=>{
       // Lokal als Backup (gleiche Browser-Instanz)
       try {
         const shots = JSON.parse(localStorage.getItem(SHOT_KEY2)||'[]');
-        shots.push({ moduleId, imgData, ts: Date.now(), label });
+        shots.push({ moduleId, imgData: imgDataBright, ts: Date.now(), label, workshopId: wsId||null });
         if (shots.length > 30) shots.splice(0, shots.length - 30);
         localStorage.setItem(SHOT_KEY2, JSON.stringify(shots));
         showBadge((wsId?'':'[lokal] ') + shots.length + ' Screenshots');
@@ -3162,7 +3172,7 @@ window.addEventListener('load', ()=>{
       // Lokal als Backup
       try {
         const shots = JSON.parse(localStorage.getItem(SHOT_KEY)||'[]');
-        shots.push({ moduleId, imgData, ts: Date.now(), label });
+        shots.push({ moduleId, imgData: imgDataBright, ts: Date.now(), label, workshopId: wsId||null });
         localStorage.setItem(SHOT_KEY, JSON.stringify(shots));
         showBadge('Screenshot ' + shots.length + ' gespeichert');
       } catch(e) { showBadge('Screenshot gespeichert'); }

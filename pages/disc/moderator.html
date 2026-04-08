@@ -2861,7 +2861,16 @@ async function generateScreenshotHandout() {
     }
     // Fallback: localStorage (gleiche Browser-Instanz)
     if (shots.length === 0) {
-      try { shots = JSON.parse(localStorage.getItem('disc-screenshots-v1') || '[]'); } catch(e){}
+      try {
+        let localShots = JSON.parse(localStorage.getItem('disc-screenshots-v1') || '[]');
+        // Nur Screenshots vom aktuellen Workshop nehmen (wenn workshopId bekannt)
+        if (onlineSession?.workshopId) {
+          const wsId = onlineSession.workshopId;
+          const filtered = localShots.filter(s => s.workshopId === wsId);
+          localShots = filtered.length > 0 ? filtered : localShots; // Fallback: alles wenn nichts passt
+        }
+        shots = localShots;
+      } catch(e){}
       console.log('Screenshots aus localStorage:', shots.length);
     }
 
