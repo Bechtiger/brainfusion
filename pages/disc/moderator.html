@@ -2836,13 +2836,27 @@ async function generateScreenshotHandout() {
   try {
     setS('📥 Screenshots werden geladen…');
 
-    // Direkt aus localStorage lesen — gleicher Browser, gleiche Domain
+    // Primär: aus Supabase (funktioniert auch mit separater Beamer-Browser-Instanz)
     let shots = [];
-    try {
-      shots = JSON.parse(localStorage.getItem('disc-screenshots-v1') || '[]');
-    } catch(e) { shots = []; }
-
-    console.log('Gefundene Screenshots im localStorage:', shots.length);
+    if (onlineSession?.workshopId) {
+      initSupabase();
+      const { data } = await sb.from('exercise_responses')
+        .select('content, created_at')
+        .eq('workshop_id', onlineSession.workshopId)
+        .eq('response_type', 'beamer_screenshot')
+        .eq('alias', '__screenshot__')
+        .order('created_at', { ascending: true });
+      shots = (data||[]).map(r => {
+        try { return typeof r.content==='string' ? JSON.parse(r.content) : r.content; }
+        catch(e){ return null; }
+      }).filter(Boolean);
+      console.log('Screenshots aus Supabase:', shots.length);
+    }
+    // Fallback: localStorage (gleiche Browser-Instanz)
+    if (shots.length === 0) {
+      try { shots = JSON.parse(localStorage.getItem('disc-screenshots-v1') || '[]'); } catch(e){}
+      console.log('Screenshots aus localStorage:', shots.length);
+    }
 
     if (shots.length === 0) {
       setS('⚠️ Keine Screenshots gefunden.<br><small>Klicke bei jedem Modul auf <strong>Screenshot</strong> — Beamer und Moderator müssen im gleichen Browser geöffnet sein.</small>');

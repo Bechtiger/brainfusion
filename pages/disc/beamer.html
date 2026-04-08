@@ -3133,14 +3133,26 @@ window.addEventListener('load', ()=>{
       const imgData = canvas.toDataURL('image/jpeg', 0.50);
       console.log('Screenshot Größe:', Math.round(imgData.length/1024), 'KB');
 
-      // Lokal speichern (Moderator holt sie via Broadcast)
+      // Via Edge Function speichern (Service Role Key = kein RLS Problem)
+      const wsId = session?.workshopId;
+      if (wsId) {
+        fetch(EDGE+'/submit-exercise', {
+          method: 'POST', headers: HDR,
+          body: JSON.stringify({
+            workshopId: wsId, module: moduleId,
+            responseType: 'beamer_screenshot',
+            content: JSON.stringify({ moduleId, label, imgData, ts: Date.now() })
+          })
+        }).then(r=>r.json()).then(d=>{ console.log('Screenshot DB:', d.success?'OK':d.error); })
+          .catch(e=>console.warn('Screenshot save:', e));
+      }
+      // Lokal als Backup (gleiche Browser-Instanz)
       try {
-        const shots = JSON.parse(localStorage.getItem(SHOT_KEY)||'[]');
+        const shots = JSON.parse(localStorage.getItem(SHOT_KEY2)||'[]');
         shots.push({ moduleId, imgData, ts: Date.now(), label });
-        // Max 30 Screenshots im localStorage
         if (shots.length > 30) shots.splice(0, shots.length - 30);
-        localStorage.setItem(SHOT_KEY, JSON.stringify(shots));
-        showBadge(shots.length + ' Screenshots');
+        localStorage.setItem(SHOT_KEY2, JSON.stringify(shots));
+        showBadge((wsId?'':'[lokal] ') + shots.length + ' Screenshots');
       } catch(e) { showBadge('Gespeichert'); }
 
       // Lokal als Backup
