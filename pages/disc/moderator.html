@@ -923,15 +923,8 @@ async function renderModuleContent(moduleId){
     ${!['waiting','normen_info','normen_theorie','mut_info','gfk_info','raci_info','disc_role_profile','pairing_karten'].includes(moduleId) ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">${snapshotBtn(moduleId)}</div>` : ''}
   </div>`;
 
-  // Canvas für DISC-Map zeichnen (nach DOM-Insert)
-  if(detail.dataType==='disc_map'){
-    setTimeout(()=>{
-      const c=document.getElementById('wsMapCanvas');
-      if(c)drawMap(c,participants,false);
-    },60);
-  }
-  // DISC-Resultate & Map: Daten frisch laden wenn online
-  if((detail.dataType==='disc_results'||detail.dataType==='disc_map') && onlineSession?.code){
+  // DISC-Resultate: Daten frisch laden wenn online
+  if(detail.dataType==='disc_results' && onlineSession?.code){
     refreshOnlineWorkshop().then(()=>{
       const area=document.getElementById('moduleDetailArea');
       if(!area) return;
@@ -973,13 +966,15 @@ function renderDiscProgress(){
 }
 
 function renderDiscMapSection(){
-  return`<div class="section-title">DISC Quadranten-Map (${participants.length} Profile)</div>
-    <div class="ws-map-wrap"><canvas id="wsMapCanvas" class="ws-map-canvas"></canvas></div>
-    <div class="legend" style="margin-top:8px">
-      <span><span class="dot" style="background:#fff"></span>natürlich</span>
-      <span><span class="dot" style="background:#7cc4ff"></span>Rolle</span>
-      <span><span class="dot" style="background:var(--bad)"></span>hoher Weg</span>
-    </div>`;
+  const n = participants.filter(p=>p.naturalType||p.natural_primary).length;
+  return`<div style="padding:14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--border);text-align:center;">
+    <div style="font-size:28px;font-weight:700;color:var(--gold);margin-bottom:4px;">${n}</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:10px;">DISC-Profile im Team</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+      Die DISC Live-Map läuft auf dem Beamer.<br>
+      Klicke auf <strong style="color:var(--gold);">Screenshot</strong> um den Beamer-Inhalt für das Handout zu speichern.
+    </div>
+  </div>`;
 }
 
 function renderDiscResultsSection(){
