@@ -3527,8 +3527,9 @@ async function refreshOnlineWorkshop(){
 
     // 3. Aktuelle Modul-Antworten laden (alle interaktiven Module)
     const INTERACTIVE=['intro_question','johari_quiz','johari_reflexion','kernbotschaften',
-      'morgen_reflexion','gfk','raci','steckbrief_feiern','steckbrief_grenzen',
-      'steckbrief_zumuten','steckbrief_vorschlaege','steckbrief_urkunde',
+      'was_sage_ich_nicht','morgen_reflexion','gfk','gfk_coaching','raci',
+      'steckbrief_feiern','steckbrief_grenzen','steckbrief_zumuten',
+      'steckbrief_vorschlaege','steckbrief_urkunde',
       'ritual','verzerrungen_quiz','teamnormen_analyse'];
     const mod=onlineSession?.currentModule;
     if(onlineSession?.workshopId&&mod&&INTERACTIVE.includes(mod)){
