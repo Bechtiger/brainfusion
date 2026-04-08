@@ -3133,21 +3133,15 @@ window.addEventListener('load', ()=>{
       const imgData = canvas.toDataURL('image/jpeg', 0.72);
       const wsId = session?.workshopId;
 
-      // In Supabase speichern
-      if (wsId) {
-        await fetch(SB_URL+'/rest/v1/exercise_responses', {
-          method: 'POST',
-          headers: { ...HDR, 'Prefer': 'return=minimal' },
-          body: JSON.stringify({
-            workshop_id: wsId,
-            participant_id: null,
-            alias: '__screenshot__',
-            module: moduleId,
-            response_type: 'beamer_screenshot',
-            content: JSON.stringify({ moduleId, imgData, ts: Date.now(), label })
-          })
-        });
-      }
+      // Lokal speichern (Moderator holt sie via Broadcast)
+      try {
+        const shots = JSON.parse(localStorage.getItem(SHOT_KEY)||'[]');
+        shots.push({ moduleId, imgData, ts: Date.now(), label });
+        // Max 30 Screenshots im localStorage
+        if (shots.length > 30) shots.splice(0, shots.length - 30);
+        localStorage.setItem(SHOT_KEY, JSON.stringify(shots));
+        showBadge(shots.length + ' Screenshots');
+      } catch(e) { showBadge('Gespeichert'); }
 
       // Lokal als Backup
       try {
@@ -3179,6 +3173,26 @@ window.addEventListener('load', ()=>{
       .on('broadcast', { event: 'take_screenshot' }, () => {
         console.log('Screenshot-Befehl empfangen');
         doScreenshot();
+      })
+      .on('broadcast', { event: 'request_screenshots' }, async () => {
+        // Moderator fragt nach allen gespeicherten Screenshots
+        const shots = JSON.parse(localStorage.getItem(SHOT_KEY)||'[]');
+        console.log('Sende', shots.length, 'Screenshots an Moderator');
+        // In Chunks senden (localStorage-Daten können gross sein)
+        for (let i = 0; i < shots.length; i++) {
+          await window._sb.channel('screenshot_cmd_' + wsId).send({
+            type: 'broadcast',
+            event: 'screenshot_data',
+            payload: { index: i, total: shots.length, shot: shots[i] }
+          });
+          await new Promise(r => setTimeout(r, 100)); // Kurze Pause
+        }
+        if (shots.length === 0) {
+          await window._sb.channel('screenshot_cmd_' + wsId).send({
+            type: 'broadcast', event: 'screenshot_data',
+            payload: { index: 0, total: 0, shot: null }
+          });
+        }
       })
       .subscribe();
     console.log('Screenshot-Listener aktiv für Workshop', wsId);

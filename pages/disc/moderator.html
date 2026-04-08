@@ -2844,37 +2844,36 @@ async function generateScreenshotHandout() {
   const setS = (m) => { if(status) status.innerHTML = m; };
 
   try {
-    setS('📥 Screenshots laden…');
+    setS('📡 Hole Screenshots vom Beamer…');
     initSupabase();
     const wsId = onlineSession?.workshopId;
+    if (!wsId) throw new Error('Kein aktiver Workshop');
 
-    // Screenshots aus Supabase holen
-    let shots = [];
-    if (wsId) {
-      const { data } = await sb.from('exercise_responses')
-        .select('content, created_at')
-        .eq('workshop_id', wsId)
-        .eq('response_type', 'beamer_screenshot')
-        .order('created_at', { ascending: true });
+    // Screenshots via Broadcast vom Beamer holen
+    const shots = await new Promise(async (resolve) => {
+      const collected = [];
+      let expectedTotal = -1;
+      let resolved = false;
 
-      shots = (data||[]).map(r => {
-        try {
-          const c = typeof r.content==='string' ? JSON.parse(r.content) : r.content;
-          return { ...c, savedAt: r.created_at };
-        } catch(e){ return null; }
-      }).filter(Boolean);
-    }
+      const ch = sb.channel('screenshot_cmd_'+wsId);
+      await new Promise(r => { ch.subscribe(s => { if(s==='SUBSCRIBED') r(); }); setTimeout(r, 2000); });
 
-    // Fallback: aus localStorage (Beamer auf demselben Gerät)
+      ch.on('broadcast', { event: 'screenshot_data' }, ({ payload }) => {
+        if (payload.total === 0) { if(!resolved){ resolved=true; resolve([]); } return; }
+        expectedTotal = payload.total;
+        if (payload.shot) collected.push(payload.shot);
+        if (collected.length >= expectedTotal && !resolved) { resolved=true; resolve(collected); }
+      });
+
+      // Broadcast senden
+      await ch.send({ type:'broadcast', event:'request_screenshots', payload:{} });
+
+      // Timeout 8 Sekunden
+      setTimeout(() => { if(!resolved){ resolved=true; resolve(collected); } }, 8000);
+    });
+
     if (shots.length === 0) {
-      try {
-        const local = JSON.parse(localStorage.getItem('disc-screenshots-v1')||'[]');
-        shots = local;
-      } catch(e){}
-    }
-
-    if (shots.length === 0) {
-      setS('⚠️ Keine Screenshots gefunden.<br><small>Im Beamer-Fenster auf 📸 klicken (erscheint bei Mausbewegung).</small>');
+      setS('⚠️ Keine Screenshots gefunden.<br><small>Klicke zuerst bei jedem Modul auf <strong>Screenshot</strong> — der Beamer muss geöffnet sein.</small>');
       btn.disabled = false; return;
     }
 
