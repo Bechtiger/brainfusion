@@ -2268,7 +2268,8 @@ const SNAPSHOT_MODULES = {
   johari_fallbeispiele: { title: 'Johari Fallbeispiele',                     icon: '[3]', type: 'quotes' },
   johari_reflexion:     { title: 'Johari — Blinder Fleck',                   icon: '[4]', type: 'quotes' },
   was_sage_ich_nicht:   { title: 'Was ich nicht sage',                        icon: '[5]', type: 'quotes' },
-  bias_story:           { title: 'Bestaedigungsfehler — Was wir lernten',    icon: '[6]', type: 'quotes' },
+  bias_story:           { title: 'Bestätigungsfehler — Was wir lernten',    icon: '[6]', type: 'quotes' },
+  kognitive_verzerrungen_info: { title: 'Kognitive Verzerrungen — Theorie',  icon: '[7b]', type: 'quotes' },
   verzerrungen_quiz:    { title: 'Kognitive Verzerrungen — Quiz',            icon: '[7]', type: 'quotes' },
   gfk_fallbeispiel:     { title: 'GFK — Fallbeispiel',                       icon: '[8]', type: 'quotes' },
   gfk_coaching:         { title: 'GFK Coaching',                             icon: '[9]', type: 'quotes' },
@@ -2337,15 +2338,21 @@ async function takeSnapshot(moduleId) {
 
 function collectSnapshotData(moduleId, type) {
   if (type === 'disc') {
-    // DISC aus participants
-    const disc = (participants||[]).filter(p => p.naturalType || p.natural_primary);
+    // Nur echte TN verwenden (die in Supabase gespeichert haben = in discDoneSet)
+    // Schützt vor Demo-Daten die loadDemo() geladen hat
+    const isOnline = onlineSession?.workshopId && discDoneSet?.size > 0;
+    const disc = (participants||[]).filter(p => {
+      if (!(p.naturalType || p.natural_primary)) return false;
+      if (isOnline) return discDoneSet.has((p.alias||'').toLowerCase());
+      return true;
+    });
     const dd = {D:0,I:0,S:0,C:0};
     disc.forEach(p => { const t = p.naturalType||p.natural_primary; if(t in dd) dd[t]++; });
     return { profiles: disc.map(p => ({
       alias: p.alias,
       naturalType: p.naturalType||p.natural_primary,
       roleType: p.roleType||p.role_primary,
-      stress: p.stress||p.stress_index||0,
+      stress: Math.min(100, Math.round(p.stress||p.stress_index||0)), // max 100%
       d: p.natural?.D||p.natural_d||0,
       i: p.natural?.I||p.natural_i||0,
       s: p.natural?.S||p.natural_s||0,

@@ -3116,21 +3116,25 @@ window.addEventListener('load', ()=>{
     const moduleId = overrideModuleId || session?.currentModule || 'modul';
     const label = overrideLabel || MODULE_LABELS[moduleId] || moduleId;
 
-    // Flash-Effekt
+    // Flash-Effekt (kurz anzeigen, dann WEGBLENDEN bevor html2canvas läuft)
     flash.style.opacity = '0.4';
-    setTimeout(() => { flash.style.opacity = '0'; }, 200);
+    await new Promise(r => setTimeout(r, 80)); // kurze visuelle Pause
+    flash.style.opacity = '0';
+    await new Promise(r => setTimeout(r, 60)); // warten bis Transition fertig
 
     try {
       const canvas = await html2canvas(document.body, {
-        scale: 0.35,           // Sehr klein für Broadcast-Limit
+        scale: 0.50,           // Etwas grösser als vorher (war 0.35)
         useCORS: true,
+        allowTaint: true,
         backgroundColor: '#060610',
         logging: false,
         windowWidth: window.innerWidth,
         windowHeight: window.innerHeight,
-        imageTimeout: 5000,
+        imageTimeout: 8000,
+        ignoreElements: (el) => el === flash, // Flash-Overlay ignorieren
       });
-      const imgData = canvas.toDataURL('image/jpeg', 0.50);
+      const imgData = canvas.toDataURL('image/jpeg', 0.72); // Bessere Qualität (war 0.50)
       console.log('Screenshot Größe:', Math.round(imgData.length/1024), 'KB');
 
       // Via Edge Function speichern (Service Role Key = kein RLS Problem)
