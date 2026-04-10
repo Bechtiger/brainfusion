@@ -3104,9 +3104,7 @@ window.addEventListener('load', ()=>{
 
 // ── SCREENSHOT SYSTEM — ferngesteuert vom Moderator via Supabase Realtime ──
 (function(){
-  const SHOT_KEY  = 'disc-screenshots-v1';
-  // Workshop-spezifischer Key — wird nach session-Load überschrieben
-  let SHOT_KEY2 = 'disc-screenshots-v1';
+  const SHOT_KEY = 'disc-screenshots-v1'; // Legacy-Fallback, wird kaum noch gebraucht
   const MODULE_LABELS = {
     waiting:'Bereit', intro_question:'Einstiegsfrage',
     johari_erklaerung:'Johari-Fenster', johari_fallbeispiele:'Johari Fallbeispiele',
@@ -3224,8 +3222,7 @@ window.addEventListener('load', ()=>{
   }
 
   // Screenshot via localStorage-Polling (zuverlässiger als Realtime Broadcast)
-  const REQ_KEY  = 'disc-screenshot-request';
-  const SHOT_KEY2 = 'disc-screenshots-v1';
+  const REQ_KEY = 'disc-screenshot-request';
   let lastReqTs = 0;
 
   setInterval(async () => {
