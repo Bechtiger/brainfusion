@@ -2244,7 +2244,8 @@ function getSnapshotKey() {
   return wsId ? `disc-handout-snapshots-${wsId}` : SNAPSHOT_KEY;
 }
 function getSnapshots() {
-  try { return JSON.parse(localStorage.getItem(getSnapshotKey()) || '[]'); } catch(e){ return []; }\n}
+  try { return JSON.parse(localStorage.getItem(getSnapshotKey()) || '[]'); } catch(e){ return []; }
+}
 function saveSnapshots(snaps) {
   localStorage.setItem(getSnapshotKey(), JSON.stringify(snaps));
 }
