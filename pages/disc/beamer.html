@@ -3154,14 +3154,13 @@ window.addEventListener('load', ()=>{
     await new Promise(r => setTimeout(r, 60)); // warten bis Transition fertig
 
     try {
-      // Aktiven Screen-DIV direkt erfassen (position:fixed, via .active Klasse angezeigt)
+      // Aktiven Screen-DIV direkt erfassen
       const activeScreen = document.querySelector('.screen.active') || document.body;
       console.log('Screenshot Target:', activeScreen.id || activeScreen.tagName);
-      const canvas = await html2canvas(activeScreen, {
+      const canvas = await html2canvas(document.body, {
         scale: 0.65,
         useCORS: true,
         allowTaint: true,
-        foreignObjectRendering: true,
         backgroundColor: '#060610',
         logging: false,
         width: window.innerWidth,
@@ -3172,6 +3171,25 @@ window.addEventListener('load', ()=>{
         scrollY: 0,
         imageTimeout: 12000,
         ignoreElements: (el) => el === flash,
+        onclone: (clonedDoc) => {
+          // Alle Screens ausblenden ausser dem aktiven — position:fixed umgehen
+          clonedDoc.querySelectorAll('.screen').forEach(s => {
+            s.style.display = 'none';
+            s.style.position = 'static';
+          });
+          const activeId = activeScreen.id;
+          if (activeId) {
+            const clone = clonedDoc.getElementById(activeId);
+            if (clone) {
+              clone.style.display = 'flex';
+              clone.style.position = 'fixed';
+              clone.style.inset = '0';
+              clone.style.width = window.innerWidth + 'px';
+              clone.style.height = window.innerHeight + 'px';
+              clone.style.overflow = 'visible';
+            }
+          }
+        }
       });
       console.log(`html2canvas Dimensions: screen=${window.screen.width}x${window.screen.height}, inner=${window.innerWidth}x${window.innerHeight}, scroll=${document.documentElement.scrollWidth}x${document.documentElement.scrollHeight}, canvas=${canvas.width}x${canvas.height}`);
       const imgData = canvas.toDataURL('image/jpeg', 0.75);
