@@ -3187,54 +3187,12 @@ window.addEventListener('load', ()=>{
               clone.style.width = window.innerWidth + 'px';
               clone.style.height = window.innerHeight + 'px';
               clone.style.overflow = 'visible';
-              // Dunklen Hintergrund aufhellen für bessere Screenshot-Qualität
-              const bg = window.getComputedStyle(clone).backgroundColor;
-              if (bg === 'rgb(6, 6, 16)' || bg === 'rgba(0, 0, 0, 0)' || clone.style.backgroundColor === '') {
-                clone.style.backgroundColor = '#1a1a2e'; // etwas helleres Navy
-              }
             }
           }
-          // Body-Hintergrund auch anpassen
-          clonedDoc.body.style.backgroundColor = '#1a1a2e';
         }
       });
       console.log(`html2canvas Dimensions: screen=${window.screen.width}x${window.screen.height}, inner=${window.innerWidth}x${window.innerHeight}, scroll=${document.documentElement.scrollWidth}x${document.documentElement.scrollHeight}, canvas=${canvas.width}x${canvas.height}`);
-      // Adaptive Helligkeitskorrektur — nur für dunkle Screens
-      const brightCanvas = document.createElement('canvas');
-      brightCanvas.width = canvas.width;
-      brightCanvas.height = canvas.height;
-      const bCtx = brightCanvas.getContext('2d');
-      bCtx.drawImage(canvas, 0, 0);
-
-      // Durchschnittshelligkeit messen (Sample aus 200 Pixeln)
-      const imageData = bCtx.getImageData(0, 0, brightCanvas.width, brightCanvas.height);
-      const px = imageData.data;
-      let brightnessSum = 0;
-      const step = Math.floor(px.length / 800); // ~200 Pixel samplen
-      for (let i = 0; i < px.length; i += step * 4) {
-        brightnessSum += (px[i] * 0.299 + px[i+1] * 0.587 + px[i+2] * 0.114);
-      }
-      const avgBrightness = brightnessSum / (px.length / (step * 4));
-      console.log('Durchschnittshelligkeit:', Math.round(avgBrightness));
-
-      // Gamma nur bei sehr dunklen Screens (< 40) leicht anwenden
-      if (avgBrightness < 40) {
-        const gamma = 0.55; // sanft
-        const gain  = 1.05;
-        const lut = new Uint8Array(256);
-        for (let v = 0; v < 256; v++) {
-          lut[v] = Math.min(255, Math.round(Math.pow(v / 255, gamma) * 255 * gain));
-        }
-        for (let i = 0; i < px.length; i += 4) {
-          px[i]   = lut[px[i]];
-          px[i+1] = lut[px[i+1]];
-          px[i+2] = lut[px[i+2]];
-        }
-        bCtx.putImageData(imageData, 0, 0);
-        console.log(`Gamma-Korrektur angewendet (gamma=${gamma})`);
-      }
-
-      const imgDataBright = brightCanvas.toDataURL('image/jpeg', 0.85);
+      const imgDataBright = canvas.toDataURL('image/jpeg', 0.88);
       console.log('Screenshot Größe:', Math.round(imgDataBright.length/1024), 'KB');
 
       // Via Edge Function speichern (Service Role Key = kein RLS Problem)
