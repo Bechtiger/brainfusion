@@ -2238,14 +2238,18 @@ function renderHandoutSection() {
 
 const SNAPSHOT_KEY = 'disc-handout-snapshots-v1';
 
-function getSnapshots() {
-  try { return JSON.parse(localStorage.getItem(SNAPSHOT_KEY) || '[]'); } catch(e){ return []; }
+function getSnapshotKey() {
+  // Workshop-spezifischer Key wenn online, sonst generisch
+  const wsId = onlineSession?.workshopId;
+  return wsId ? `disc-handout-snapshots-${wsId}` : SNAPSHOT_KEY;
 }
+function getSnapshots() {
+  try { return JSON.parse(localStorage.getItem(getSnapshotKey()) || '[]'); } catch(e){ return []; }\n}
 function saveSnapshots(snaps) {
-  localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snaps));
+  localStorage.setItem(getSnapshotKey(), JSON.stringify(snaps));
 }
 function clearSnapshots() {
-  localStorage.removeItem(SNAPSHOT_KEY);
+  localStorage.removeItem(getSnapshotKey());
   renderSnapshotCount();
 }
 
@@ -2503,30 +2507,35 @@ async function generateHandoutPDF() {
 
     const kiBox = (text) => {
       if (!text || !text.trim()) return;
-      const lines = doc.splitTextToSize(strip(text), cW-10);
-      const bH = lines.length * 8.5 * 0.40 + 10;
+      const maxW = cW - 10;
+      const lines = doc.splitTextToSize(strip(text), maxW);
+      const bH = lines.length * 8.5 * 0.40 + 12;
       need(bH+4);
       doc.setFillColor(...LGOLD); doc.setDrawColor(...GOLD); doc.setLineWidth(0.18);
       doc.rect(ML, y, cW, bH, 'FD');
       doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...GOLD);
       doc.text('KI-INTERPRETATION', ML+cW-2, y+3.5, {align:'right'});
       doc.setFont('helvetica','italic'); doc.setFontSize(8.5); doc.setTextColor(50,40,10);
-      doc.text(lines, ML+5, y+7.5);
+      doc.text(lines, ML+5, y+7.5, {maxWidth: maxW});
       y += bH+5;
     };
 
     const qCard = (alias, text) => {
-      const t = strip(text).substring(0,230);
-      const lines = doc.splitTextToSize('"'+t+'"', cW-28);
+      const t = strip(text).substring(0,300);
+      const nameW = 22; // Breite für Alias-Spalte
+      const textX = ML + nameW + 3;
+      const textW = cW - nameW - 5; // Restbreite für Text
+      const lines = doc.splitTextToSize('"'+t+'"', textW);
       const bH = Math.max(9, lines.length*8*0.40+6);
       need(bH+3);
       doc.setFillColor(248,247,242); doc.setDrawColor(200,185,145); doc.setLineWidth(0.12);
       doc.rect(ML, y, cW, bH, 'FD');
       doc.setFillColor(...GOLD); doc.rect(ML, y, 2.5, bH, 'F');
       doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(100,85,35);
-      doc.text((alias||'Anonym').substring(0,14), ML+4, y+5);
+      const aliasLines = doc.splitTextToSize((alias||'Anonym').substring(0,18), nameW-2);
+      doc.text(aliasLines, ML+4, y+5);
       doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...DARK);
-      doc.text(lines, ML+25, y+5);
+      doc.text(lines, textX, y+5);
       y += bH+2.5;
     };
 
