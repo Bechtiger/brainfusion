@@ -3187,8 +3187,15 @@ window.addEventListener('load', ()=>{
               clone.style.width = window.innerWidth + 'px';
               clone.style.height = window.innerHeight + 'px';
               clone.style.overflow = 'visible';
+              // Dunklen Hintergrund aufhellen für bessere Screenshot-Qualität
+              const bg = window.getComputedStyle(clone).backgroundColor;
+              if (bg === 'rgb(6, 6, 16)' || bg === 'rgba(0, 0, 0, 0)' || clone.style.backgroundColor === '') {
+                clone.style.backgroundColor = '#1a1a2e'; // etwas helleres Navy
+              }
             }
           }
+          // Body-Hintergrund auch anpassen
+          clonedDoc.body.style.backgroundColor = '#1a1a2e';
         }
       });
       console.log(`html2canvas Dimensions: screen=${window.screen.width}x${window.screen.height}, inner=${window.innerWidth}x${window.innerHeight}, scroll=${document.documentElement.scrollWidth}x${document.documentElement.scrollHeight}, canvas=${canvas.width}x${canvas.height}`);
@@ -3210,10 +3217,10 @@ window.addEventListener('load', ()=>{
       const avgBrightness = brightnessSum / (px.length / (step * 4));
       console.log('Durchschnittshelligkeit:', Math.round(avgBrightness));
 
-      // Gamma nur bei dunklen Screens anwenden
-      if (avgBrightness < 80) {
-        const gamma = avgBrightness < 30 ? 0.42 : 0.60; // sehr dunkel = aggressiver
-        const gain  = avgBrightness < 30 ? 1.30 : 1.10;
+      // Gamma nur bei sehr dunklen Screens (< 40) leicht anwenden
+      if (avgBrightness < 40) {
+        const gamma = 0.55; // sanft
+        const gain  = 1.05;
         const lut = new Uint8Array(256);
         for (let v = 0; v < 256; v++) {
           lut[v] = Math.min(255, Math.round(Math.pow(v / 255, gamma) * 255 * gain));
@@ -3224,7 +3231,7 @@ window.addEventListener('load', ()=>{
           px[i+2] = lut[px[i+2]];
         }
         bCtx.putImageData(imageData, 0, 0);
-        console.log(`Gamma-Korrektur angewendet (gamma=${gamma}, gain=${gain})`);
+        console.log(`Gamma-Korrektur angewendet (gamma=${gamma})`);
       }
 
       const imgDataBright = brightCanvas.toDataURL('image/jpeg', 0.85);
