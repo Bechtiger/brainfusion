@@ -3154,8 +3154,8 @@ window.addEventListener('load', ()=>{
     await new Promise(r => setTimeout(r, 60)); // warten bis Transition fertig
 
     try {
-      // Aktiven Screen-DIV direkt erfassen (position:fixed wird sonst nicht korrekt gerendert)
-      const activeScreen = document.querySelector('.screen[style*="flex"], .screen[style*="block"]') || document.body;
+      // Aktiven Screen-DIV direkt erfassen (position:fixed, via .active Klasse angezeigt)
+      const activeScreen = document.querySelector('.screen.active') || document.body;
       console.log('Screenshot Target:', activeScreen.id || activeScreen.tagName);
       const canvas = await html2canvas(activeScreen, {
         scale: 0.65,
