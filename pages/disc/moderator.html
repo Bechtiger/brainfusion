@@ -2837,16 +2837,32 @@ function screenshotModuleBtn(moduleId) {
 /* ─── SCREENSHOT HANDOUT ─────────────────────────────────────────────────── */
 async function loadWorkshopScreenshots() {
   const wsId = onlineSession?.workshopId;
-  const shotKey = wsId ? `disc-screenshots-${wsId}` : 'disc-screenshots-v1';
   let shots = [];
-  try { shots = JSON.parse(localStorage.getItem(shotKey) || '[]'); } catch(e){}
-  if (shots.length === 0 && wsId) {
-    try {
-      const old = JSON.parse(localStorage.getItem('disc-screenshots-v1') || '[]');
-      shots = old.filter(s => s.workshopId === wsId);
-    } catch(e){}
+
+  // 1. Workshop-spezifischer Key (bevorzugt)
+  if (wsId) {
+    try { shots = JSON.parse(localStorage.getItem(`disc-screenshots-${wsId}`) || '[]'); } catch(e){}
   }
-  console.log('Screenshots geladen:', shots.length, 'Key:', shotKey);
+
+  // 2. Alle disc-screenshots-* Keys scannen (catch-all Fallback)
+  if (shots.length === 0) {
+    try {
+      const allShots = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('disc-screenshots-')) {
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          arr.forEach(s => {
+            if (!wsId || !s.workshopId || s.workshopId === wsId) allShots.push(s);
+          });
+        }
+      }
+      allShots.sort((a,b) => (a.ts||0) - (b.ts||0));
+      shots = allShots;
+    } catch(e) { console.warn('localStorage scan:', e); }
+  }
+
+  console.log('Screenshots geladen:', shots.length, wsId ? `(Workshop ${wsId})` : '(alle Keys)');
   return shots;
 }
 
