@@ -960,6 +960,7 @@ async function doJoin() {
 
     session = { code, alias, participantId: data.participantId, joinToken: data.joinToken, workshopId: data.workshopId };
     sessionStorage.setItem('disc_session', JSON.stringify(session));
+    localStorage.setItem('disc_session_' + code, JSON.stringify(session)); // persistiert über Browser-Schliessen
     setHeader('live');
     initRealtime();
 
@@ -2162,15 +2163,19 @@ const BLOCK_PAGES = Array.from(
 let mostPicks  = {}; // blockId → dim
 let leastPicks = {}; // blockId → dim
 
-// Picks aus sessionStorage wiederherstellen (überlebt Modul-Wechsel)
+// Picks aus sessionStorage/localStorage wiederherstellen (überlebt Modul-Wechsel und Browser-Schliessen)
 try {
-  const saved = JSON.parse(sessionStorage.getItem('disc_picks') || 'null');
+  const saved = JSON.parse(localStorage.getItem('disc_picks') || sessionStorage.getItem('disc_picks') || 'null');
   if (saved?.mostPicks) mostPicks  = saved.mostPicks;
   if (saved?.leastPicks) leastPicks = saved.leastPicks;
 } catch(e) {}
 
 function savePicksToSession() {
-  try { sessionStorage.setItem('disc_picks', JSON.stringify({mostPicks, leastPicks})); } catch(e) {}
+  try {
+    const data = JSON.stringify({mostPicks, leastPicks});
+    sessionStorage.setItem('disc_picks', data);
+    localStorage.setItem('disc_picks', data); // auch in localStorage für Tag 2
+  } catch(e) {}
 }
 let discPage   = 0;
 
@@ -2581,12 +2586,16 @@ function buildDiscResults() {
       el.style.width = el.getAttribute('data-w') + '%';
     });
   }, 150);
-  // Typ für Pairing-Karten in Session speichern (überlebt Reload)
+  // Typ für Pairing-Karten in Session speichern (überlebt Reload und Browser-Schliessen)
   try {
     const stored = JSON.parse(sessionStorage.getItem('disc_session') || '{}');
     stored.naturalType = domType(sc.natural);
-    stored.teamTypes   = null; // wird später vom Moderator gesetzt
+    stored.roleType    = domType(sc.adapted);
+    stored.stress      = Math.round(sc.stress || 0);
+    stored.teamTypes   = null;
     sessionStorage.setItem('disc_session', JSON.stringify(stored));
+    // Auch in localStorage für Tag 2
+    if (stored.code) localStorage.setItem('disc_session_' + stored.code, JSON.stringify(stored));
   } catch(e) {}
   // Pairing-Karten werden NICHT automatisch generiert
   // → erst wenn Moderator das Modul 'pairing_karten' aktiviert
@@ -3535,18 +3544,37 @@ async function sendDiscResult() {
 (async function init() {
   const params  = new URLSearchParams(window.location.search);
   const urlCode = params.get('code')?.trim().toUpperCase();
-  const stored  = sessionStorage.getItem('disc_session');
+
+  // 1. Zuerst sessionStorage (aktive Session im Browser)
+  // 2. Dann localStorage (Session vom Vortag)
+  let stored = sessionStorage.getItem('disc_session')
+             || localStorage.getItem('disc_session_' + (urlCode || ''));
+  // Fallback: alle disc_session_* Keys scannen
+  if (!stored && !urlCode) {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k?.startsWith('disc_session_')) { stored = localStorage.getItem(k); break; }
+    }
+  }
 
   if (stored) {
     try {
       const s = JSON.parse(stored);
       if (s.code && s.participantId && s.workshopId) {
-        if (urlCode && urlCode !== s.code) { sessionStorage.removeItem('disc_session'); if(urlCode) joinCodeEl.value=urlCode; return; }
+        if (urlCode && urlCode !== s.code) {
+          // Anderer Code im URL — alte Session ignorieren
+          if (urlCode) joinCodeEl.value = urlCode;
+          show('sJoin'); return;
+        }
         session = s;
+        // Session in sessionStorage synchronisieren
+        sessionStorage.setItem('disc_session', JSON.stringify(session));
         setHeader('live');
         initRealtime();
         const res = await fetch(SB_URL+'/rest/v1/workshops?id=eq.'+s.workshopId+'&select=current_module,module_data', { headers:{'apikey':SB_KEY} });
         const ws  = await res.json();
+        // DISC-Resultate aus Supabase wiederherstellen wenn naturalType fehlt
+        if (!s.naturalType) await restoreDiscFromSupabase(s);
         handleModule(ws?.[0]?.current_module||'waiting', ws?.[0]?.module_data||{});
         return;
       }
@@ -3555,6 +3583,31 @@ async function sendDiscResult() {
   if (urlCode) joinCodeEl.value = urlCode;
   show('sJoin');
 })();
+
+// DISC-Daten vom Vortag aus Supabase laden
+async function restoreDiscFromSupabase(s) {
+  if (!s?.participantId || !s?.workshopId) return;
+  try {
+    const url = `${SB_URL}/rest/v1/exercise_responses?workshop_id=eq.${s.workshopId}&participant_id=eq.${s.participantId}&response_type=eq.disc_result&select=content&order=created_at.desc&limit=1`;
+    const res = await fetch(url, { headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY } });
+    const rows = await res.json();
+    if (rows?.length && rows[0].content) {
+      const content = typeof rows[0].content === 'string' ? JSON.parse(rows[0].content) : rows[0].content;
+      if (content?.naturalType || content?.natural_primary) {
+        // Session mit DISC-Daten anreichern
+        const enriched = { ...s,
+          naturalType: content.naturalType || content.natural_primary,
+          roleType:    content.roleType    || content.role_primary,
+          stress:      content.stress      || content.stress_index || 0,
+        };
+        session = enriched;
+        sessionStorage.setItem('disc_session', JSON.stringify(session));
+        localStorage.setItem('disc_session_' + s.code, JSON.stringify(session));
+        console.log('DISC-Resultate aus Supabase wiederhergestellt:', enriched.naturalType);
+      }
+    }
+  } catch(e) { console.warn('restoreDiscFromSupabase:', e.message); }
+}
 
 /* ═══════════════════════════════════════════════════════
    PRINT SUPPORT
