@@ -3161,15 +3161,16 @@ window.addEventListener('load', ()=>{
         foreignObjectRendering: true,
         backgroundColor: '#060610',
         logging: false,
-        width: document.documentElement.scrollWidth,
-        height: document.documentElement.scrollHeight,
-        windowWidth: document.documentElement.scrollWidth,
-        windowHeight: document.documentElement.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
+        width: window.screen.width,
+        height: window.screen.height,
+        windowWidth: window.screen.width,
+        windowHeight: window.screen.height,
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
         imageTimeout: 12000,
         ignoreElements: (el) => el === flash,
       });
+      console.log(`html2canvas Dimensions: screen=${window.screen.width}x${window.screen.height}, inner=${window.innerWidth}x${window.innerHeight}, scroll=${document.documentElement.scrollWidth}x${document.documentElement.scrollHeight}, canvas=${canvas.width}x${canvas.height}`);
       const imgData = canvas.toDataURL('image/jpeg', 0.75);
       // Helligkeit für PDF-Export aufhellen (Beamer ist dunkel designed)
       // Gamma-Korrektur auf Pixel-Ebene (viel effektiver als CSS filter für dunkle Screens)
