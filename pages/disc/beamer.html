@@ -3104,7 +3104,9 @@ window.addEventListener('load', ()=>{
 
 // ── SCREENSHOT SYSTEM — ferngesteuert vom Moderator via Supabase Realtime ──
 (function(){
-  const SHOT_KEY = 'disc-screenshots-v1';
+  const SHOT_KEY  = 'disc-screenshots-v1';
+  // Workshop-spezifischer Key — wird nach session-Load überschrieben
+  let SHOT_KEY2 = 'disc-screenshots-v1';
   const MODULE_LABELS = {
     waiting:'Bereit', intro_question:'Einstiegsfrage',
     johari_erklaerung:'Johari-Fenster', johari_fallbeispiele:'Johari Fallbeispiele',
@@ -3143,6 +3145,9 @@ window.addEventListener('load', ()=>{
     const session = JSON.parse(localStorage.getItem('disc-online-session-v2')||'{}');
     const moduleId = overrideModuleId || session?.currentModule || 'modul';
     const label = overrideLabel || MODULE_LABELS[moduleId] || moduleId;
+    const wsId = session?.workshopId;
+    // Workshop-spezifischer localStorage-Key — trennt Workshops sauber
+    const shotKey = wsId ? `disc-screenshots-${wsId}` : SHOT_KEY;
 
     // Flash-Effekt (kurz anzeigen, dann WEGBLENDEN bevor html2canvas läuft)
     flash.style.opacity = '0.4';
@@ -3152,17 +3157,18 @@ window.addEventListener('load', ()=>{
 
     try {
       const canvas = await html2canvas(document.body, {
-        scale: 0.50,           // Etwas grösser als vorher (war 0.35)
+        scale: 0.65,                  // Höher (gleicher Browser = kein Upload-Limit-Problem)
         useCORS: true,
         allowTaint: true,
+        foreignObjectRendering: true, // Besseres CSS-Rendering (Grid, Flex, Animations)
         backgroundColor: '#060610',
         logging: false,
         windowWidth: window.innerWidth,
         windowHeight: window.innerHeight,
-        imageTimeout: 8000,
-        ignoreElements: (el) => el === flash, // Flash-Overlay ignorieren
+        imageTimeout: 12000,
+        ignoreElements: (el) => el === flash,
       });
-      const imgData = canvas.toDataURL('image/jpeg', 0.72);
+      const imgData = canvas.toDataURL('image/jpeg', 0.75);
       // Helligkeit für PDF-Export aufhellen (Beamer ist dunkel designed)
       // Gamma-Korrektur auf Pixel-Ebene (viel effektiver als CSS filter für dunkle Screens)
       const brightCanvas = document.createElement('canvas');
@@ -3202,22 +3208,14 @@ window.addEventListener('load', ()=>{
         }).then(r=>r.json()).then(d=>{ console.log('Screenshot DB:', d.success?'OK':d.error); })
           .catch(e=>console.warn('Screenshot save:', e));
       }
-      // Lokal als Backup (gleiche Browser-Instanz)
+      // Lokal speichern (Workshop-spezifischer Key)
       try {
-        const shots = JSON.parse(localStorage.getItem(SHOT_KEY2)||'[]');
+        const shots = JSON.parse(localStorage.getItem(shotKey)||'[]');
         shots.push({ moduleId, imgData: imgDataBright, ts: Date.now(), label, workshopId: wsId||null });
-        if (shots.length > 30) shots.splice(0, shots.length - 30);
-        localStorage.setItem(SHOT_KEY2, JSON.stringify(shots));
-        showBadge((wsId?'':'[lokal] ') + shots.length + ' Screenshots');
+        if (shots.length > 40) shots.splice(0, shots.length - 40);
+        localStorage.setItem(shotKey, JSON.stringify(shots));
+        showBadge(shots.length + ' Screenshots gespeichert');
       } catch(e) { showBadge('Gespeichert'); }
-
-      // Lokal als Backup
-      try {
-        const shots = JSON.parse(localStorage.getItem(SHOT_KEY)||'[]');
-        shots.push({ moduleId, imgData: imgDataBright, ts: Date.now(), label, workshopId: wsId||null });
-        localStorage.setItem(SHOT_KEY, JSON.stringify(shots));
-        showBadge('Screenshot ' + shots.length + ' gespeichert');
-      } catch(e) { showBadge('Screenshot gespeichert'); }
 
     } catch(e) {
       console.error('Screenshot Fehler:', e);

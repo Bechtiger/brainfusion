@@ -2859,17 +2859,18 @@ async function generateScreenshotHandout() {
       }).filter(Boolean);
       console.log('Screenshots aus Supabase:', shots.length);
     }
-    // Fallback: localStorage (gleiche Browser-Instanz)
+    // Fallback: localStorage (gleicher Browser, Workshop-spezifischer Key)
     if (shots.length === 0) {
       try {
-        let localShots = JSON.parse(localStorage.getItem('disc-screenshots-v1') || '[]');
-        // Nur Screenshots vom aktuellen Workshop nehmen (wenn workshopId bekannt)
-        if (onlineSession?.workshopId) {
-          const wsId = onlineSession.workshopId;
-          const filtered = localShots.filter(s => s.workshopId === wsId);
-          localShots = filtered.length > 0 ? filtered : localShots; // Fallback: alles wenn nichts passt
+        const wsId = onlineSession?.workshopId;
+        // Zuerst Workshop-spezifischen Key versuchen, dann Fallback auf alten Key
+        const shotKey = wsId ? `disc-screenshots-${wsId}` : 'disc-screenshots-v1';
+        shots = JSON.parse(localStorage.getItem(shotKey) || '[]');
+        if (shots.length === 0 && wsId) {
+          // Fallback: alter generischer Key (für Rückwärtskompatibilität)
+          shots = JSON.parse(localStorage.getItem('disc-screenshots-v1') || '[]');
+          shots = shots.filter(s => !s.workshopId || s.workshopId === wsId);
         }
-        shots = localShots;
       } catch(e){}
       console.log('Screenshots aus localStorage:', shots.length);
     }
