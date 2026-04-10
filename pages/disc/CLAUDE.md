@@ -1,6 +1,6 @@
 # Wahrheitsfähigkeit im Team - Workshop-Plattform
 > Projektgedächtnis für Claude Code / Claude Chat Sessions
-> Letzte Aktualisierung: 2026-03-24 (Session Team-Steckbrief + Urkunden-System vollständig)
+> Letzte Aktualisierung: 2026-04-10 (Session Screenshot-System komplett + Handout fixes)
 > Status: Workshop bereit ✅ | Nächster Einsatz: 22./23. April 2026
 
 ---
@@ -494,6 +494,56 @@ const sigDataUrl = urkSigCanvas.toDataURL('image/jpeg', 0.92);
 
 ---
 
+## 20. Screenshot & Handout System — FINALER STAND (Session 10.04.2026)
+
+### 20.1 Screenshot-System (beamer.html) — FUNKTIONIERT ✅
+
+**Technik:**
+- html2canvas mit `onclone` Callback: alle `.screen` Divs werden ausgeblendet, nur der aktive (`.screen.active`) wird sichtbar gemacht
+- `position:fixed` Problem gelöst durch direktes Setzen in Klon
+- Adaptive Gamma-Korrektur: nur bei avgBrightness < 40 wird sanft aufgehellt (gamma=0.55)
+- Auto-Screenshot bei jedem Modulwechsel via `handleModule()` mit KI_DELAY Map
+- Race-Condition-Schutz: `if (currentModule !== mod) return` vor Screenshot
+- Workshop-spezifischer localStorage Key: `disc-screenshots-{workshopId}`
+
+**KRITISCH:** SHOT_KEY2 darf NICHT doppelt deklariert sein → SyntaxError crasht alles!
+
+**Auto-Screenshot Delays:**
+```javascript
+teamnormen_analyse: 12000, disc_results: 4500, disc_map: 4000,
+johari_erklaerung: 3500, kognitive_verzerrungen_info: 3500,
+gfk_coaching: 9000, kernbotschaften: 9000, intro_question: 7000
+```
+
+### 20.2 ZIP-Export (moderator.html) — FUNKTIONIERT ✅
+
+- `exportScreenshotsZip()` mit JSZip (`cdn.jsdelivr.net/npm/jszip@3.10.1`)
+- `loadWorkshopScreenshots()` scannt alle `disc-screenshots-*` Keys
+- Dateibenennung: `01_22-56_Johari-Fenster.jpg`
+- Löschen: `clearWorkshopScreenshots()` löscht nur aktuellen Workshop
+
+### 20.3 Text-Handout PDF (moderator.html) — FUNKTIONIERT ✅
+
+- Snapshot-Key workshop-spezifisch: `disc-handout-snapshots-{workshopId}`
+- `getSnapshotKey()` Funktion — KEIN direktes `SNAPSHOT_KEY` verwenden!
+- qCard Text-Overflow Fix: `textW = cW - nameW - 5` konsistent
+- DISC-Demo-Daten-Fix: `discDoneSet` Filter schützt vor Demo-Daten
+
+### 20.4 Manueller Screenshot (Windows) — FUNKTIONIERT ✅
+
+- Script: `C:\Users\chbec\screenshot_beamer.ps1`
+- Tastenkürzel: `C:\Users\chbec\screenshot_beamer.bat` → Verknüpfung mit Strg+Alt+B
+- Speicherort: `C:\Users\chbec\Pictures\Beamer-Screenshots\`
+- Erfasst immer den zweiten Bildschirm (Beamer)
+
+### 20.5 Teilnehmer — Pairing-Karten
+
+- `pairingSection` aus DISC-Resultaten **entfernt** (war doppelt und störend)
+- PDF-Export `downloadPairingPdf()` existiert und funktioniert (heller Hintergrund)
+- Button erscheint nach KI-Generierung auf `sPairingKarten` Screen
+
+---
+
 ## 19. NEU: Screenshot-Handout System + Pending Bugs (Session 08.04.2026)
 
 ### 19.1 Was gebaut wurde
@@ -594,10 +644,17 @@ cd /d E:\Programme\Homepage Brainfusion
 npx supabase functions deploy submit-exercise --project-ref dnoecftuybkoqvrkfvei
 ```
 
-### 19.8 Nächste Schritte (Priorität)
+### 19.8 Status aller Bugs (Stand 10.04.2026)
 
-1. **KRITISCH: Screenshot-PDF-Export debuggen** — Logging verbessern, herausfinden warum `doc.save()` nicht ausgeführt wird
-2. **Screenshot-Button auf allen Modulen** — Blacklist prüfen
-3. **Demo-Daten aus Text-Handout entfernen** — DISC direkt aus Supabase laden
-4. **Workshop 22./23. April** — Kompletten Durchlauf testen
+✅ **GELÖST: Screenshot-PDF-Export** — ZIP-Export funktioniert
+✅ **GELÖST: Screenshots abgeschnitten** — onclone + .screen.active Fix
+✅ **GELÖST: Dunkelheit der Screenshots** — adaptive Gamma-Korrektur
+✅ **GELÖST: SHOT_KEY2 SyntaxError** — doppelte Deklaration entfernt
+✅ **GELÖST: Workshop-Vermischung** — workshop-spezifische Storage-Keys
+✅ **GELÖST: Demo-Daten im DISC-Handout** — discDoneSet Filter
+✅ **GELÖST: Text-Overflow im Handout** — konsistente Breiten-Berechnung
+✅ **GELÖST: Pairing-Karten in DISC-Resultaten** — Section entfernt
+⚠️ **OFFEN: Supabase participant_id NOT NULL** — Screenshot-DB-Save schlägt fehl
+   → Workaround: localStorage ist Primary, DB ist nur Backup
+   → Fix: `ALTER TABLE exercise_responses ALTER COLUMN participant_id DROP NOT NULL;`
 
