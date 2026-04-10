@@ -203,6 +203,7 @@ th{position:sticky;top:0;background:var(--surf);z-index:2;font-size:11px;color:v
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -2190,24 +2191,24 @@ function renderHandoutSection() {
 
     <!-- SCREENSHOT-HANDOUT (neu, einfach) -->
     <div style="padding:14px;border-radius:10px;border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.06);margin-bottom:14px;">
-      <div style="font-size:13px;font-weight:600;color:#c9a84c;margin-bottom:6px;">Screenshot-Handout</div>
+      <div style="font-size:13px;font-weight:600;color:#c9a84c;margin-bottom:6px;">📸 Beamer-Screenshots</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-        Klicke während des Workshops auf <strong style="color:#c9a84c;">Screenshot</strong> — der Beamer macht automatisch ein Bild des aktuellen Inhalts.
+        Der Beamer speichert automatisch Screenshots bei jedem Modul. Hier manuell auslösen oder alle als ZIP-Datei exportieren.
       </div>
       <button onclick="sendScreenshotCommand()" id="screenshotCmdBtn"
-        style="width:100%;padding:12px;border-radius:8px;border:1px solid rgba(201,168,76,.4);
-        background:rgba(201,168,76,.12);color:#c9a84c;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px;">
-        Screenshot jetzt
+        style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(201,168,76,.4);
+        background:rgba(201,168,76,.12);color:#c9a84c;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:6px;">
+        📷 Screenshot jetzt
       </button>
       <div id="screenshotCmdStatus" style="font-size:11px;color:var(--muted);text-align:center;min-height:14px;margin-bottom:8px;"></div>
-      <button onclick="generateScreenshotHandout()" id="screenshotHandoutBtn"
+      <button onclick="exportScreenshotsZip()" id="screenshotZipBtn"
         style="width:100%;padding:11px;border-radius:8px;border:1px solid rgba(74,144,217,.35);
-        background:rgba(74,144,217,.08);color:#4a90d9;font-size:12px;font-weight:600;cursor:pointer;">
-        Handout aus Screenshots exportieren
+        background:rgba(74,144,217,.08);color:#4a90d9;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:4px;">
+        📦 Screenshots als ZIP exportieren
       </button>
-      <div style="display:flex;gap:6px;margin-top:6px;">
+      <div style="display:flex;gap:6px;margin-top:4px;">
         <div id="screenshotHandoutStatus" style="flex:1;font-size:11px;color:var(--muted);text-align:center;min-height:14px;padding-top:2px;"></div>
-        <button onclick="if(confirm('Alle Screenshots löschen?')){localStorage.removeItem('disc-screenshots-v1');this.previousElementSibling.textContent='Gelöscht';}"
+        <button onclick="clearWorkshopScreenshots()" 
           style="padding:4px 10px;border-radius:6px;border:1px solid rgba(200,60,60,.25);background:rgba(200,60,60,.06);color:rgba(200,80,80,.7);font-size:11px;cursor:pointer;">🗑</button>
       </div>
     </div>
@@ -2834,7 +2835,75 @@ function screenshotModuleBtn(moduleId) {
 }
 
 /* ─── SCREENSHOT HANDOUT ─────────────────────────────────────────────────── */
+async function loadWorkshopScreenshots() {
+  const wsId = onlineSession?.workshopId;
+  const shotKey = wsId ? `disc-screenshots-${wsId}` : 'disc-screenshots-v1';
+  let shots = [];
+  try { shots = JSON.parse(localStorage.getItem(shotKey) || '[]'); } catch(e){}
+  if (shots.length === 0 && wsId) {
+    try {
+      const old = JSON.parse(localStorage.getItem('disc-screenshots-v1') || '[]');
+      shots = old.filter(s => s.workshopId === wsId);
+    } catch(e){}
+  }
+  console.log('Screenshots geladen:', shots.length, 'Key:', shotKey);
+  return shots;
+}
+
+function clearWorkshopScreenshots() {
+  const wsId = onlineSession?.workshopId;
+  const shotKey = wsId ? `disc-screenshots-${wsId}` : 'disc-screenshots-v1';
+  if (confirm('Alle Workshop-Screenshots löschen?')) {
+    localStorage.removeItem(shotKey);
+    const status = document.getElementById('screenshotHandoutStatus');
+    if (status) status.textContent = 'Gelöscht ✓';
+  }
+}
+
+async function exportScreenshotsZip() {
+  const btn = document.getElementById('screenshotZipBtn');
+  const status = document.getElementById('screenshotHandoutStatus');
+  btn.disabled = true;
+  const setS = (m) => { if(status) status.innerHTML = m; };
+  try {
+    setS('📥 Screenshots werden geladen…');
+    const shots = await loadWorkshopScreenshots();
+    if (shots.length === 0) {
+      setS('⚠️ Keine Screenshots. Beamer-Tab muss geöffnet und verbunden sein.');
+      btn.disabled = false; return;
+    }
+    setS(`📦 ZIP mit ${shots.length} JPEGs wird erstellt…`);
+    const zip = new JSZip();
+    const date = new Date().toLocaleDateString('de-CH').replace(/\./g, '-');
+    const folder = zip.folder(`Beamer-Screenshots-${date}`);
+    let ok = 0;
+    shots.forEach((shot, i) => {
+      try {
+        const label = (shot.label || shot.moduleId || 'modul').replace(/[^a-zA-Z0-9_\-äöüÄÖÜ]/g, '_').substring(0, 40);
+        const timeStr = shot.ts ? new Date(shot.ts).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'}).replace(':','-') : String(i).padStart(2,'0');
+        const filename = `${String(i+1).padStart(2,'0')}_${timeStr}_${label}.jpg`;
+        const base64 = shot.imgData?.includes(',') ? shot.imgData.split(',')[1] : shot.imgData;
+        if (base64 && base64.length > 50) { folder.file(filename, base64, {base64:true}); ok++; }
+      } catch(e) { console.warn('Shot',i,'Fehler:',e.message); }
+    });
+    if (ok === 0) { setS('❌ Keine gültigen Bilddaten.'); btn.disabled=false; return; }
+    setS(`💾 ZIP wird heruntergeladen (${ok} Bilder)…`);
+    const blob = await zip.generateAsync({type:'blob', compression:'DEFLATE', compressionOptions:{level:6}});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=`Beamer-Screenshots-${date}.zip`; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
+    setS(`✓ ${ok} Screenshots als ZIP heruntergeladen`);
+    setTimeout(()=>{ if(status) status.textContent=''; }, 6000);
+  } catch(e) {
+    setS('❌ Fehler: '+e.message); console.error(e);
+  } finally { btn.disabled = false; }
+}
+
 async function generateScreenshotHandout() {
+  return exportScreenshotsZip(); // Umleitung auf ZIP
+}
+
+async function _generateScreenshotHandout_old() {
   const btn = document.getElementById('screenshotHandoutBtn');
   const status = document.getElementById('screenshotHandoutStatus');
   btn.disabled = true;
