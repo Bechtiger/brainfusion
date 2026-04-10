@@ -960,7 +960,12 @@ async function doJoin() {
 
     session = { code, alias, participantId: data.participantId, joinToken: data.joinToken, workshopId: data.workshopId };
     sessionStorage.setItem('disc_session', JSON.stringify(session));
-    localStorage.setItem('disc_session_' + code, JSON.stringify(session)); // persistiert über Browser-Schliessen
+    localStorage.setItem('disc_session_' + code, JSON.stringify(session));
+
+    // Wiederbeitritt (Tag 2): DISC-Daten aus Supabase nachladen
+    if (data.rejoined) {
+      await restoreDiscFromSupabase(session);
+    }
     setHeader('live');
     initRealtime();
 
