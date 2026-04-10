@@ -1075,10 +1075,9 @@ let tnaSubmitted = false;
 function showTeamNormenAnalyse(data) {
   const phase = data?.phase || 'sammeln';
   if (phase === 'auswertung' || tnaSubmitted) {
-    show('sGeneric');
-    document.getElementById('genericIcon').textContent = '\ud83d\udcca';
-    document.getElementById('genericTitle').textContent = 'Auswertung l\u00e4uft';
-    document.getElementById('genericDesc').textContent  = 'Die KI analysiert gerade die Teamnormen. Schau auf den Beamer.';
+    show('sWaiting');
+    document.getElementById('waitingTitle').textContent = 'Auswertung läuft';
+    document.getElementById('waitingDesc').textContent  = 'Die KI analysiert gerade die Teamnormen. Schau auf den Beamer.';
     return;
   }
   show('sModule');
@@ -1152,10 +1151,9 @@ async function submitTeamNormen() {
     });
     if (res.ok || res.status===409) {
       tnaSubmitted = true;
-      show('sGeneric');
-      document.getElementById('genericIcon').textContent = '\u2713';
-      document.getElementById('genericTitle').textContent = 'Danke \u2014 Antworten gespeichert';
-      document.getElementById('genericDesc').textContent  = 'Deine Antworten wurden anonym \u00fcbermittelt. Schau auf den Beamer.';
+      show('sWaiting');
+      document.getElementById('waitingTitle').textContent = 'Danke \u2014 Antworten gespeichert';
+      document.getElementById('waitingDesc').textContent  = 'Deine Antworten wurden anonym übermittelt. Schau auf den Beamer.';
     }
   } catch(e) { document.getElementById('tnaErr').textContent = 'Fehler: '+e.message; }
 }
