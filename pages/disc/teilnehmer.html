@@ -2161,9 +2161,25 @@ const BLOCK_PAGES = Array.from(
 
 let mostPicks  = {}; // blockId → dim
 let leastPicks = {}; // blockId → dim
+
+// Picks aus sessionStorage wiederherstellen (überlebt Modul-Wechsel)
+try {
+  const saved = JSON.parse(sessionStorage.getItem('disc_picks') || 'null');
+  if (saved?.mostPicks) mostPicks  = saved.mostPicks;
+  if (saved?.leastPicks) leastPicks = saved.leastPicks;
+} catch(e) {}
+
+function savePicksToSession() {
+  try { sessionStorage.setItem('disc_picks', JSON.stringify({mostPicks, leastPicks})); } catch(e) {}
+}
 let discPage   = 0;
 
 function showDiscTest() {
+  // Bereits abgeschlossen? (naturalType in disc_session gesetzt nach Auswertung)
+  try {
+    const sess = JSON.parse(sessionStorage.getItem('disc_session') || '{}');
+    if (sess.naturalType) { buildDiscResults(); return; }
+  } catch(e) {}
   const done = SHUFFLED_BLOCKS.every(b => mostPicks[b.id] && leastPicks[b.id]);
   if (done) { buildDiscResults(); return; }
   show('sDiscIntro');
@@ -2173,6 +2189,7 @@ function startDiscTest() {
   discPage = 0;
   mostPicks = {};
   leastPicks = {};
+  sessionStorage.removeItem('disc_picks'); // Reset auch in Session
   renderDiscPage();
   show('sDiscQuestions');
 }
@@ -2272,6 +2289,7 @@ function fcClick(blockId, dim) {
   // Update progress counter
   const done = SHUFFLED_BLOCKS.filter(b => mostPicks[b.id] && leastPicks[b.id]).length;
   document.getElementById('pgCount').textContent = `${done} / ${DISC_BLOCKS.length}`;
+  savePicksToSession(); // Picks persistieren
 
   // Re-render block in place
   const b = SHUFFLED_BLOCKS.find(x => x.id === blockId);
