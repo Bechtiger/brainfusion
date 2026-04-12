@@ -4299,6 +4299,12 @@ async function sendDiscResult() {
   if (forceNew) {
     sessionStorage.removeItem('disc_session');
     sessionStorage.removeItem('disc_picks');
+    localStorage.removeItem('disc_picks');
+    // In-Memory-State zurücksetzen
+    mostPicks = {};
+    leastPicks = {};
+    discResultSent = false;
+    lastDiscScores = null;
     if (urlCode) joinCodeEl.value = urlCode;
     show('sJoin'); return;
   }
