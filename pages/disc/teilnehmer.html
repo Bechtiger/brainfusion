@@ -1009,7 +1009,18 @@ function handleModule(mod, data) {
     case 'bias_story':
       showBiasStory(data); break;
     case 'disc_test':             showDiscTest(); break;
-    case 'disc_results':          /* stay on results screen */ break;
+    case 'disc_results':
+      // Resultate anzeigen wenn Test abgeschlossen, sonst Beamer-Hinweis
+      try {
+        const sess = JSON.parse(sessionStorage.getItem('disc_session') || '{}');
+        if (sess.naturalType) { buildDiscResults(); }
+        else {
+          const done = SHUFFLED_BLOCKS.every(b => mostPicks[b.id] && leastPicks[b.id]);
+          if (done) { buildDiscResults(); }
+          else { showBeamerMode(mod, data); }
+        }
+      } catch(e) { showBeamerMode(mod, data); }
+      break;
     case 'pairing_karten':        showPairingKarten(data); break;
     case 'disc_map':
     case 'disc_role_profile':
