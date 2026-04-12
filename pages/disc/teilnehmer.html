@@ -1009,7 +1009,19 @@ function handleModule(mod, data) {
     case 'bias_story':
       showBiasStory(data); break;
     case 'disc_test':             showDiscTest(); break;
-    case 'disc_results':          showTeamDiscResults(); break;
+    case 'disc_results':
+      // Wenn Test fertig aber noch nicht gesendet → individuelle Ansicht mit Send-Button
+      if (!discResultSent) {
+        try {
+          const sess = JSON.parse(sessionStorage.getItem('disc_session') || '{}');
+          if (sess.naturalType || SHUFFLED_BLOCKS.every(b => mostPicks[b.id] && leastPicks[b.id])) {
+            buildDiscResults(); break;
+          }
+        } catch(e) {}
+      }
+      // Sonst → Team-Ansicht
+      showTeamDiscResults();
+      break;
     case 'pairing_karten':        showPairingKarten(data); break;
     case 'disc_map':
     case 'disc_role_profile':
@@ -2433,6 +2445,8 @@ function domType(p) {
 /* ─── RESULTS ─────────────────────────────────────── */
 let lastDiscScores = null;   // global für PDF-Export
 let lastKiAnalysis = null;   // KI-Text für PDF
+let discResultSent = false;  // Track ob Profil gesendet
+try { discResultSent = !!JSON.parse(sessionStorage.getItem('disc_session')||'{}').sent; } catch(e){}
 
 function buildDiscResults() {
   const sc = calcDiscScores();
@@ -2565,17 +2579,6 @@ function buildDiscResults() {
         <p style="font-size:14px;color:var(--muted);line-height:1.6;">✓ Maske und Kern sind deckungsgleich — du kannst in deinem Alltag authentisch sein.</p>
       </div>`}
 
-      <!-- KI-Analyse (persoenlich) -->
-      <div class="detail-card" id="kiAnalysisCard" style="border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.04);">
-        <h2 style="color:var(--gold);">KI-Analyse — Dein Profil</h2>
-        <div id="kiAnalysisContent">
-          <div style="display:flex;align-items:center;gap:12px;padding:20px 0;">
-            <div style="width:20px;height:20px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>
-            <span style="font-size:13px;color:var(--muted);">KI analysiert dein Profil…</span>
-          </div>
-        </div>
-      </div>
-
       <!-- Raw scores -->
       <div class="bar-card">
         <div class="bar-title">Rohwerte (Picks)</div>
@@ -2592,11 +2595,8 @@ function buildDiscResults() {
         <div style="font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:14px;padding:8px 12px;border-left:2px solid var(--border);">
           Dieses Reflexionsinstrument dient der Workshop-Selbstreflexion und ersetzt keine validierte psychometrische Diagnostik.
         </div>
-        <button class="btn btn-primary" id="discPdfBtn" onclick="downloadDiscPdf()" style="margin-bottom:10px;gap:10px;width:auto;padding:11px 22px;">
-          <span style="font-size:16px;">↓</span> PDF herunterladen
-        </button>
         <button class="btn btn-ghost" onclick="preparePrint()" style="margin-bottom:10px;gap:10px;">
-          Drucken
+          <span style="font-size:16px;">↓</span> PDF speichern / Drucken
         </button>
       </div>
 
@@ -2608,8 +2608,6 @@ function buildDiscResults() {
       el.style.width = el.getAttribute('data-w') + '%';
     });
   }, 150);
-  // KI-Analyse starten
-  setTimeout(() => runPersonalKiAnalysis(), 600);
   // Typ für Pairing-Karten in Session speichern (überlebt Reload und Browser-Schliessen)
   try {
     const stored = JSON.parse(sessionStorage.getItem('disc_session') || '{}');
@@ -4277,9 +4275,11 @@ async function sendDiscResult() {
       })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Fehler');
+    if (!res.ok && res.status !== 409) throw new Error(data.error || 'Fehler');
     btn.textContent = 'Gesendet ✓';
     btn.style.background = 'linear-gradient(135deg,#1a5c53,var(--S))';
+    discResultSent = true;
+    try { const s = JSON.parse(sessionStorage.getItem('disc_session')||'{}'); s.sent=true; sessionStorage.setItem('disc_session', JSON.stringify(s)); } catch(e){}
     toast('Profil erfolgreich gesendet ✓', 'success');
   } catch(e) {
     toast('Fehler: ' + e.message, 'error');
