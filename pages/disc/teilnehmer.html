@@ -4293,6 +4293,15 @@ async function sendDiscResult() {
 (async function init() {
   const params  = new URLSearchParams(window.location.search);
   const urlCode = params.get('code')?.trim().toUpperCase();
+  const forceNew = params.get('new') === '1';
+
+  // &new=1 → frische Session erzwingen (für Tests mit mehreren Teilnehmern)
+  if (forceNew) {
+    sessionStorage.removeItem('disc_session');
+    sessionStorage.removeItem('disc_picks');
+    if (urlCode) joinCodeEl.value = urlCode;
+    show('sJoin'); return;
+  }
 
   // 1. Zuerst sessionStorage (aktive Session im Browser)
   // 2. Dann localStorage (Session vom Vortag)
