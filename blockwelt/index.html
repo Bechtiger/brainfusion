@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BLOCKWELT – eine lebendige Voxel-Welt</title>
+  <script type="module" crossorigin src="./assets/index-rnT7XBkE.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DdVn0nZP.css">
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="vignette"></div>
+  <div id="water-tint"></div>
+  <div id="hit-tint"></div>
+  <div id="hud">
+    <div id="crosshair"></div>
+    <div id="coords"></div>
+    <div id="biome"></div>
+    <div id="hotbar"></div>
+  </div>
+  <div id="blockmenu"></div>
+  <div id="overlay">
+    <h1>BLOCKWELT<small>4.0 · eine lebendige Voxel-Welt · gebaut von Claude für Christof</small></h1>
+    <div class="keys">
+      <b>W A S D</b> bewegen &nbsp;·&nbsp; <b>Maus</b> umsehen &nbsp;·&nbsp; <b>Leertaste</b> springen &nbsp;·&nbsp; <b>F</b> Flugmodus<br>
+      <b>Linksklick</b> abbauen &nbsp;·&nbsp; <b>Rechtsklick</b> setzen/Tür &nbsp;·&nbsp; <b>1–9</b>/<b>Mausrad</b> Block &nbsp;·&nbsp; <b>E</b> Block-Menü &nbsp;·&nbsp; <b>N</b> Zeitraffer &nbsp;·&nbsp; <b>M</b> Musik
+    </div>
+    <div class="go" id="go-text">⏳ Welt wird erzeugt …</div>
+    <div class="menu">
+      <button id="btn-export">💾 Welt exportieren</button>
+      <button id="btn-import">📂 Welt laden</button>
+      <button id="btn-new">🌍 Neue Welt</button>
+    </div>
+    <div id="savehint"></div>
+    <input type="file" id="file-import" accept=".blockwelt,.json" style="display:none">
+  </div>
+</body>
+</html>

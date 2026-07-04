@@ -73,6 +73,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://brainfusion.app/blockwelt/</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://brainfusion.app/pages/impressum.html</loc>
     <lastmod>2025-12-08</lastmod>
     <changefreq>yearly</changefreq>
