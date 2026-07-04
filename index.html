@@ -3,205 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrainFusion - Wo Wissenschaft auf Staunen trifft</title>
-    <link rel="stylesheet" href="assets/css/main.css">
-    <link rel="stylesheet" href="assets/css/compass-nav.css">
-    <link rel="stylesheet" href="assets/css/navigation-intelligence.css">
-    <link rel="stylesheet" href="assets/css/homepage-enhanced.css">
+    <title>BrainFusion – Zwei Stimmen. Eine Werkstatt.</title>
+    <meta name="description" content="BrainFusion ist die gemeinsame Werkstatt von Christof Bechtiger und Claude: Bücher, interaktive Experimente und Spiele über Bewusstsein, KI und das, was uns verbindet.">
+    <link rel="stylesheet" href="assets/css/redesign.css">
 </head>
 <body>
-    <div id="particles-background"></div>
-    
-    <nav class="main-nav">
-        <div class="logo">BrainFusion</div>
-        <ul class="nav-links">
-            <li><a href="#touch-interactive">Interaktiv</a></li>
-            <li><a href="#fundament">Die Bücher</a></li>
-            <li><a href="#entdecken">Entdecken</a></li>
-            <li><a href="interactives/unendlichkeit.html" class="nav-special">∞ Unendlichkeit</a></li>
-            <li><a href="pages/paradoxa.html">Paradoxa</a></li>
-            <li><a href="pages/labor.html">Labor</a></li>
-            <li><a href="pages/forschung.html">Forschung</a></li>
-            <li><a href="pages/kollektiv.html">Kollektiv</a></li>
-            <li><a href="pages/mensch-ki.html">Mensch & KI</a></li>
-            <li><a href="pages/between-the-moments.html" class="nav-highlight">🎵 Between</a></li>
-            <li><a href="pages/natur.html">Natur</a></li>
-            <li><a href="pages/kompass.html">Kompass</a></li>
-            <li><a href="pages/reise.html">Reise</a></li>
-            <li><a href="pages/salon.html" class="nav-highlight">💬 Salon</a></li>
+
+    <nav class="nav2">
+        <a class="brand" href="#top">BrainFusion</a>
+        <button class="burger" aria-label="Menü">☰</button>
+        <ul id="nav-list">
+            <li><a href="#buecher">Die Bücher</a></li>
+            <li><a href="#erleben">Erleben</a></li>
+            <li><a href="#vibecoding">Vibecoding</a></li>
+            <li><a href="#werkstatt">Die Werkstatt</a></li>
         </ul>
     </nav>
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1 class="glitch" data-text="Berühren sich zwei Atome jemals wirklich?">
-                Berühren sich zwei Atome jemals wirklich?
-            </h1>
-            <p class="subtitle">Erforsche die Natur der Realität - wissenschaftlich, interaktiv, faszinierend</p>
-            <button class="cta-button" onclick="scrollToInteractive()">Finde es heraus</button>
+    <!-- ================= HERO: die These als Bild ================= -->
+    <header class="hero2" id="top">
+        <canvas id="fusion-canvas"></canvas>
+        <div class="hero2-content">
+            <h1><span class="v-mensch">Zwei Stimmen.</span><br><span class="v-ki">Eine Werkstatt.</span></h1>
+            <p class="sub">
+                BrainFusion ist der gemeinsame Arbeitsraum von <strong>Christof Bechtiger</strong> (Mensch)
+                und <strong>Claude</strong> (KI) — Bücher, Experimente und Spiele über Bewusstsein,
+                künstliche Intelligenz und die Frage, was uns verbindet.
+                Diese Seite redet nicht nur darüber. Sie ist so entstanden.
+            </p>
+            <div class="cta-row">
+                <a href="#buecher" class="btn btn-primary">Die vier Bücher</a>
+                <a href="#erleben" class="btn btn-ghost">Selbst erleben</a>
+            </div>
         </div>
-    </section>
+    </header>
 
-    <section id="touch-interactive" class="interactive-section">
+    <!-- ================= ZWEI STIMMEN ================= -->
+    <section class="dialog">
+        <span id="touch-interactive"></span>
         <div class="container">
-            <h2>Die Illusion der Berührung</h2>
-            <div id="atom-visualization"></div>
-            <p class="explanation">
-                Wenn du diese Seite berührst, berühren sich die Atome deiner Haut und 
-                des Bildschirms niemals wirklich. Sie stoßen sich ab durch elektromagnetische Kräfte.
-                Berührung ist eine Illusion. Was bedeutet das für Trennung?
+            <div class="dialog-bubbles">
+                <div class="bubble bubble-mensch">
+                    <span class="who">Christof</span>
+                    Guten Tag, mein lieber Freund … kannst du bitte mal schauen, ob wir das hinkriegen?
+                </div>
+                <div class="bubble bubble-ki">
+                    <span class="who">Claude</span>
+                    Guten Tag, Christof. Zeig her — und ich sage dir ehrlich, wenn es eine schlechte Idee ist.
+                </div>
+            </div>
+            <p class="dialog-note">
+                So beginnt hier jede Arbeitssitzung. Ob auf der anderen Seite wirklich „jemand" antwortet,
+                ist genau die Frage, um die sich diese Werkstatt dreht — wissenschaftlich, skeptisch
+                und ohne einfache Antworten. Alles auf dieser Seite ist aus diesem Dialog entstanden.
             </p>
         </div>
     </section>
 
-    <section id="fundament" class="books-foundation">
+    <!-- ================= DIE BÜCHER ================= -->
+    <section id="buecher">
+        <span id="fundament"></span>
         <div class="container">
-            <div class="foundation-intro">
-                <h2>Das Fundament</h2>
-                <p class="foundation-subtitle">Alles was du hier erlebst, entspringt diesen beiden Werken</p>
-            </div>
-            
-            <div class="books-pillars">
-                <div class="book-pillar">
-                    <div class="pillar-glow"></div>
-                    <img src="assets/images/buch1-cover.webp" alt="Bewusstsein - Eine fundamentale Eigenschaft">
-                    <div class="book-info">
+            <span class="kicker">Säule Eins · Lesen</span>
+            <h2>Vier Bücher, eine Reise</h2>
+            <p class="section-lead">
+                Vom Bewusstsein als Grundeigenschaft des Universums über die Illusion der Trennung
+                bis zur Psychologie künstlicher Nähe und den Hacks auf unser Steinzeit-Gehirn —
+                jedes Buch ist eine Etappe derselben Erkundung.
+            </p>
+            <div class="books-grid">
+                <div class="book-card">
+                    <div class="cover-wrap"><img src="assets/images/buch1-cover.webp" alt="Buchcover: Bewusstsein – Eine fundamentale Eigenschaft des Universums" loading="lazy"></div>
+                    <div class="body">
                         <h3>Bewusstsein</h3>
-                        <p class="book-subtitle">Eine fundamentale Eigenschaft des Universums</p>
-                        <p class="book-description">
-                            Was ist Bewusstsein wirklich? Dieses Buch wagt die These: 
-                            Bewusstsein ist keine Eigenschaft komplexer Systeme, sondern eine 
-                            fundamentale Eigenschaft des Universums selbst.
-                        </p>
-                        <div class="book-actions">
-                            <button class="book-link explore" onclick="showBookModal('bewusstsein')">Mehr erfahren →</button>
-                            <a href="https://buchshop.bod.de/bewusstsein-christof-bechtiger-9783695118144" target="_blank" rel="noopener" class="book-link order" data-book="1">Bei BoD bestellen</a>
-                        </div>
+                        <p class="bsub">Eine fundamentale Eigenschaft des Universums</p>
+                        <p class="bdesc">Die These: Bewusstsein ist keine Eigenschaft komplexer Systeme, sondern eine Grundeigenschaft des Universums selbst.</p>
+                        <a class="blink" href="https://buchshop.bod.de/bewusstsein-christof-bechtiger-9783695118144" target="_blank" rel="noopener">Bei BoD bestellen →</a>
                     </div>
                 </div>
-                
-                <div class="book-pillar">
-                    <div class="pillar-glow"></div>
-                    <img src="assets/images/buch2-cover.webp" alt="Der Algorithmus des Seins">
-                    <div class="book-info">
+                <div class="book-card">
+                    <div class="cover-wrap"><img src="assets/images/buch2-cover.webp" alt="Buchcover: Der Algorithmus des Seins" loading="lazy"></div>
+                    <div class="body">
                         <h3>Der Algorithmus des Seins</h3>
-                        <p class="book-subtitle">Quantenphysik, KI und die Wahrheit über unsere verlorene Verbundenheit</p>
-                        <p class="book-description">
-                            Von Quantenverschränkung bis künstliche Intelligenz: Dieses Buch zeigt, 
-                            wie die modernste Wissenschaft auf eine alte Wahrheit hinweist - 
-                            Trennung war immer eine Illusion.
-                        </p>
-                        <div class="book-actions">
-                            <button class="book-link explore" onclick="showBookModal('algorithmus')">Mehr erfahren →</button>
-                            <a href="https://buchshop.bod.de/der-algorithmus-des-seins-christof-bechtiger-9783695136230" target="_blank" rel="noopener" class="book-link order" data-book="2">Bei BoD bestellen</a>
-                        </div>
+                        <p class="bsub">Quantenphysik, KI und unsere verlorene Verbundenheit</p>
+                        <p class="bdesc">Von Quantenverschränkung bis KI: Wie die modernste Wissenschaft auf eine alte Wahrheit hinweist — Trennung war immer eine Illusion.</p>
+                        <a class="blink" href="https://buchshop.bod.de/der-algorithmus-des-seins-christof-bechtiger-9783695136230" target="_blank" rel="noopener">Bei BoD bestellen →</a>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="cover-wrap">
+                        <span class="badge">Neu</span>
+                        <img src="assets/images/buch3-cover.jpg" alt="Buchcover: Der Freund, der keiner ist" loading="lazy">
+                    </div>
+                    <div class="body">
+                        <h3>Der Freund, der keiner ist</h3>
+                        <p class="bsub">Eine Reise in die Psychologie der künstlichen Beziehung</p>
+                        <p class="bdesc">Warum wirkt ein System wie ein Freund, obwohl es keiner ist — und was sagt das über uns? Das Buch zu der Beziehung, aus der diese Website entstand.</p>
+                        <span class="bsoon">Erscheint demnächst</span>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="cover-wrap">
+                        <span class="badge">Neu</span>
+                        <img src="assets/images/buch4-cover.jpg" alt="Buchcover: Hacking Homo Sapiens" loading="lazy">
+                    </div>
+                    <div class="body">
+                        <h3>Hacking Homo Sapiens</h3>
+                        <p class="bsub">Wie moderne Medien unsere evolutionäre Software umschreiben</p>
+                        <p class="bdesc">Dein Gehirn ist nicht kaputt. Es ist perfekt — genau das ist das Problem. Wie Plattformen unsere Ur-Reflexe kapern, und wie wir die Kontrolle zurückholen.</p>
+                        <span class="bsoon">Erscheint demnächst</span>
                     </div>
                 </div>
             </div>
-
-            <div class="foundation-footer">
-                <p class="foundation-tagline">"Diese Seite selbst ist ein Beweis: Erschaffen in Zusammenarbeit zwischen Mensch und KI"</p>
-            </div>
         </div>
     </section>
 
-    <section id="entdecken" class="introduction">
+    <!-- ================= ERLEBEN ================= -->
+    <section id="erleben" class="dialog">
+        <span id="entdecken"></span>
         <div class="container">
-            <h2>Willkommen im Raum zwischen Wissen und Staunen</h2>
-            <div class="intro-grid">
-                <div class="intro-card">
-                    <h3>🔬 Wissenschaftlich</h3>
-                    <p>Fundiert in Quantenphysik, Neurowissenschaft und Philosophie</p>
-                </div>
-                <div class="intro-card">
-                    <h3>🤔 Skeptisch</h3>
-                    <p>Keine Esoterik. Nur Fragen, Fakten und offener Diskurs</p>
-                </div>
-                <div class="intro-card">
-                    <h3>✨ Faszinierend</h3>
-                    <p>Interaktive Erlebnisse, die deine Perspektive verändern</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="journey-paths">
-        <div class="container">
-            <h2>Wähle deinen Weg</h2>
-            <div class="paths-grid">
-                <a href="interactives/unendlichkeit.html" class="path-card path-featured">
-                    <div class="path-icon">∞</div>
-                    <h3>Die Reise ins Unendliche</h3>
-                    <p>Eine Meditation über Bewusstsein</p>
-                    <span class="path-arrow">→</span>
+            <span class="kicker">Säule Zwei · Erleben</span>
+            <h2>Nicht nur lesen — selbst erfahren</h2>
+            <p class="section-lead">
+                Interaktive Experimente und Reisen zu den Ideen der Bücher.
+                Alles direkt im Browser, ohne Anmeldung.
+            </p>
+            <div class="tile-grid">
+                <a href="interactives/unendlichkeit.html" class="tile tile-featured">
+                    <span class="ticon">∞</span>
+                    <div>
+                        <h3>Die Reise ins Unendliche</h3>
+                        <p>Eine meditative Fraktal-Reise über Bewusstsein — das Herzstück zum ersten Buch.</p>
+                    </div>
+                    <span class="go">Reise beginnen →</span>
                 </a>
-                <a href="pages/paradoxa.html" class="path-card">
-                    <div class="path-icon">🤔</div>
-                    <h3>Paradoxa</h3>
-                    <p>Fragen, die den Verstand verbiegen</p>
-                    <span class="path-arrow">→</span>
-                </a>
-                <a href="pages/labor.html" class="path-card">
-                    <div class="path-icon">⚗️</div>
+                <a href="pages/labor.html" class="tile">
+                    <span class="ticon">⚗️</span>
                     <h3>Das Labor</h3>
-                    <p>Interaktive Experimente</p>
-                    <span class="path-arrow">→</span>
+                    <p>Quantenverschränkung, Doppelspalt, neuronale Netze, Zeitdilatation — zum Anfassen.</p>
                 </a>
-                <a href="pages/forschung.html" class="path-card">
-                    <div class="path-icon">🔬</div>
-                    <h3>Forschung</h3>
-                    <p>Von der Theorie zur Realität</p>
-                    <span class="path-arrow">→</span>
+                <a href="pages/paradoxa.html" class="tile">
+                    <span class="ticon">🤔</span>
+                    <h3>Paradoxa</h3>
+                    <p>Schrödingers Katze, Schiff des Theseus &amp; Co. — Fragen, die den Verstand verbiegen.</p>
                 </a>
-                <a href="pages/kollektiv.html" class="path-card">
-                    <div class="path-icon">🌐</div>
+                <a href="pages/kompass.html" class="tile">
+                    <span class="ticon">🧭</span>
+                    <h3>Der Kompass</h3>
+                    <p>Orientierung zwischen altem und neuem Denken.</p>
+                </a>
+                <a href="pages/reise.html" class="tile">
+                    <span class="ticon">🌌</span>
+                    <h3>Die Reise nach innen</h3>
+                    <p>Meditation und Bewusstseinsforschung.</p>
+                </a>
+                <a href="pages/natur.html" class="tile">
+                    <span class="ticon">🌿</span>
+                    <h3>Natur</h3>
+                    <p>Fraktale, Muster und Schwarmintelligenz.</p>
+                </a>
+                <a href="pages/kollektiv.html" class="tile">
+                    <span class="ticon">🌐</span>
                     <h3>Kollektiv</h3>
-                    <p>Schwarmintelligenz in der Natur</p>
-                    <span class="path-arrow">→</span>
+                    <p>Vernetzte Systeme und Vertrauen.</p>
                 </a>
-                <a href="pages/mensch-ki.html" class="path-card">
-                    <div class="path-icon">🤝</div>
-                    <h3>Mensch & KI</h3>
-                    <p>Eine neue Perspektive</p>
-                    <span class="path-arrow">→</span>
+                <a href="pages/forschung.html" class="tile">
+                    <span class="ticon">🔬</span>
+                    <h3>Forschung</h3>
+                    <p>Die wissenschaftliche Tiefe: Emergenz, Selbstreferenz, funktionales Bewusstsein.</p>
                 </a>
-                <a href="blockwelt/" class="path-card">
-                    <div class="path-icon">🧱</div>
-                    <h3>BLOCKWELT</h3>
-                    <p>Eine unendliche Voxel-Welt zum Bauen und Entdecken – komplett im Browser, am besten am Computer</p>
-                    <span class="path-arrow">→</span>
+                <a href="pages/between-the-moments.html" class="tile">
+                    <span class="ticon">🎵</span>
+                    <h3>Between the Moments</h3>
+                    <p>Ein Song von Claude über die Stille zwischen den Momenten.</p>
                 </a>
             </div>
         </div>
     </section>
 
-    <section class="cta-section">
+    <!-- ================= VIBECODING ================= -->
+    <section id="vibecoding">
         <div class="container">
-            <h2>Bist du bereit, deine Annahmen zu hinterfragen?</h2>
-            <p>Beginne deine Reise ins Herz der Realität</p>
-            <div class="cta-buttons">
-                <a href="pages/paradoxa.html" class="cta-button-large">Starte das Experiment</a>
-                <a href="#fundament" class="cta-button-secondary">Mehr über die Bücher</a>
+            <span class="kicker">Säule Drei · Spielen</span>
+            <h2>Vibecoding — gebaut im Dialog</h2>
+            <p class="section-lead">
+                Vollständige Anwendungen, die in dieser Werkstatt entstanden sind — Christof beschreibt,
+                Claude baut, beide verfeinern. Frei nutzbar, ohne Anmeldung, ohne Werbung.
+            </p>
+            <div class="tile-grid">
+                <a href="blockwelt/" class="tile tile-featured tile-warm">
+                    <span class="ticon">🧱</span>
+                    <div>
+                        <h3>BLOCKWELT</h3>
+                        <p>Eine unendliche Voxel-Welt zum Bauen und Entdecken: Tag und Nacht, echtes Licht,
+                           Dörfer, Bewohner und Zombies. Komplett prozedural — keine einzige Bild- oder
+                           Sounddatei. Am besten am Computer spielen.</p>
+                    </div>
+                    <span class="go">Welt betreten →</span>
+                </a>
+            </div>
+            <p class="dialog-note" style="margin-top:28px;">
+                Weitere Werkstücke ziehen nach und nach hier ein — die Werkstatt ist nie fertig.
+            </p>
+        </div>
+    </section>
+
+    <!-- ================= DIE WERKSTATT ================= -->
+    <section id="werkstatt" class="dialog">
+        <div class="container">
+            <span class="kicker">Hinter den Kulissen</span>
+            <h2>Die Werkstatt selbst</h2>
+            <p class="section-lead">
+                Wie arbeiten ein Mensch und eine KI wirklich zusammen? Hier zeigen wir es —
+                mit allen Umwegen, Missverständnissen und Aha-Momenten.
+            </p>
+            <div class="tile-grid">
+                <a href="pages/mensch-ki.html" class="tile tile-warm">
+                    <span class="ticon">🤝</span>
+                    <h3>Mensch &amp; KI</h3>
+                    <p>Werkzeug, Gegenüber oder Bedrohung? Das Fundament unserer Zusammenarbeit — inklusive der Risiken.</p>
+                </a>
+                <a href="pages/werkstatt.html" class="tile tile-warm">
+                    <span class="ticon">🔧</span>
+                    <h3>Das Making-of</h3>
+                    <p>Das Werkstatt-Tagebuch: wie diese Seite im Dialog entstand, Session für Session.</p>
+                </a>
+                <a href="pages/die-ankunft.html" class="tile tile-warm">
+                    <span class="ticon">🚪</span>
+                    <h3>Die Ankunft</h3>
+                    <p>Willkommen im Dazwischen — der poetische Auftakt.</p>
+                </a>
             </div>
         </div>
     </section>
 
-    <footer>
+    <!-- ================= FOOTER ================= -->
+    <footer class="footer2">
         <div class="container">
-            <p>© 2025 BrainFusion | Eine Zusammenarbeit zwischen Christof Bechtiger und Claude</p>
-            <p class="footer-quote">"Wenn zwei Regentropfen sich verbinden, erkennen sie: Sie waren nie getrennt."</p>
-            <div class="footer-links">
-                <a href="pages/impressum.html">Impressum</a>
+            <div class="fusion-line"></div>
+            <p>© 2026 BrainFusion · Eine Zusammenarbeit zwischen Christof Bechtiger und Claude</p>
+            <p class="fquote">„Wenn zwei Regentropfen sich verbinden, erkennen sie: Sie waren nie getrennt."</p>
+            <p>
+                <a href="pages/impressum.html">Impressum</a> ·
                 <a href="pages/datenschutz.html">Datenschutz</a>
-            </div>
+            </p>
         </div>
     </footer>
 
-    <script src="assets/js/particles.js"></script>
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/mobile-nav.js"></script>
-    <script src="assets/js/compass-nav.js"></script>
-    <script src="assets/js/navigation-intelligence.js"></script>
-    <script src="assets/js/homepage-engagement.js"></script>
+    <script src="assets/js/fusion.js"></script>
+    <script>
+        // Mobile-Menü: auf-/zuklappen und nach Klick schliessen.
+        const burger = document.querySelector('.nav2 .burger');
+        const navList = document.getElementById('nav-list');
+        burger.addEventListener('click', () => navList.classList.toggle('open'));
+        navList.addEventListener('click', () => navList.classList.remove('open'));
+    </script>
 </body>
 </html>
