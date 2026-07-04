@@ -54,7 +54,9 @@ class ParticleSystem {
                 vx: (Math.random() - 0.5) * 0.5,
                 vy: (Math.random() - 0.5) * 0.5,
                 radius: Math.random() * 2 + 1,
-                opacity: Math.random() * 0.5 + 0.3
+                opacity: Math.random() * 0.5 + 0.3,
+                // Zwei Stimmen (Redesign 2.0): ~40% Bernstein (Mensch), Rest Cyan (KI)
+                rgb: Math.random() < 0.4 ? '232, 163, 74' : '0, 217, 255'
             });
         }
     }
@@ -72,12 +74,12 @@ class ParticleSystem {
     drawParticle(particle) {
         this.ctx.beginPath();
         this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-        this.ctx.fillStyle = `rgba(0, 217, 255, ${particle.opacity})`;
+        this.ctx.fillStyle = `rgba(${particle.rgb}, ${particle.opacity})`;
         this.ctx.fill();
-        
+
         // Glow effect
         this.ctx.shadowBlur = 10;
-        this.ctx.shadowColor = 'rgba(0, 217, 255, 0.5)';
+        this.ctx.shadowColor = `rgba(${particle.rgb}, 0.5)`;
         this.ctx.fill();
         this.ctx.shadowBlur = 0;
     }
@@ -143,6 +145,13 @@ class ParticleSystem {
     }
 
     animate() {
+        // Selbstheilung: Wurde die Seite in einem Hintergrund-Tab geladen,
+        // meldet das Fenster beim Init 0×0 und die Canvas bliebe für immer
+        // schwarz. Darum die Grösse in der Schleife nachführen.
+        if (this.canvas.width !== window.innerWidth || this.canvas.height !== window.innerHeight) {
+            if (window.innerWidth > 0) { this.resize(); this.createParticles(); }
+        }
+
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
