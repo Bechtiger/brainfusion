@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SEVEN STAR — 七星螳螂拳 Pinball</title>
+    <link rel="icon" type="image/png" href="images/logo.png" />
+    <style>
+      :root {
+        --gold: #d4af37;
+        --gold-dim: #9a7f2a;
+        --ink: #e8e0cf;
+        --panel: rgba(12, 9, 6, 0.78);
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: radial-gradient(
+            ellipse at 50% 30%,
+            #241a10 0%,
+            #120d08 55%,
+            #060403 100%
+          )
+          #060403;
+        font-family: 'Segoe UI', 'Noto Sans', sans-serif;
+      }
+      #app {
+        position: absolute;
+        inset: 0;
+      }
+      /* Logo oben links */
+      #logo {
+        position: fixed;
+        top: 14px;
+        left: 16px;
+        height: 72px;
+        opacity: 0.95;
+        pointer-events: none;
+        user-select: none;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+      }
+      /* Spielstand-Panel oben rechts */
+      #hud {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        min-width: 260px;
+        padding: 10px 14px;
+        color: var(--ink);
+        background: var(--panel);
+        border: 1px solid var(--gold-dim);
+        border-radius: 6px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+        font-size: 13px;
+        line-height: 1.65;
+        letter-spacing: 0.02em;
+        white-space: pre;
+        pointer-events: none;
+        user-select: none;
+      }
+      #hud::first-line {
+        color: var(--gold);
+        font-weight: 600;
+        letter-spacing: 0.12em;
+      }
+      /* Steuerung dezent unten mittig */
+      #controls {
+        position: fixed;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 6px 18px;
+        color: #b9ad90;
+        background: var(--panel);
+        border: 1px solid rgba(154, 127, 42, 0.5);
+        border-radius: 999px;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+        pointer-events: none;
+        user-select: none;
+      }
+      #controls b {
+        color: var(--gold);
+        font-weight: 600;
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-D7N9BPF8.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <img id="logo" src="images/logo.png" alt="SEVEN STAR" />
+    <div id="hud"></div>
+    <div id="controls">
+      <b>←/→</b> oder <b>Shift</b> Flipper&ensp;·&ensp;<b>Leertaste</b>
+      Plunger / Start&ensp;·&ensp;<b>N</b>/<b>↑</b> Nudge&ensp;·&ensp;<b>R</b> Neustart
+    </div>
+  </body>
+</html>

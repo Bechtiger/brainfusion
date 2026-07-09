@@ -79,6 +79,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://brainfusion.app/sevenstar/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://brainfusion.app/pages/impressum.html</loc>
     <lastmod>2025-12-08</lastmod>
     <changefreq>yearly</changefreq>
