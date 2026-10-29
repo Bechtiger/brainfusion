@@ -71,3 +71,7 @@ Das Gezeitenmodul ist bei ausgewählter Erde oder ausgewähltem Mond sowie in de
 ## Bereitstellung in einem Unterordner
 
 Der Produktions-Build verwendet relative Pfade. `npm run build` erzeugt `dist/`; dessen Inhalt kann nach Prüfung und Freigabe in einen eigenen Ordner einer Website übernommen werden. Die URL des Ordners benötigt einen abschliessenden Schrägstrich. Für die Sicherheitsrichtlinie und einen vorsichtigen Veröffentlichungsablauf siehe `VEROEFFENTLICHUNGSPLAN.md`.
+
+## Mobile Ansicht
+
+Auf schmalen Bildschirmen öffnet „Ziele“ die Navigation und die Massstabs- und Simulationssteuerung. Nach der Auswahl schliesst sie sich und gibt die Sicht auf das Objekt frei. „Wissen“ öffnet das Informationspanel; die Zielauswahl darin und die Lernmodule bleiben erreichbar. Die Leiste am unteren Rand bleibt sichtbar. Am Desktop bleibt die bisherige Anordnung erhalten.
