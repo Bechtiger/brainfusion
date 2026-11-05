@@ -9,9 +9,9 @@ npm run dev
 
 Die im Terminal angezeigte lokale Adresse im Browser öffnen. Für ein Produktionspaket `npm run build` ausführen; `npm run preview` zeigt den Build lokal an.
 
-Maus/Finger ziehen: drehen. Mausrad oder zwei Finger: zoomen. Ziele in der Navigation wählen oder anklicken. Im realistischen Massstab stehen Durchmesser und mittlere Bahnradien im gleichen Verhältnis; Bahnen sind vereinfacht kreisförmig und nicht datumsbezogen. Die Animationsgeschwindigkeit ist zur Betrachtung erhöht. Die Explorer-Ansicht verändert Grössen und Abstände absichtlich.
+Maus/Finger ziehen: drehen. Mausrad oder zwei Finger: zoomen. Ziele in der Navigation wählen oder anklicken. Im realistischen Massstab stehen Durchmesser und Entfernungen im gleichen Verhältnis. Die Zeitreise berechnet Sonne, die acht Planeten und den Erdmond für das gewählte Datum; die eingezeichneten Bahnlinien sind idealisierte Kreise. Die Explorer-Ansicht verändert Grössen und Abstände absichtlich.
 
-Die strukturierten Körperdaten in `src/data.js` und die getrennte 3D-/UI-Logik sind Ausgangspunkte für spätere Inhalte, zusätzliche Objekte und Ephemeriden. Bisher keine tatsächlichen Positionen, Ton, Touren oder Sprachumschaltung.
+Die strukturierten Körperdaten in `src/data.js` und die getrennte 3D-/UI-Logik sind Ausgangspunkte für spätere Inhalte, zusätzliche Objekte und Ephemeriden. Planeten- und Mondpositionen werden für die gewählte Zeit berechnet; Ton und geführte Touren sind bisher nicht enthalten.
 
 ## Bildnachweise
 Planetentexturen und Sternhintergrund: Solar System Scope, https://www.solarsystemscope.com/textures/, Creative Commons Attribution 4.0 International, https://creativecommons.org/licenses/by/4.0/. Verwendet als Kugeltexturen, teils beleuchtet und eingefärbt. Die Quelle beschreibt teilweise ergänzte Oberflächen und angepasste Farben. Dateien: Sonne, Merkur, Venus-Atmosphäre, Erde, Mars, Jupiter, Saturn, Uranus, Neptun und Milchstrassenhintergrund. Einige Dateien wurden über den öffentlichen Spiegel https://github.com/Sanghel/solar-system-3d/tree/develop/public/textures bezogen; Ursprung und Lizenz wurden auf der Seite des Urhebers geprüft.
@@ -45,7 +45,7 @@ Für jedes der 22 Ziele liegen DE/EN-Lerntexte mit Quellenlink in `src/knowledge
 
 ## Erdmond
 
-Der Mond ist über Suche, Erde und Wissenspanel erreichbar. Die Bahn ist kreisförmig und nicht datumsgenau; die Bewegung ist gegenüber den Planeten verlangsamt. Im realistischen Massstab werden 384.400 km mittlerer Bahnabstand und 1.737,4 km mittlerer Radius verwendet. Die Eigenrotation ist an die Umlaufbewegung gekoppelt, sodass dieselbe Kartenhälfte zur Erde zeigt. Libration, Bahnneigung, reale Phase und aktuelle Position werden nicht berechnet. Ein interaktives Lernmodul zu irdischen Gezeiten ist verfügbar; ein eigenes Lernmodul zur gebundenen Rotation bleibt ein späterer Ausbauschritt.
+Der Mond ist über Suche, Erde und Wissenspanel erreichbar. Die Mondposition und der Abstand stammen aus der Ephemeride, die eingezeichnete Kreisbahn ist ein Schema. Im realistischen Massstab gilt ein Radius von 1.737,4 km. Die Oberflächenausrichtung ist vereinfacht zur Erde gekoppelt; Libration und die datumsgenaue Eigenrotation werden nicht berechnet. Ein interaktives Lernmodul zu irdischen Gezeiten ist verfügbar; ein eigenes Lernmodul zur gebundenen Rotation bleibt ein späterer Ausbauschritt.
 
 Mondtextur `public/textures/moon.jpg`: NASA Scientific Visualization Studio, CGI Moon Kit (Ernie Wright), https://svs.gsfc.nasa.gov/4720/; 2025er LROC-Farbkarte, 2K-JPEG, Daten aus Lunar Reconnaissance Orbiter, für die Darstellung auf eine Kugel abgebildet und beleuchtet. Die Karte ist laut Quelle für visuelle Darstellung optimiert; Polregionen und kleine Datenlücken wurden aus anderen Daten ergänzt bzw. rekonstruiert. NASA SVS führt seine Inhalte als gemeinfrei, sofern nicht anders angegeben: https://svs.gsfc.nasa.gov/help/; Quellenangabe und NASA-Medienrichtlinien beachten.
 
@@ -75,3 +75,11 @@ Der Produktions-Build verwendet relative Pfade. `npm run build` erzeugt `dist/`;
 ## Mobile Ansicht
 
 Auf schmalen Bildschirmen öffnet „Ziele“ die Navigation und die Massstabs- und Simulationssteuerung. Nach der Auswahl schliesst sie sich und gibt die Sicht auf das Objekt frei. „Wissen“ öffnet das Informationspanel; die Zielauswahl darin und die Lernmodule bleiben erreichbar. Die Leiste am unteren Rand bleibt sichtbar. Am Desktop bleibt die bisherige Anordnung erhalten.
+
+## Zeitreise und Ephemeriden
+
+Zeitreise öffnet die Datumseingabe sowie Vorwärts, Rückwärts, Pause und Geschwindigkeit. Der Bereich reicht vom 1. Januar 8001 v. Chr. bis 31. Dezember 2100 n. Chr. Eingaben verwenden UTC/UT und den proleptischen gregorianischen Kalender; es gibt kein Jahr 0. Der UT–TT-Abstand wird mit dem Modell der Ephemeridenbibliothek geschätzt. Uhrzeiten und insbesondere die Erdrotation sind für sehr alte Daten unsicher; Sonne und Planetenpositionen sind ebenfalls Modelle und keine zeitgenössischen Messungen.
+
+Sonne, acht Planeten und Erdmond verwenden geometrische JPL-DE440/DE441-Vektoren in J2000-Koordinaten, mit der Sonne als Ursprung; Jupiter bis Neptun stehen für die jeweiligen Systemschwerpunkte. Die Bibliothek `naelos-ephemeris` 0.1.2 (Apache 2.0, https://github.com/altariqabraham-design/naelos-ephemeris) stellt komprimierte, aus JPL-Daten abgeleitete Tabellen bereit. Quelldaten: https://ssd.jpl.nasa.gov/planets/eph_export.html; die Datenabschnitte wurden beim Download mit den veröffentlichten SHA-256-Prüfsummen geprüft. Nur benötigte Jahrhundertdateien werden geladen. Die heutige Stellung der Oberflächen und eingezeichnete Bahnen sind keine Ephemeriden. Andere Monde, Ceres, Pluto, Gürtel und Raumfahrzeuge bleiben schematisch; Raumfahrzeuge sind vor Missionsbeginn nicht verfügbar.
+
+Validierung: Vergleich geometrischer Vektoren mit dem unabhängigen NASA/JPL-Horizons-Rechenzugang https://ssd-api.jpl.nasa.gov/doc/horizons.html für den 1. Januar um 12 UT in 8000 v. Chr., 1 v. Chr. und 2026 n. Chr.; Abweichungen in diesen Stichproben unter 56 km für Planeten und unter 7 m für den Mond, bezogen auf dieselbe JPL-Datengrundlage und den gewählten dynamischen Zeitpunkt. Dies ist keine allgemeine Aussage über die historische Genauigkeit der Ephemeriden oder der Erdzeit. Tests: `npm test`; die gespeicherten Referenzwerte liegen in `tests/horizons-reference.json`.
